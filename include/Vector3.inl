@@ -1,6 +1,4 @@
 #include <Vector3.hpp>
-#include <Math.hpp>
-#include <cmath>
 
 template<typename T>
 Vector3<T>::Vector3(T V) :
