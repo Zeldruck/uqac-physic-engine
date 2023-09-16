@@ -30,3 +30,12 @@
 *.exe
 *.out
 *.app
+
+# Xmake cache
+.xmake/
+build/
+bin/
+vsxmake2022/
+
+# MacOS Cache
+.DS_Store
