@@ -1,6 +1,8 @@
 add_rules("mode.debug", "mode.release")
 
-add_requires("imgui", "opengl", "glfw", "glad")
+add_requires("opengl", "glfw", "glad")
+
+add_requires("imgui", { configs = { glfw_opengl3 = true, useglad = true } })
 
 set_allowedarchs("windows|x64")
 set_warnings("allextra")
