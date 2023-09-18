@@ -6,7 +6,8 @@
 #include "imgui_impl_opengl3.h"
 #include <GLFW/glfw3.h>
 
-#include "EngineCpp/GLFWcpp.hpp"
+#include "EngineCpp/cppGLFW.hpp"
+#include "EngineCpp/cppGLFWwindow.hpp"
 
 using namespace std;
 
@@ -14,15 +15,8 @@ void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 int main(int argc, char** argv)
 {
-    GLFWcpp glfw;
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Uqac physic engine", nullptr, nullptr);
-    if (window == nullptr)
-    {
-        std::cout << "Error: Can't create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(window);
+    cppGLFW glfw;
+    cppGLFWwindow window(800, 600, "Uqac physic engine");
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -31,7 +25,7 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
+    glfwSetFramebufferSizeCallback(window.GetHandle(), FramebufferSizeCallback);
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -39,10 +33,10 @@ int main(int argc, char** argv)
     ImGui::StyleColorsDark();
 
     // Setup Platform/Renderer backends
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplGlfw_InitForOpenGL(window.GetHandle(), true);
     ImGui_ImplOpenGL3_Init("#version 130");
 
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(window.GetHandle()))
     {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -60,7 +54,7 @@ int main(int argc, char** argv)
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(window.GetHandle());
         glfwPollEvents();
     }
 
@@ -68,7 +62,6 @@ int main(int argc, char** argv)
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
-    glfwDestroyWindow(window);
     return 0;
 }
 
