@@ -17,6 +17,12 @@ cppGLFWwindow::cppGLFWwindow(int width, int height, const std::string& title)
 	std::cout << "Current context: " << m_window << std::endl;
 }
 
+cppGLFWwindow::cppGLFWwindow(cppGLFWwindow&& window) noexcept
+{
+	m_window = window.m_window;
+	window.m_window = nullptr;
+}
+
 cppGLFWwindow::~cppGLFWwindow()
 {
 	std::cout << "Current context nullptr" << std::endl;
@@ -28,4 +34,10 @@ cppGLFWwindow::~cppGLFWwindow()
 GLFWwindow* cppGLFWwindow::GetHandle()
 {
 	return m_window;
+}
+
+cppGLFWwindow& cppGLFWwindow::operator=(cppGLFWwindow&& window) noexcept
+{
+	std::swap(m_window, window.m_window);
+	return *this;
 }
