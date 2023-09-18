@@ -6,17 +6,15 @@
 #include "imgui_impl_opengl3.h"
 #include <GLFW/glfw3.h>
 
+#include "EngineCpp/GLFWcpp.hpp"
+
 using namespace std;
 
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 int main(int argc, char** argv)
 {
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
+    GLFWcpp glfw;
     GLFWwindow* window = glfwCreateWindow(800, 600, "Uqac physic engine", nullptr, nullptr);
     if (window == nullptr)
     {
@@ -71,7 +69,6 @@ int main(int argc, char** argv)
     ImGui::DestroyContext();
 
     glfwDestroyWindow(window);
-    glfwTerminate();
     return 0;
 }
 
