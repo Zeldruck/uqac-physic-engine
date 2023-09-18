@@ -9,8 +9,6 @@
 #include "EngineCpp/cppGLFW.hpp"
 #include "EngineCpp/cppGLFWwindow.hpp"
 
-using namespace std;
-
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 int main(int argc, char** argv)
