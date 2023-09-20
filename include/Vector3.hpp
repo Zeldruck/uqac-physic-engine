@@ -23,6 +23,15 @@ struct Vector3
 	Vector3& operator/=(const Vector3& vec);
 	Vector3& operator/=(T value);
 
+	float GetLength() const;
+	Vector3& Normalize();
+	Vector3& UnitNormalize();
+	Vector3 GetNormalized() const;
+	Vector3 GetUnitNormalized() const;
+
+	static float DotProduct(const Vector3& vecA, const Vector3& vecB);
+	static Vector3 CrossProduct(const Vector3& vecA, const Vector3& vecB);
+
 	T x, y, z;
 };
 

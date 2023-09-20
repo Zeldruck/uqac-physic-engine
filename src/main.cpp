@@ -7,6 +7,8 @@
 #include "EngineCpp/cppGLFWwindow.hpp"
 #include "EngineCpp/cppImgui.hpp"
 
+#include "Vector3.hpp"
+
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 int main(int argc, char** argv)
@@ -24,6 +26,25 @@ int main(int argc, char** argv)
 
     // Imgui setup
     ImguiCpp imguiCpp(&window);
+
+
+
+    /* Vector3 class test */
+    Vector3f testVec(1.f, 1.f, 0.f);
+    std::cout << "TestVec: " << testVec << std::endl;
+    std::cout << "TestVec length: " << testVec.GetLength() << std::endl;
+    std::cout << "TestVec normalized: " << testVec.GetNormalized() << std::endl;
+    std::cout << "TestVec unit normalized: " << testVec.GetUnitNormalized() << std::endl;
+    std::cout << std::endl;
+
+    Vector3f t(1, 2, 3);
+    Vector3f t2(4, 5, 6);
+
+    std::cout << "Cross product: " << t << ";" << t2 << " = " << Vector3f::CrossProduct(t, t2) << std::endl;
+    std::cout << "Dot product: " << t << ";" << t2 << " = " << Vector3f::DotProduct(t, t2) << std::endl;
+    std::cout << std::endl;
+
+
 
     while (!glfwWindowShouldClose(window.GetHandle()))
     {
