@@ -17,6 +17,7 @@ public:
 	cppGLFWwindow& operator=(cppGLFWwindow&& window) noexcept;
 
 	GLFWwindow* GetHandle();
+	bool ShouldClose();
 private:
 	GLFWwindow* m_window = nullptr;
 };
