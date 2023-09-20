@@ -1,12 +1,11 @@
 #include <iostream>
-#include "Vector3.hpp"
-#include <glad/glad.h>
-#include "./EngineCpp/ImguiCpp.hpp"
-#include "imgui.h"
 #include <GLFW/glfw3.h>
+#include <glad/glad.h>
+#include "imgui.h"
 
 #include "EngineCpp/cppGLFW.hpp"
 #include "EngineCpp/cppGLFWwindow.hpp"
+#include "EngineCpp/cppImgui.hpp"
 
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 
@@ -18,16 +17,15 @@ int main(int argc, char** argv)
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Error: Failed to initialize GLAD" << std::endl;
-        glfwTerminate();
         return -1;
     }
 
     glfwSetFramebufferSizeCallback(window.GetHandle(), FramebufferSizeCallback);
 
     // Imgui setup
-    ImguiCpp imguiCpp(window);
+    ImguiCpp imguiCpp(&window);
 
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(window.GetHandle()))
     {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -45,8 +43,6 @@ int main(int argc, char** argv)
         glfwPollEvents();
     }
 
-    glfwDestroyWindow(window);
-    glfwTerminate();
     return 0;
 }
 

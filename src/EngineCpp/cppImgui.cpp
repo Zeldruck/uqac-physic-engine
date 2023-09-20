@@ -1,12 +1,13 @@
-#include "./EngineCpp/ImguiCpp.hpp"
+#include "EngineCpp/cppImgui.hpp"
+#include "EngineCpp/cppGLFWwindow.hpp"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-#include <GLFW/glfw3.h>
 
 
-ImguiCpp::ImguiCpp(GLFWwindow* window)
+
+ImguiCpp::ImguiCpp(cppGLFWwindow* window)
 {
 	// Setup imgui
 	IMGUI_CHECKVERSION();
@@ -15,7 +16,7 @@ ImguiCpp::ImguiCpp(GLFWwindow* window)
 	ImGui::StyleColorsDark();
 
 	// Setup Platform/Renderer backends
-	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplGlfw_InitForOpenGL(window->GetHandle(), true);
 	ImGui_ImplOpenGL3_Init("#version 130");
 }
 
