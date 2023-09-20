@@ -42,10 +42,15 @@ int main(int argc, char** argv)
     std::cout << "Dot product: " << t << ";" << t2 << " = " << Vector3f::DotProduct(t, t2) << std::endl;
     std::cout << std::endl;
 
-
+   
     EulerIntegrator integrator;
     Particle particle(Vector3<float>(0.0f, 0.0f, 0.0f), Vector3<float>(1.0f, 1.0f, 2.0f), Vector3<float>(1.0f, 2.0f, 3.0f), 0.000001f, "Particle");
-
+    
+    // Game variables
+    Vector3f direction(0.0f, 1.0f, 0.0f);
+    float power = 2.f;
+    
+    // Time variables
     float deltaTime = 0.0f;
     float lastFrameTime = 0.0f;
 
