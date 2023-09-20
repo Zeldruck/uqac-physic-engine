@@ -26,21 +26,6 @@ int main(int argc, char** argv)
 
     glfwSetFramebufferSizeCallback(window.GetHandle(), FramebufferSizeCallback);
 
-    EulerIntegrator integrator;
-    Particle particle(Vector3<float>(0.0f, 0.0f, 0.0f), Vector3<float>(1.0f, 1.0f, 2.0f), Vector3<float>(1.0f, 2.0f, 3.0f), 0.000001f, "Particle");
-
-    float deltaTime = 0.0f;
-    float lastFrameTime = 0.0f;
-
-    // Imgui setup
-    ImguiCpp imguiCpp(&window);
-    while (!window.ShouldClose())
-    {
-        float currentTime = glfwGetTime();
-        deltaTime = currentTime - lastFrameTime;
-        lastFrameTime = currentTime;
-
-
 
     /* Vector3 class test */
     Vector3f testVec(1.f, 1.f, 0.f);
@@ -58,9 +43,20 @@ int main(int argc, char** argv)
     std::cout << std::endl;
 
 
+    EulerIntegrator integrator;
+    Particle particle(Vector3<float>(0.0f, 0.0f, 0.0f), Vector3<float>(1.0f, 1.0f, 2.0f), Vector3<float>(1.0f, 2.0f, 3.0f), 0.000001f, "Particle");
 
-    while (!glfwWindowShouldClose(window.GetHandle()))
+    float deltaTime = 0.0f;
+    float lastFrameTime = 0.0f;
+
+    // Imgui setup
+    ImguiCpp imguiCpp(&window);
+    while (!window.ShouldClose())
     {
+        float currentTime = glfwGetTime();
+        deltaTime = currentTime - lastFrameTime;
+        lastFrameTime = currentTime;
+
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
