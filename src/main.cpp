@@ -5,25 +5,17 @@
 #include "imgui.h"
 #include <GLFW/glfw3.h>
 
+#include "EngineCpp/cppGLFW.hpp"
+#include "EngineCpp/cppGLFWwindow.hpp"
+
 using namespace std;
 
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 int main(int argc, char** argv)
 {
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Uqac physic engine", nullptr, nullptr);
-    if (window == nullptr)
-    {
-        std::cout << "Error: Can't create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(window);
+    cppGLFW glfw;
+    cppGLFWwindow window(800, 600, "Uqac physic engine");
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -32,7 +24,7 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
+    glfwSetFramebufferSizeCallback(window.GetHandle(), FramebufferSizeCallback);
 
     // Imgui setup
     ImguiCpp imguiCpp(window);
@@ -51,7 +43,7 @@ int main(int argc, char** argv)
 
         imguiCpp.Render();
 
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(window.GetHandle());
         glfwPollEvents();
     }
 
