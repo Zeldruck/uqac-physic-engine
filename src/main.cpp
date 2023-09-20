@@ -27,17 +27,16 @@ int main(int argc, char** argv)
     EulerIntegrator integrator;
     Particle particle(Vector3<float>(0.0f, 0.0f, 0.0f), Vector3<float>(1.0f, 1.0f, 2.0f), Vector3<float>(1.0f, 2.0f, 3.0f), 0.000001f, "Particle");
 
-    uint64_t lastFrameTime = glfwGetTime();
+    float deltaTime = 0.0f;
+    float lastFrameTime = 0.0f;
 
     // Imgui setup
     ImguiCpp imguiCpp(&window);
     while (!window.ShouldClose())
     {
-        //uint64_t currentTime = glfwGetTime();
-        //float deltaTime = (float)(currentTime - lastFrameTime) / glfwGetTimerFrequency();
-        //lastFrameTime = currentTime;
-
-        float deltaTime = 0.2f;
+        float currentTime = glfwGetTime();
+        deltaTime = currentTime - lastFrameTime;
+        lastFrameTime = currentTime;
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
