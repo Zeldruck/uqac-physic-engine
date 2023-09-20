@@ -6,6 +6,8 @@
 #include "EngineCpp/cppGLFW.hpp"
 #include "EngineCpp/cppGLFWwindow.hpp"
 #include "EngineCpp/cppImgui.hpp"
+#include "EulerIntegrator.hpp"
+#include "Particle.hpp"
 
 #include "Vector3.hpp"
 
@@ -24,8 +26,19 @@ int main(int argc, char** argv)
 
     glfwSetFramebufferSizeCallback(window.GetHandle(), FramebufferSizeCallback);
 
+    EulerIntegrator integrator;
+    Particle particle(Vector3<float>(0.0f, 0.0f, 0.0f), Vector3<float>(1.0f, 1.0f, 2.0f), Vector3<float>(1.0f, 2.0f, 3.0f), 0.000001f, "Particle");
+
+    float deltaTime = 0.0f;
+    float lastFrameTime = 0.0f;
+
     // Imgui setup
     ImguiCpp imguiCpp(&window);
+    while (!window.ShouldClose())
+    {
+        float currentTime = glfwGetTime();
+        deltaTime = currentTime - lastFrameTime;
+        lastFrameTime = currentTime;
 
 
 
@@ -55,6 +68,13 @@ int main(int argc, char** argv)
 
         ImGui::Begin("Hello, world!");
         ImGui::Text("Basic IMGUI text.");
+        ImGui::Text("Particles");
+        ImGui::Text("Particle name: %s", particle.name.c_str());
+        ImGui::Text("Particle position: (%f, %f, %f)", particle.position.x, particle.position.y, particle.position.z);
+        ImGui::Text("Particle velocity: (%f, %f, %f)", particle.velocity.x, particle.velocity.y, particle.velocity.z);
+        ImGui::Text("Particle acceleration: (%f, %f, %f)", particle.acceleration.x, particle.acceleration.y, particle.acceleration.z);
+        ImGui::Text("Particle mass: %f", particle.mass);
+        ImGui::Text("Delta Time: %f", deltaTime);
         ImGui::End();
 
 
@@ -62,6 +82,8 @@ int main(int argc, char** argv)
 
         glfwSwapBuffers(window.GetHandle());
         glfwPollEvents();
+
+        integrator.Integrate(particle, deltaTime);
     }
 
     return 0;

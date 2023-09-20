@@ -44,3 +44,8 @@ cppGLFWwindow& cppGLFWwindow::operator=(cppGLFWwindow&& window) noexcept
 	std::swap(m_window, window.m_window);
 	return *this;
 }
+
+bool cppGLFWwindow::ShouldClose()
+{
+	return glfwWindowShouldClose(m_window);
+}
