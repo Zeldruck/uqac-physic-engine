@@ -29,7 +29,7 @@ const char* fragmentShaderSource = "#version 330 core\n"
 "}\n\0";
 
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
-void ImguiGamePanel(Particle& particle, Vector3f& direction, float& power, bool& isParticleLaunched, float deltaTime);
+void ImguiGamePanel(std::shared_ptr<Particle> particle, EulerIntegrator& integrator, Vector3f& direction, float& power, bool& isParticleLaunched, float deltaTime);
 void Vector3ClassTest();
 
 int main(int argc, char** argv)
@@ -48,10 +48,9 @@ int main(int argc, char** argv)
     Vector3ClassTest();
    
     EulerIntegrator integrator;
-    Particle particle(Vector3<float>(0.0f, 0.0f, 0.0f), Vector3<float>(1.0f, 1.0f, 2.0f), Vector3<float>(1.0f, 2.0f, 3.0f), 0.000001f, "Particle");
-    Particle particle2(Vector3<float>(0.0f, 0.0f, 0.0f), Vector3<float>(1.0f, 1.0f, 2.0f), Vector3<float>(1.0f, 2.0f, 3.0f), 0.000001f, "Particle2");
-    integrator.AddParticle(particle);
-    integrator.AddParticle(particle2);
+
+    std::shared_ptr<Particle> particle(new Particle(Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f, 1.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.000001f, "Particle"));
+    //integrator.AddParticle(particle);
 
     // Game variables
     Vector3f direction(0.0f, 1.0f, 0.0f);
@@ -61,6 +60,8 @@ int main(int argc, char** argv)
     // Time variables
     float deltaTime = 0.0f;
     float lastFrameTime = 0.0f;
+
+    #pragma region Shader
 
     // build and compile our shader program
         // ------------------------------------
@@ -102,6 +103,10 @@ int main(int argc, char** argv)
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
+    #pragma endregion
+
+    #pragma region Triangle
+
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float vertices[] = {
@@ -128,16 +133,24 @@ int main(int argc, char** argv)
     // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
     glBindVertexArray(0);
+
+    #pragma endregion
     
    
-
     // Imgui setup
     ImguiCpp imguiCpp(&window);
+
+
+    // Game & window loop
     while (!window.ShouldClose())
     {
         float currentTime = glfwGetTime();
         deltaTime = currentTime - lastFrameTime;
         lastFrameTime = currentTime;
+
+
+        integrator.Integrate(deltaTime);
+
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -149,9 +162,7 @@ int main(int argc, char** argv)
         ImGui::Text("FPS: %.f", std::clamp(1000 / (deltaTime * 1000), 0.f, 60.f));
         ImGui::End();
 
-        ImguiGamePanel(particle, direction, power, isParticleLaunched, deltaTime);
-
-        imguiCpp.Render();
+        ImguiGamePanel(particle, integrator, direction, power, isParticleLaunched, deltaTime);
 
         // draw our first triangle
         glUseProgram(shaderProgram);
@@ -159,10 +170,10 @@ int main(int argc, char** argv)
         glDrawArrays(GL_TRIANGLES, 0, 3);
         // glBindVertexArray(0); // no need to unbind it every time 
 
+        imguiCpp.Render();
+
         glfwSwapBuffers(window.GetHandle());
         glfwPollEvents();
-
-        integrator.Integrate(deltaTime);
     }
 
     // optional: de-allocate all resources once they've outlived their purpose:
@@ -179,7 +190,7 @@ void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-void ImguiGamePanel(Particle& particle, Vector3f& direction, float& power, bool& isParticleLaunched, float deltaTime)
+void ImguiGamePanel(std::shared_ptr<Particle> particle, EulerIntegrator& integrator, Vector3f& direction, float& power, bool& isParticleLaunched, float deltaTime)
 {
     float directionAngle = 0.f;
 
@@ -199,11 +210,21 @@ void ImguiGamePanel(Particle& particle, Vector3f& direction, float& power, bool&
     if (!isParticleLaunched && ImGui::Button("Launch"))
     {
         std::cout << "Launch the particle" << std::endl;
+
+        particle->velocity = direction.GetUnitNormalized() * power;
+
+        integrator.AddParticle(particle);
+
         isParticleLaunched = true;
     }
     if (isParticleLaunched && ImGui::Button("Reset"))
     {
         std::cout << "Reset the particle" << std::endl;
+
+        integrator.RemoveParticle(particle);
+        particle->position = Vector3f(0, 0, 0);
+        particle->velocity = Vector3f(0, 0, 0);
+
         isParticleLaunched = false;
     }
     ImGui::EndGroup();
@@ -213,11 +234,11 @@ void ImguiGamePanel(Particle& particle, Vector3f& direction, float& power, bool&
 
     /* Particle Panel Data*/
     ImGui::Begin("Particle Data");
-    ImGui::Text("Particle name: %s", particle.name.c_str());
-    ImGui::Text("Particle position: (%f, %f, %f)", particle.position.x, particle.position.y, particle.position.z);
-    ImGui::Text("Particle velocity: (%f, %f, %f)", particle.velocity.x, particle.velocity.y, particle.velocity.z);
-    ImGui::Text("Particle acceleration: (%f, %f, %f)", particle.acceleration.x, particle.acceleration.y, particle.acceleration.z);
-    ImGui::Text("Particle mass: %f", particle.mass);
+    ImGui::Text("Particle name: %s", particle->name.c_str());
+    ImGui::Text("Particle position: (%f, %f, %f)", particle->position.x, particle->position.y, particle->position.z);
+    ImGui::Text("Particle velocity: (%f, %f, %f)", particle->velocity.x, particle->velocity.y, particle->velocity.z);
+    ImGui::Text("Particle acceleration: (%f, %f, %f)", particle->acceleration.x, particle->acceleration.y, particle->acceleration.z);
+    ImGui::Text("Particle mass: %f", particle->mass);
     ImGui::End();
 }
 

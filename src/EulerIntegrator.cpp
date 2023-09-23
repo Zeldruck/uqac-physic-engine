@@ -4,23 +4,23 @@
 
 void EulerIntegrator::Integrate(float deltaTime)
 {
-	for (Particle& particle : particles)
+	for (std::shared_ptr<Particle> particle : particles)
 	{
-		particle.position += particle.velocity * deltaTime;
-		particle.velocity += particle.acceleration * deltaTime;
+		particle->position += particle->velocity * deltaTime;
+		particle->velocity += particle->acceleration * deltaTime;
 	}
 }
 
-void EulerIntegrator::AddParticle(Particle& particle)
+void EulerIntegrator::AddParticle(std::shared_ptr<Particle> particle)
 {
 	particles.push_back(particle);
 }
 
-void EulerIntegrator::RemoveParticle(Particle& particle)
+void EulerIntegrator::RemoveParticle(std::shared_ptr<Particle> particle)
 {
-	for(auto& it = particles.begin(); it != particles.end(); ++it)
+	for(auto it = particles.begin(); it != particles.end(); ++it)
 	{
-		if(&(*it) == &particle)
+		if(*it == particle)
 		{
 			particles.erase(it);
 			return;
@@ -30,10 +30,10 @@ void EulerIntegrator::RemoveParticle(Particle& particle)
 
 void EulerIntegrator::PrintParticles()
 {
-	for(const Particle& particle : particles)
+	for(const std::shared_ptr<Particle> particle : particles)
 	{
-		std::cout << "Particle position: " << particle.position << std::endl;
-		std::cout << "Particle velocity: " << particle.velocity << std::endl;
-		std::cout << "Particle acceleration: " << particle.acceleration << std::endl;
+		std::cout << "Particle position: " << particle->position << std::endl;
+		std::cout << "Particle velocity: " << particle->velocity << std::endl;
+		std::cout << "Particle acceleration: " << particle->acceleration << std::endl;
 	}
 }

@@ -9,7 +9,7 @@ Particle::Particle()
 {
 }
 
-Particle::Particle(Vector3<float> position, Vector3<float> velocity, Vector3<float> acceleration, float mass, std::string name)
+Particle::Particle(Vector3f position, Vector3f velocity, Vector3f acceleration, float mass, std::string name)
 	: name(name),
 	position(position),
 	velocity(velocity),

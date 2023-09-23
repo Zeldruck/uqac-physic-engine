@@ -9,9 +9,9 @@ class EulerIntegrator
 {
 public:
 	void Integrate(float deltaTime);
-	void AddParticle(Particle& particle);
-	void RemoveParticle(Particle& particle);
+	void AddParticle(std::shared_ptr<Particle> particle);
+	void RemoveParticle(std::shared_ptr<Particle> particle);
 	void PrintParticles();
 private:
-	std::vector<Particle> particles;
+	std::vector<std::shared_ptr<Particle>> particles;
 };
