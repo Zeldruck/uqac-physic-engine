@@ -1,5 +1,6 @@
 #include <iostream>
 #include <algorithm>
+#include <memory>
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 #include "imgui.h"
@@ -48,7 +49,10 @@ int main(int argc, char** argv)
    
     EulerIntegrator integrator;
     Particle particle(Vector3<float>(0.0f, 0.0f, 0.0f), Vector3<float>(1.0f, 1.0f, 2.0f), Vector3<float>(1.0f, 2.0f, 3.0f), 0.000001f, "Particle");
-    
+    Particle particle2(Vector3<float>(0.0f, 0.0f, 0.0f), Vector3<float>(1.0f, 1.0f, 2.0f), Vector3<float>(1.0f, 2.0f, 3.0f), 0.000001f, "Particle2");
+    integrator.AddParticle(particle);
+    integrator.AddParticle(particle2);
+
     // Game variables
     Vector3f direction(0.0f, 1.0f, 0.0f);
     float power = 2.f;
@@ -125,6 +129,8 @@ int main(int argc, char** argv)
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
     glBindVertexArray(0);
     
+   
+
     // Imgui setup
     ImguiCpp imguiCpp(&window);
     while (!window.ShouldClose())
@@ -156,7 +162,7 @@ int main(int argc, char** argv)
         glfwSwapBuffers(window.GetHandle());
         glfwPollEvents();
 
-        integrator.Integrate(particle, deltaTime);
+        integrator.Integrate(deltaTime);
     }
 
     // optional: de-allocate all resources once they've outlived their purpose:
