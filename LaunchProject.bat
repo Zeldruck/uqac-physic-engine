@@ -1,0 +1,2 @@
+xmake run
+pause
