@@ -31,7 +31,7 @@ const char* fragmentShaderSource = "#version 330 core\n"
 "}\n\0";
 
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
-void ImguiGamePanel(std::shared_ptr<Particle> particle, EulerIntegrator& integrator, Vector3f& direction, float& power, bool& isParticleLaunched, float deltaTime);
+void ImguiGamePanel(std::shared_ptr<Particle> particle, EulerIntegrator& integrator, Vector3f& direction, float& power, bool& isParticleLaunched, bool& isGravityEnabled, float deltaTime);
 void ImguiStatsPanel(float deltaTime);
 void Vector3ClassTest();
 
@@ -56,8 +56,9 @@ int main(int argc, char** argv)
 
     // Game variables
     Vector3f direction(0.0f, 1.0f, 0.0f);
-    float power = 0.5f;
+    float power = 4.f;
     bool isParticleLaunched = false;
+    bool isGravityEnabled = true;
     
     // Time variables
     float deltaTime = 0.0f;
@@ -116,7 +117,7 @@ int main(int argc, char** argv)
         lastFrameTime = currentTime;
 
 
-        integrator.Integrate(deltaTime); // Update all the particles
+        integrator.Integrate(deltaTime, isGravityEnabled); // Update all the particles
         ourShader.SetVec3("position", particle->position); // Set the particle position in our triangle shader
 
 
@@ -127,7 +128,7 @@ int main(int argc, char** argv)
         imguiCpp.NewFrame();
 
         ImguiStatsPanel(deltaTime);
-        ImguiGamePanel(particle, integrator, direction, power, isParticleLaunched, deltaTime);
+        ImguiGamePanel(particle, integrator, direction, power, isParticleLaunched, isGravityEnabled, deltaTime);
 
         /* Draw our triangle */
         ourShader.Use(); 
@@ -153,7 +154,7 @@ void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-void ImguiGamePanel(std::shared_ptr<Particle> particle, EulerIntegrator& integrator, Vector3f& direction, float& power, bool& isParticleLaunched, float deltaTime)
+void ImguiGamePanel(std::shared_ptr<Particle> particle, EulerIntegrator& integrator, Vector3f& direction, float& power, bool& isParticleLaunched, bool& isGravityEnabled, float deltaTime)
 {
     float directionAngle = 0.f;
 
@@ -166,7 +167,11 @@ void ImguiGamePanel(std::shared_ptr<Particle> particle, EulerIntegrator& integra
     ImGui::EndGroup();
 
     ImGui::Spacing();
-    ImGui::SliderFloat("Power", &power, 0.f, 1.f);
+    ImGui::SliderFloat("Power", &power, 0.f, 8.f);
+    ImGui::Spacing();
+
+    ImGui::Spacing();
+    ImGui::Checkbox("Gravity", &isGravityEnabled);
     ImGui::Spacing();
 
     ImGui::BeginGroup();
