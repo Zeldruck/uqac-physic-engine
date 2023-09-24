@@ -1,3 +1,4 @@
 #pragma once
 
-const float GRAVITY = 9.8f;
+const float MIN_MASS = 0.000001f;
+const float GRAVITY = 9.81f;

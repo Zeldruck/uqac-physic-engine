@@ -9,10 +9,12 @@ cppGLFW::cppGLFW()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     std::cout << "GLFW initialized" << std::endl;
+    std::cout << std::endl;
 }
 
 cppGLFW::~cppGLFW()
 {
     std::cout << "Terminating GLFW" << std::endl;
     glfwTerminate();
+    std::cout << std::endl;
 }

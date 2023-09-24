@@ -1,7 +1,7 @@
 add_rules("mode.debug", "mode.release")
 
 add_requires("opengl", "glfw", "glad")
-
+--add_requires("glslang", {configs = {binaryonly = true}})
 add_requires("imgui", { configs = { glfw_opengl3 = true, useglad = true } })
 
 set_allowedarchs("windows|x64")
@@ -20,10 +20,13 @@ end
 
 target("uqac-physic-engine")
     set_kind("binary")
+    --add_rules("utils.glsl2spv", {outputdir = "build"})
     add_headerfiles("include/**.h", "include/**.hpp", "include/**.inl")
     add_includedirs("include", { public = true })
     add_files("src/**.cpp")
+    --add_files("shader/**.vert", "shader/**.frag")
     add_packages("imgui", "opengl", "glfw", "glad", { public = true })
+    --add_packages("glslang")
 
 --
 -- If you want to known more usage about xmake, please see https://xmake.io

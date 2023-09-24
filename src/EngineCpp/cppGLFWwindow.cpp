@@ -9,12 +9,14 @@ cppGLFWwindow::cppGLFWwindow(int width, int height, const std::string& title)
 	if (m_window == nullptr)
 	{
 		std::cout << "Error: Can't create GLFW window" << std::endl;
-		glfwTerminate();
+		std::cout << std::endl;
+		return;
 	}
 
 	std::cout << "Window created" << std::endl;
 	glfwMakeContextCurrent(m_window);
 	std::cout << "Current context: " << m_window << std::endl;
+	std::cout << std::endl;
 }
 
 cppGLFWwindow::cppGLFWwindow(cppGLFWwindow&& window) noexcept
@@ -29,6 +31,7 @@ cppGLFWwindow::~cppGLFWwindow()
 	glfwMakeContextCurrent(nullptr);
 	std::cout << "Destroy window" << std::endl;
 	glfwDestroyWindow(m_window);
+	std::cout << std::endl;
 }
 
 GLFWwindow* cppGLFWwindow::GetHandle()
@@ -40,4 +43,9 @@ cppGLFWwindow& cppGLFWwindow::operator=(cppGLFWwindow&& window) noexcept
 {
 	std::swap(m_window, window.m_window);
 	return *this;
+}
+
+bool cppGLFWwindow::ShouldClose()
+{
+	return glfwWindowShouldClose(m_window);
 }

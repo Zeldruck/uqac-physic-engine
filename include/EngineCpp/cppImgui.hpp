@@ -1,12 +1,12 @@
 #pragma once
 
 struct ImGuiContext;
-struct GLFWwindow;
+class cppGLFWwindow;
 
 class ImguiCpp
 {
 public:
-	ImguiCpp(GLFWwindow* window);
+	ImguiCpp(cppGLFWwindow* window);
 	ImguiCpp(const ImguiCpp&) = delete;
 	ImguiCpp(ImguiCpp&&) = delete;
 	~ImguiCpp();

@@ -1,4 +1,5 @@
 #include <Vector3.hpp>
+#include <cmath>
 
 template<typename T>
 Vector3<T>::Vector3(T V) :
@@ -110,6 +111,53 @@ Vector3<T>& Vector3<T>::operator/=(T value)
 	z /= value;
 
 	return *this;
+}
+
+template<typename T>
+float Vector3<T>::GetLength() const
+{
+	return std::sqrt(x*x + y*y + z*z);
+}
+
+template<typename T>
+Vector3<T>& Vector3<T>::Normalize()
+{
+	*this = GetNormalized();
+	return *this;
+}
+
+template<typename T>
+Vector3<T>& Vector3<T>::UnitNormalize()
+{
+	*this = GetUnitNormalized();
+	return *this;
+}
+
+template<typename T>
+Vector3<T> Vector3<T>::GetNormalized() const
+{
+	return Vector3(*this / GetLength());
+}
+
+template<typename T>
+Vector3<T> Vector3<T>::GetUnitNormalized() const
+{
+	Vector3<T> temp = *this / GetLength();
+	return Vector3(temp / (temp.x + temp.y + temp.z));
+}
+
+template<typename T>
+float Vector3<T>::DotProduct(const Vector3& vecA, const Vector3& vecB)
+{
+	return vecA.x*vecB.x + vecA.y*vecB.y + vecA.z*vecB.z;
+}
+
+template<typename T>
+Vector3<T> Vector3<T>::CrossProduct(const Vector3& vecA, const Vector3& vecB)
+{
+	return Vector3(vecA.y*vecB.z - vecA.z*vecB.y,
+				vecA.z*vecB.x - vecA.x*vecB.z,
+				vecA.x*vecB.y - vecA.y*vecB.x);
 }
 
 template<typename T>
