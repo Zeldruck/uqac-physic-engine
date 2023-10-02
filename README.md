@@ -8,24 +8,7 @@ Installer [xMake](https://github.com/xmake-io/xmake/releases) pour pouvoir compi
 
 Installer [Visual Studio 2022](https://visualstudio.microsoft.com/fr/vs/) pour pouvoir compiler et lancer le projet.
 
-## Compiler en ligne de commande
-
-**Générer la solution Visual Studio.**
-```bash
-xmake project -k vsxmake
-```
-
-**Compiler le projet.**
-```bash
-xmake
-```
-
-**Lancer le projet.**
-```bash
-xmake run
-```
-
-## Compiler en utilisant les fichiers prédéfinis
+## Compiler en utilisant les fichiers batch
 
 **Générer la solution Visual Studio.**
 
