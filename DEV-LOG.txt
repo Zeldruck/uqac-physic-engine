@@ -1,0 +1,12 @@
+Tâches:
+- Vecteur: Félix Jouanneau
+- Particule: Lan-Anh Virginie Nguyen
+- Intégrateur: Lan-Anh Virginie Nguyen
+- Affichage graphique: Lan-Anh Virginie Nguyen & Félix Jouanneau
+- Imgui: Félix Jouanneau
+
+
+Références utilisées:
+- https://learnopengl.com
+- https://wikipedia.org
+- https://xmake.io

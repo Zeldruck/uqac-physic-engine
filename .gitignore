@@ -34,7 +34,8 @@
 # Xmake cache
 .xmake/
 build/
-bin/
+bin/*
+!bin/assets
 vsxmake2022/
 
 # MacOS Cache
