@@ -1,6 +1,8 @@
 #include <iostream>
 #include <algorithm>
 #include <memory>
+#include <chrono>
+
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 #include "imgui.h"
@@ -8,11 +10,12 @@
 #include "EngineCpp/cppGLFW.hpp"
 #include "EngineCpp/cppGLFWwindow.hpp"
 #include "EngineCpp/cppImgui.hpp"
-#include "EulerIntegrator.hpp"
+#include "PhysicsSystem.hpp"
 #include "Particle.hpp"
 #include "Constants/PhysicConstants.hpp"
 #include "Constants/MathConstants.hpp"
 #include "EngineCpp/cppShader.hpp"
+#include "EulerIntegrator.hpp"
 
 #include "Camera.hpp"
 
@@ -22,9 +25,10 @@ void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 void MouseCallback(GLFWwindow* window, double xpos, double ypos);
 void ProcessInput(GLFWwindow* window, float deltaTime);
 
-void ImguiGamePanel(std::shared_ptr<Particle> particle, EulerIntegrator& integrator, Vector3f& direction, float& power, bool& isParticleLaunched, bool& isGravityEnabled, float deltaTime);
+void ImguiGamePanel(std::shared_ptr<Particle> particle, PhysicsSystem& physics, Vector3f& direction, float& power, bool& isParticleLaunched, bool& isGravityEnabled, float deltaTime);
 void ImguiStatsPanel(float deltaTime);
 void Vector3ClassTest();
+double HiresTimeInSeconds();
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -38,6 +42,8 @@ bool firstMouse = true;
 
 int main(int argc, char** argv)
 {
+    using clock = std::chrono::high_resolution_clock;
+
     cppGLFW glfw;
     cppGLFWwindow window(SCR_WIDTH, SCR_HEIGHT, "Uqac physic engine");
 
@@ -55,7 +61,7 @@ int main(int argc, char** argv)
 
     Vector3ClassTest();
    
-    EulerIntegrator integrator;
+    PhysicsSystem physics;
 
     std::shared_ptr<Particle> particle(new Particle(Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f, 1.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.000001f, "Particle"));
 
@@ -64,10 +70,14 @@ int main(int argc, char** argv)
     float power = 4.f;
     bool isParticleLaunched = false;
     bool isGravityEnabled = true;
-    
-    // Time variables
-    float deltaTime = 0.0f;
-    float lastFrameTime = 0.0f;
+   
+    #pragma region Timestep
+    double t = 0.0;
+    double deltaTime = 0.01;
+
+    double currentTime = HiresTimeInSeconds();
+    double accumulator = 0.0;
+    #pragma endregion
 
     #pragma region Shader
 
@@ -165,18 +175,36 @@ int main(int argc, char** argv)
     // Game & window loop
     while (!window.ShouldClose())
     {
-        float currentTime = glfwGetTime();
-        deltaTime = currentTime - lastFrameTime;
-        lastFrameTime = currentTime;
+        double newTime = HiresTimeInSeconds();
+        double frameTime = newTime - currentTime;
 
+        // Cap the frame time to avoid spiral of death
+        if (frameTime > 0.25)
+            frameTime = 0.25;
+
+        currentTime = newTime;
+        accumulator += frameTime;
+
+        while (accumulator >= deltaTime) {
+            // Integrates the physics
+            physics.Update(deltaTime, isGravityEnabled);
+            t += deltaTime;
+            accumulator -= deltaTime;
+        }
+
+        // Use alpha with rneder to interpolate between the previous and current physics state
+        const double alpha = accumulator / deltaTime;
+        // state = currentState * alpha + previousState * (1.0 - alpha);
+
+       
         ProcessInput(window.GetHandle(), deltaTime);
-
+       
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // activate shader
+       
         ourShader.Use();
-
+        // activate shader
+       
         // pass projection matrix to shader (note that in this case it could change every frame)
         glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         ourShader.SetMat4("projection", projection);
@@ -184,6 +212,7 @@ int main(int argc, char** argv)
         // camera/view transformation
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.SetMat4("view", view);
+        
 
         // render boxes
         glBindVertexArray(VAO);
@@ -202,7 +231,7 @@ int main(int argc, char** argv)
         imguiCpp.NewFrame();
 
         ImguiStatsPanel(deltaTime);
-        ImguiGamePanel(particle, integrator, direction, power, isParticleLaunched, isGravityEnabled, deltaTime);
+        ImguiGamePanel(particle, physics, direction, power, isParticleLaunched, isGravityEnabled, alpha);
 
         imguiCpp.Render(); // Draw the imgui frame
 
@@ -222,7 +251,7 @@ void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-void ImguiGamePanel(std::shared_ptr<Particle> particle, EulerIntegrator& integrator, Vector3f& direction, float& power, bool& isParticleLaunched, bool& isGravityEnabled, float deltaTime)
+void ImguiGamePanel(std::shared_ptr<Particle> particle, PhysicsSystem& physics, Vector3f& direction, float& power, bool& isParticleLaunched, bool& isGravityEnabled, float deltaTime)
 {
     float directionAngle = 0.f;
 
@@ -249,7 +278,7 @@ void ImguiGamePanel(std::shared_ptr<Particle> particle, EulerIntegrator& integra
 
         particle->velocity = direction.GetUnitNormalized() * power;
 
-        integrator.AddParticle(particle);
+        physics.AddParticle(particle);
 
         isParticleLaunched = true;
     }
@@ -257,7 +286,7 @@ void ImguiGamePanel(std::shared_ptr<Particle> particle, EulerIntegrator& integra
     {
         std::cout << "Reset the particle" << std::endl;
 
-        integrator.RemoveParticle(particle);
+        physics.RemoveParticle(particle);
         particle->position = Vector3f(0, 0, 0);
         particle->velocity = Vector3f(0, 0, 0);
 
@@ -302,6 +331,14 @@ void Vector3ClassTest()
     std::cout << "Cross product: " << t << ";" << t2 << " = " << Vector3f::CrossProduct(t, t2) << std::endl;
     std::cout << "Dot product: " << t << ";" << t2 << " = " << Vector3f::DotProduct(t, t2) << std::endl;
     std::cout << std::endl;
+}
+
+double HiresTimeInSeconds() {
+    using namespace std::chrono;
+    using clock = high_resolution_clock;
+
+    auto currentTime = duration_cast<milliseconds>(clock::now().time_since_epoch()).count();
+    return currentTime / 1000.0;
 }
 
 void ProcessInput(GLFWwindow* window, float deltaTime)
