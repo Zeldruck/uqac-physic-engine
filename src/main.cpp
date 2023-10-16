@@ -1,6 +1,8 @@
 #include <iostream>
 #include <algorithm>
 #include <memory>
+#include <chrono>
+
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 #include "imgui.h"
@@ -8,11 +10,13 @@
 #include "EngineCpp/cppGLFW.hpp"
 #include "EngineCpp/cppGLFWwindow.hpp"
 #include "EngineCpp/cppImgui.hpp"
-#include "EulerIntegrator.hpp"
+#include "PhysicsSystem.hpp"
 #include "Particle.hpp"
 #include "Constants/PhysicConstants.hpp"
 #include "Constants/MathConstants.hpp"
 #include "EngineCpp/cppShader.hpp"
+#include "EulerIntegrator.hpp"
+
 
 #include "Vector3.hpp"
 
@@ -31,12 +35,15 @@ const char* fragmentShaderSource = "#version 330 core\n"
 "}\n\0";
 
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
-void ImguiGamePanel(std::shared_ptr<Particle> particle, EulerIntegrator& integrator, Vector3f& direction, float& power, bool& isParticleLaunched, bool& isGravityEnabled, float deltaTime);
+void ImguiGamePanel(std::shared_ptr<Particle> particle, PhysicsSystem& physics, Vector3f& direction, float& power, bool& isParticleLaunched, bool& isGravityEnabled, float deltaTime);
 void ImguiStatsPanel(float deltaTime);
 void Vector3ClassTest();
+double HiresTimeInSeconds();
 
 int main(int argc, char** argv)
 {
+    using clock = std::chrono::high_resolution_clock;
+
     cppGLFW glfw;
     cppGLFWwindow window(800, 600, "Uqac physic engine");
 
@@ -50,7 +57,7 @@ int main(int argc, char** argv)
 
     Vector3ClassTest();
    
-    EulerIntegrator integrator;
+    PhysicsSystem physics;
 
     std::shared_ptr<Particle> particle(new Particle(Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f, 1.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.000001f, "Particle"));
 
@@ -59,10 +66,14 @@ int main(int argc, char** argv)
     float power = 4.f;
     bool isParticleLaunched = false;
     bool isGravityEnabled = true;
-    
-    // Time variables
-    float deltaTime = 0.0f;
-    float lastFrameTime = 0.0f;
+   
+    #pragma region Timestep
+    double t = 0.0;
+    double deltaTime = 0.01;
+
+    double currentTime = HiresTimeInSeconds();
+    double accumulator = 0.0;
+    #pragma endregion
 
     #pragma region Shader
 
@@ -103,32 +114,43 @@ int main(int argc, char** argv)
     glBindVertexArray(0);
 
     #pragma endregion
-    
    
     // Imgui setup
     ImguiCpp imguiCpp(&window);
 
-
     // Game & window loop
     while (!window.ShouldClose())
     {
-        float currentTime = glfwGetTime();
-        deltaTime = currentTime - lastFrameTime;
-        lastFrameTime = currentTime;
+        double newTime = HiresTimeInSeconds();
+        double frameTime = newTime - currentTime;
 
+        // Cap the frame time to avoid spiral of death
+        if (frameTime > 0.25)
+            frameTime = 0.25;
 
-        integrator.Integrate(deltaTime, isGravityEnabled); // Update all the particles
-        ourShader.SetVec3("position", particle->position); // Set the particle position in our triangle shader
+        currentTime = newTime;
+        accumulator += frameTime;
 
+        while (accumulator >= deltaTime) {
+            // Integrates the physics
+            physics.Update(deltaTime, isGravityEnabled);
+            t += deltaTime;
+            accumulator -= deltaTime;
+        }
+
+        // Use alpha with rneder to interpolate between the previous and current physics state
+        const double alpha = accumulator / deltaTime;
+        // state = currentState * alpha + previousState * (1.0 - alpha);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        ourShader.SetVec3("position", particle->position); // Set the particle position in our triangle shader
 
         imguiCpp.NewFrame();
 
         ImguiStatsPanel(deltaTime);
-        ImguiGamePanel(particle, integrator, direction, power, isParticleLaunched, isGravityEnabled, deltaTime);
+        ImguiGamePanel(particle, physics, direction, power, isParticleLaunched, isGravityEnabled, alpha);
 
         /* Draw our triangle */
         ourShader.Use(); 
@@ -154,7 +176,7 @@ void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-void ImguiGamePanel(std::shared_ptr<Particle> particle, EulerIntegrator& integrator, Vector3f& direction, float& power, bool& isParticleLaunched, bool& isGravityEnabled, float deltaTime)
+void ImguiGamePanel(std::shared_ptr<Particle> particle, PhysicsSystem& physics, Vector3f& direction, float& power, bool& isParticleLaunched, bool& isGravityEnabled, float deltaTime)
 {
     float directionAngle = 0.f;
 
@@ -181,7 +203,7 @@ void ImguiGamePanel(std::shared_ptr<Particle> particle, EulerIntegrator& integra
 
         particle->velocity = direction.GetUnitNormalized() * power;
 
-        integrator.AddParticle(particle);
+        physics.AddParticle(particle);
 
         isParticleLaunched = true;
     }
@@ -189,7 +211,7 @@ void ImguiGamePanel(std::shared_ptr<Particle> particle, EulerIntegrator& integra
     {
         std::cout << "Reset the particle" << std::endl;
 
-        integrator.RemoveParticle(particle);
+        physics.RemoveParticle(particle);
         particle->position = Vector3f(0, 0, 0);
         particle->velocity = Vector3f(0, 0, 0);
 
@@ -234,4 +256,12 @@ void Vector3ClassTest()
     std::cout << "Cross product: " << t << ";" << t2 << " = " << Vector3f::CrossProduct(t, t2) << std::endl;
     std::cout << "Dot product: " << t << ";" << t2 << " = " << Vector3f::DotProduct(t, t2) << std::endl;
     std::cout << std::endl;
+}
+
+double HiresTimeInSeconds() {
+    using namespace std::chrono;
+    using clock = high_resolution_clock;
+
+    auto currentTime = duration_cast<milliseconds>(clock::now().time_since_epoch()).count();
+    return currentTime / 1000.0;
 }
