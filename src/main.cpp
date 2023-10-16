@@ -77,8 +77,8 @@ int main(int argc, char** argv)
 
     #pragma region Shader
 
-    //Shader ourShader("shader/test.vert", "shader/test.frag"); // To fix, so we can use real files for vert and frag shaders
-    Shader ourShader(vertexShaderSource, fragmentShaderSource, false);
+    Shader ourShader("assets/shaders/test.vert", "assets/shaders/test.frag"); // To fix, so we can use real files for vert and frag shaders
+    //Shader ourShader(vertexShaderSource, fragmentShaderSource, false);
 
     #pragma endregion
 
