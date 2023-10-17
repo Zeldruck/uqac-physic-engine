@@ -1,4 +1,4 @@
-#include "ForceBuoyancy.hpp"
+#include "Force/ForceBuoyancy.hpp"
 #include "Particle.hpp"
 
 void ForceBuoyancy::UpdateForce(Particle* particle, float deltaTime)

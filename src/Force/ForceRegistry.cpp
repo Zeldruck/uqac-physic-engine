@@ -1,5 +1,5 @@
-#include "ForceRegistry.hpp"
-#include "ForceGenerator.hpp"
+#include "Force/ForceRegistry.hpp"
+#include "Force/ForceGenerator.hpp"
 
 void ForceRegistry::Add(Particle* particle, ForceGenerator* fg)
 {

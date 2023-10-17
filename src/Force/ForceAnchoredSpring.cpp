@@ -1,4 +1,4 @@
-#include "ForceAnchoredSpring.hpp"
+#include "Force/ForceAnchoredSpring.hpp"
 #include "Particle.hpp"
 
 void ForceAnchoredSpring::UpdateForce(Particle* particle, float deltaTime)

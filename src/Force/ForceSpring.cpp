@@ -1,4 +1,4 @@
-#include "ForceSpring.hpp"
+#include "Force/ForceSpring.hpp"
 #include "Particle.hpp"
 
 ForceSpring::ForceSpring(float k, float restLength, Particle* otherEnd) : 
