@@ -6,10 +6,10 @@ void EulerIntegrator::Update(std::vector<std::shared_ptr<Particle>>& particles, 
 {
 	for (std::shared_ptr<Particle> particle : particles)
 	{
+		particle->velocity += particle->acceleration * deltaTime;
 		particle->position += particle->velocity * deltaTime;
-		if(isGravityEnabled)
-			particle->velocity += (particle->acceleration + g) * deltaTime;
-		else
-			particle->velocity += particle->acceleration * deltaTime;
+		//if(isGravityEnabled)
+		//	particle->velocity += (particle->acceleration + g) * deltaTime;
+		//else
 	}
 }

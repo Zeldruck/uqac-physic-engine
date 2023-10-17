@@ -11,6 +11,19 @@ PhysicsSystem::PhysicsSystem()
 
 void PhysicsSystem::Update(float deltaTime, bool isGravityEnabled)
 {
+	// Mise à jour des forces
+	m_forceRegistry.UpdateForces(deltaTime);
+
+	// Génération des contacts
+	//std::vector<ParticleContact> contacts;
+	//for (auto generator : contactGenerators) {
+	//	generator->GenerateContacts(contacts);
+	//}
+
+	// Résolution des contacts
+	//contactResolver.ResolveContacts(contacts, deltaTime);
+
+	// Mise à jour des particules
 	m_integrator->Update(m_particles, deltaTime, isGravityEnabled);	
 }
 

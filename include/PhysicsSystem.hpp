@@ -1,6 +1,10 @@
 #pragma once
 #include <memory>
 #include <vector>
+#include <map>
+#include "Force/ForceRegistry.hpp"
+#include "Contact/ParticleContactGenerator.hpp"
+#include "Contact/ParticleContactResolver.hpp"
 
 class Particle;
 class EulerIntegrator;
@@ -23,5 +27,8 @@ public:
 private:
 	static PhysicsSystem* s_instance;
 	std::vector<std::shared_ptr<Particle>> m_particles;
+	ForceRegistry m_forceRegistry;
+	//std::vector<ParticleContactGenerator*> contactGenerators;
+	//ParticleContactResolver contactResolver;
 	EulerIntegrator* m_integrator;
 };
