@@ -1,14 +1,14 @@
 #include "Force/ForceSpring.hpp"
 #include "Particle.hpp"
 
-ForceSpring::ForceSpring(float k, float restLength, Particle* otherEnd) : 
+ForceSpring::ForceSpring(float k, float restLength, std::shared_ptr<Particle> otherEnd) :
 	m_k(k), 
 	m_restLength(restLength), 
 	m_otherEnd(otherEnd) 
 {
 }
 
-void ForceSpring::UpdateForce(Particle* particle, float deltaTime)
+void ForceSpring::UpdateForce(std::shared_ptr<Particle> particle, float deltaTime)
 {
 	// calculate the vector of the spring
 	Vector3f springVector = particle->position - m_otherEnd->position;

@@ -9,5 +9,5 @@ private :
 	Vector3f m_gravity = Vector3f(0.f, GRAVITY, 0.f);
 
 public :
-	void UpdateForce(Particle* particle, float deltaTime) override;
+	void UpdateForce(std::shared_ptr<Particle> particle, float deltaTime) override;
 };

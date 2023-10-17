@@ -1,7 +1,15 @@
 #include "Force/ForceBuoyancy.hpp"
 #include "Particle.hpp"
 
-void ForceBuoyancy::UpdateForce(Particle* particle, float deltaTime)
+ForceBuoyancy::ForceBuoyancy(float maxDepth, float volume, float waterHeight, float liquidDensity) :
+	m_maxDepth(maxDepth),
+	m_volume(volume),
+	m_waterHeight(waterHeight),
+	m_liquidDensity(liquidDensity)
+{
+}
+
+void ForceBuoyancy::UpdateForce(std::shared_ptr<Particle> particle, float deltaTime)
 {
 	// calculate the submersion depth
 	float depth = particle->position.y;

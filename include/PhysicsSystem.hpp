@@ -12,7 +12,8 @@ class EulerIntegrator;
 class PhysicsSystem
 {
 public:
-	PhysicsSystem();
+	//PhysicsSystem();
+	PhysicsSystem(ForceRegistry forceRegistry);
 	PhysicsSystem(PhysicsSystem&&) = default;
 	PhysicsSystem(const PhysicsSystem&) = delete;
 

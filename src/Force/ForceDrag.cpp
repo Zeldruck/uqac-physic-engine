@@ -7,7 +7,7 @@ ForceDrag::ForceDrag(float k1, float k2) :
 {
 };
 
-void ForceDrag::UpdateForce(Particle* particle, float deltaTime)
+void ForceDrag::UpdateForce(std::shared_ptr<Particle> particle, float deltaTime)
 {
 	// calculate the total drag coefficient
 	float dragCoeff = particle->velocity.GetLength();

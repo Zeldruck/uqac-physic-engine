@@ -10,12 +10,21 @@
 #include "EngineCpp/cppGLFW.hpp"
 #include "EngineCpp/cppGLFWwindow.hpp"
 #include "EngineCpp/cppImgui.hpp"
-#include "PhysicsSystem.hpp"
-#include "Particle.hpp"
+#include "EngineCpp/cppShader.hpp"
+
 #include "Constants/PhysicConstants.hpp"
 #include "Constants/MathConstants.hpp"
-#include "EngineCpp/cppShader.hpp"
-#include "EulerIntegrator.hpp"
+
+#include "PhysicsSystem.hpp"
+#include "Particle.hpp"
+
+#include "Force/ForceRegistry.hpp"
+#include "Force/ForceGenerator.hpp"
+#include "Force/ForceGravity.hpp"
+#include "Force/ForceDrag.hpp"
+#include "Force/ForceSpring.hpp"
+#include "Force/ForceAnchoredSpring.hpp"
+#include "Force/ForceBuoyancy.hpp"
 
 #include "Camera.hpp"
 
@@ -60,10 +69,36 @@ int main(int argc, char** argv)
 
 
     Vector3ClassTest();
-   
-    PhysicsSystem physics;
 
+    #pragma region Physics
+    ForceRegistry forceRegistry;
+    PhysicsSystem physics(forceRegistry);
     std::shared_ptr<Particle> particle(new Particle(Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f, 1.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.000001f, "Particle"));
+    std::shared_ptr<Particle> particle2(new Particle(Vector3f(1.0f, 1.0f, 1.0f), Vector3f(1.0f, 1.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.000001f, "Particle2"));
+    std::shared_ptr<Particle> particle3(new Particle(Vector3f(2.0f, 2.0f, 2.0f), Vector3f(1.0f, 1.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.000001f, "Particle3"));
+    std::shared_ptr<Particle> particle4(new Particle(Vector3f(3.0f, 3.0f, 3.0f), Vector3f(1.0f, 1.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.000001f, "Particle4"));
+    std::shared_ptr<Particle> particle5(new Particle(Vector3f(4.0f, 4.0f, 4.0f), Vector3f(1.0f, 1.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.000001f, "Particle5"));
+    std::shared_ptr<Particle> particle6(new Particle(Vector3f(5.0f, 5.0f, 5.0f), Vector3f(1.0f, 1.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.000001f, "Particle6"));
+
+    std::shared_ptr<ForceGravity> forceGravity = std::make_shared<ForceGravity>();
+    
+    std::shared_ptr<ForceDrag> forceDrag = std::make_shared<ForceDrag>(0.1f, 0.1f);
+
+    float restLength = (particle3->position - particle2->position).GetLength();
+    std::shared_ptr<ForceSpring> forceSpring = std::make_shared<ForceSpring>(100.f, restLength, particle2);
+    
+    std::shared_ptr<Particle> anchor(new Particle(Vector3f(6.0f, 6.0f, 6.0f), Vector3f(1.0f, 1.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.000001f, "Anchor"));
+    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpring = std::make_shared<ForceAnchoredSpring>(100.f, restLength, anchor->position);
+    
+    std::shared_ptr<ForceBuoyancy> forceBuoyancy = std::make_shared<ForceBuoyancy>(1.f, 1.f, 1.f, 1.f);
+
+    forceRegistry.Add(particle, forceGravity);
+    forceRegistry.Add(particle, forceDrag);
+    forceRegistry.Add(particle3, forceDrag);
+    forceRegistry.Add(particle4, forceSpring);
+    forceRegistry.Add(particle5, forceAnchoredSpring);
+    forceRegistry.Add(particle6, forceBuoyancy);
+    #pragma endregion
 
     // Game variables
     Vector3f direction(0.0f, 1.0f, 0.0f);

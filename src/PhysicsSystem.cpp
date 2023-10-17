@@ -4,9 +4,10 @@
 #include "Particle.hpp"
 #include "EulerIntegrator.hpp"
 
-PhysicsSystem::PhysicsSystem()
+PhysicsSystem::PhysicsSystem(ForceRegistry forceRegistry) :
+	m_forceRegistry(forceRegistry),
+	m_integrator(new EulerIntegrator())
 {
-	m_integrator = new EulerIntegrator();
 }
 
 void PhysicsSystem::Update(float deltaTime, bool isGravityEnabled)

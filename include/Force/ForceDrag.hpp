@@ -14,5 +14,5 @@ public:
 	ForceDrag(float k1, float k2);
 
 	// apply simplified drag force
-	void UpdateForce(Particle* particle, float deltaTime) override;
+	void UpdateForce(std::shared_ptr<Particle> particle, float deltaTime) override;
 };

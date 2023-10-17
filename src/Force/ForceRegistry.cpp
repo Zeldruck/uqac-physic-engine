@@ -1,12 +1,12 @@
 #include "Force/ForceRegistry.hpp"
 #include "Force/ForceGenerator.hpp"
 
-void ForceRegistry::Add(Particle* particle, ForceGenerator* fg)
+void ForceRegistry::Add(std::shared_ptr<Particle> particle, std::shared_ptr<ForceGenerator> fg)
 {
 	m_registry.push_back({ particle, fg });
 }
 
-void ForceRegistry::Remove(Particle* particle, ForceGenerator* fg)
+void ForceRegistry::Remove(std::shared_ptr<Particle> particle, std::shared_ptr<ForceGenerator> fg)
 {
 	for (auto it = m_registry.begin(); it != m_registry.end(); ++it)
 	{

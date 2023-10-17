@@ -6,11 +6,14 @@
 class ForceAnchoredSpring : public ForceGenerator
 {
 private:
-	Vector3<float> m_anchor;
-	float m_springConstant;
+	Vector3f m_anchor;
+	float m_k;
 	float m_restLength;
 	 
 public:
+	ForceAnchoredSpring(float k, float restLength, Vector3f anchor);
+
 	// apply spring force
-	void UpdateForce(Particle* particle, float deltaTime) override;
+	void UpdateForce(std::shared_ptr<Particle> particle, float deltaTime) override;
+	void SetAnchor(Vector3f anchor);
 };
