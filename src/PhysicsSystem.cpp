@@ -12,6 +12,12 @@ PhysicsSystem::PhysicsSystem(ForceRegistry forceRegistry) :
 
 void PhysicsSystem::Update(float deltaTime, bool isGravityEnabled)
 {
+	// Clear force in all particles
+	for(auto& particle : m_particles)
+	{
+		particle->ClearForce();
+	}
+
 	// Mise à jour des forces
 	m_forceRegistry.UpdateForces(deltaTime);
 
