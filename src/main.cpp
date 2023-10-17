@@ -179,8 +179,8 @@ int main(int argc, char** argv)
         double frameTime = newTime - currentTime;
 
         // Cap the frame time to avoid spiral of death
-        if (frameTime > 0.25)
-            frameTime = 0.25;
+        if (frameTime > 0.015)
+            frameTime = 0.015;
 
         currentTime = newTime;
         accumulator += frameTime;
@@ -196,7 +196,6 @@ int main(int argc, char** argv)
         const double alpha = accumulator / deltaTime;
         // state = currentState * alpha + previousState * (1.0 - alpha);
 
-       
         ProcessInput(window.GetHandle(), deltaTime);
        
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
