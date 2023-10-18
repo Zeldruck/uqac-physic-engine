@@ -28,3 +28,8 @@ void ForceAnchoredSpring::SetAnchor(Vector3f anchor)
 {
 	m_anchor = anchor;
 }
+
+void ForceAnchoredSpring::SetSpringConstant(float k)
+{
+	m_k = k;
+}

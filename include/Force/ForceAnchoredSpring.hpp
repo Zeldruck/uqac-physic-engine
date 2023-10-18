@@ -16,4 +16,5 @@ public:
 	// apply spring force
 	void UpdateForce(std::shared_ptr<Particle> particle, float deltaTime) override;
 	void SetAnchor(Vector3f anchor);
+	void SetSpringConstant(float k);
 };

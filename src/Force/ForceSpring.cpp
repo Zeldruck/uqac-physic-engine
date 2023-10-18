@@ -23,3 +23,13 @@ void ForceSpring::UpdateForce(std::shared_ptr<Particle> particle, float deltaTim
 	Vector3f force = -m_k * (magnitude - m_restLength) * springVector.GetNormalized();
 	particle->AddForce(force);
 }
+
+void ForceSpring::SetOtherEnd(std::shared_ptr<Particle> otherEnd)
+{
+	m_otherEnd = otherEnd;
+}
+
+void ForceSpring::SetSpringConstant(float k)
+{
+	m_k = k;
+}

@@ -18,4 +18,7 @@ public:
 
 	// apply spring force
 	void UpdateForce(std::shared_ptr<Particle> particle, float deltaTime) override;
+
+	void SetOtherEnd(std::shared_ptr<Particle> otherEnd);
+	void SetSpringConstant(float k);
 };

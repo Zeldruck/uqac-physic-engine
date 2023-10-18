@@ -87,11 +87,13 @@ int main(int argc, char** argv)
     std::shared_ptr<ForceDrag> forceDrag = std::make_shared<ForceDrag>(0.1f, 0.0f);
     std::shared_ptr<ForceDrag> forceDrag2 = std::make_shared<ForceDrag>(0.0f, 0.1f);
 
+    float springConstant = 100.f;
     float restLength = (particle4->position - particle2->position).GetLength();
-    std::shared_ptr<ForceSpring> forceSpring = std::make_shared<ForceSpring>(100.f, restLength, particle2);
+    std::shared_ptr<ForceSpring> forceSpring = std::make_shared<ForceSpring>(springConstant, restLength, particle2);
     
+    float anchoredSpringConstant = 10.0f;
     std::shared_ptr<Particle> anchor(new Particle(Vector3f(.0f, 6.0f, .0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), 1.f, "Anchor"));
-    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpring = std::make_shared<ForceAnchoredSpring>(10.f, restLength, anchor->position);
+    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpring = std::make_shared<ForceAnchoredSpring>(anchoredSpringConstant, restLength, anchor->position);
     
     std::shared_ptr<ForceBuoyancy> forceBuoyancy = std::make_shared<ForceBuoyancy>(1.f, 1.f, 1.f, 1.f);
 
@@ -262,7 +264,6 @@ int main(int argc, char** argv)
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.SetMat4("view", view);
         
-
         // render boxes
         glBindVertexArray(VAO);
         for (unsigned int i = 0; i < 10; i++)
@@ -315,6 +316,10 @@ int main(int argc, char** argv)
         ImGui::Text("Particle velocity: (%f, %f, %f)", particle4->velocity.x, particle4->velocity.y, particle4->velocity.z);
         ImGui::Text("Particle acceleration: (%f, %f, %f)", particle4->acceleration.x, particle4->acceleration.y, particle4->acceleration.z);
         ImGui::Text("Particle mass: %f", particle4->mass);
+        ImGui::BeginGroup();
+        ImGui::SliderFloat("Spring constant", &springConstant, 0.f, 1000.f);
+        forceSpring->SetSpringConstant(springConstant);
+        ImGui::EndGroup();
         ImGui::End();
         ImGui::Begin("Particle Data");
         ImGui::Text("Particle name: %s", particle5->name.c_str());
@@ -322,11 +327,15 @@ int main(int argc, char** argv)
         ImGui::Text("Particle velocity: (%f, %f, %f)", particle5->velocity.x, particle5->velocity.y, particle5->velocity.z);
         ImGui::Text("Particle acceleration: (%f, %f, %f)", particle5->acceleration.x, particle5->acceleration.y, particle5->acceleration.z);
         ImGui::Text("Particle mass: %f", particle5->mass);
+        ImGui::BeginGroup();
+        ImGui::SliderFloat("Anchored Spring constant", &anchoredSpringConstant, 0.f, 1000.f);
+        forceAnchoredSpring->SetSpringConstant(anchoredSpringConstant);
+        ImGui::EndGroup();
         ImGui::End();
         ImGui::Begin("Particle Data");
         ImGui::Text("Particle name: %s", particle6->name.c_str());
         ImGui::Text("Particle position: (%f, %f, %f)", particle6->position.x, particle6->position.y, particle6->position.z);
-        ImGui::Text("Particle velocity: (%f, %f, %f)", particle5->velocity.x, particle6->velocity.y, particle6->velocity.z);
+        ImGui::Text("Particle velocity: (%f, %f, %f)", particle6->velocity.x, particle6->velocity.y, particle6->velocity.z);
         ImGui::Text("Particle acceleration: (%f, %f, %f)", particle6->acceleration.x, particle6->acceleration.y, particle6->acceleration.z);
         ImGui::Text("Particle mass: %f", particle6->mass);
         ImGui::End();
@@ -392,8 +401,6 @@ void ImguiGamePanel(std::shared_ptr<Particle> particle, PhysicsSystem& physics, 
     }
     ImGui::EndGroup();
     ImGui::End();
-
-
 
     /* Particle Panel Data*/
     ImGui::Begin("Particle Data");
