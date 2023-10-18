@@ -1,17 +1,17 @@
-#pragma once
+#include "Contact/ParticleContactResolver.hpp"
+#include "Contact/ParticleContact.hpp"
 
-class ParticleContact;
-
-class ParticleContactResolver
+ParticleContactResolver::ParticleContactResolver(unsigned int iteration)
 {
-public:
-	ParticleContactResolver(unsigned int iteration);
-	~ParticleContactResolver();
+	this->iteration = iteration;
+}
 
-	void ResolveContacts(ParticleContact* conactArray, unsigned int numContact, float duration);
+void ParticleContactResolver::ResolveContacts(ParticleContact* contactArray, unsigned int numContact, float duration)
+{
+	for (int i = 0; i < iteration; i++)
+	{
+		if (i >= numContact) break;
 
-private:
-
-protected:
-	unsigned int iteration;
-};
+		(&contactArray[i])->Resolve(duration);
+	}
+}

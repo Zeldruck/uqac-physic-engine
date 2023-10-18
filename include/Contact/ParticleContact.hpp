@@ -10,7 +10,7 @@ public:
 	~ParticleContact();
 
 	void Resolve(float duration);
-	void CalculateSeparatingVelocity();
+	float CalculateSeparatingVelocity();
 
 private:
 	void ResolveVelocity();
@@ -18,7 +18,7 @@ private:
 
 
 public:
-	Particle* particle[2];
+	Particle* particles[2];
 
 	float restitution;
 	float penetration;

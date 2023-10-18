@@ -8,7 +8,7 @@ public:
 	ParticleContactResolver(unsigned int iteration);
 	~ParticleContactResolver();
 
-	void ResolveContacts(ParticleContact* conactArray, unsigned int numContact, float duration);
+	void ResolveContacts(ParticleContact* contactArray, unsigned int numContact, float duration);
 
 private:
 
