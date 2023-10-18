@@ -23,3 +23,9 @@ void ForceDrag::UpdateForce(std::shared_ptr<Particle> particle, float deltaTime)
 	Vector3f force = particle->velocity.GetNormalized() * -dragCoeff;
 	particle->AddForce(force);
 }
+
+void ForceDrag::SetDragCoefficients(float k1, float k2)
+{
+	m_k1 = k1;
+	m_k2 = k2;
+}

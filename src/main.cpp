@@ -80,11 +80,13 @@ int main(int argc, char** argv)
     std::shared_ptr<Particle> particle5(new Particle(Vector3f(4.0f, 4.0f, 4.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), 1.f, "Particle5AnchoredSpring"));
     std::shared_ptr<Particle> particle6(new Particle(Vector3f(5.0f, 5.0f, 5.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.0001f, "Particle6Buoyancy"));
     std::shared_ptr<Particle> particle7(new Particle(Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.0001f, "Particle7Gravity"));
-    std::shared_ptr<Particle> particle8(new Particle(Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 1.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.0001f, "Particle8Drag"));
+    std::shared_ptr<Particle> particle8(new Particle(Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, -10.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), 1.f, "Particle8Drag"));
 
     std::shared_ptr<ForceGravity> forceGravity = std::make_shared<ForceGravity>();
     
-    std::shared_ptr<ForceDrag> forceDrag = std::make_shared<ForceDrag>(0.1f, 0.0f);
+    float dragCoeff = 1.0f;
+    float dragCoeff2 = 1.0f;
+    std::shared_ptr<ForceDrag> forceDrag = std::make_shared<ForceDrag>(dragCoeff, dragCoeff2);
     std::shared_ptr<ForceDrag> forceDrag2 = std::make_shared<ForceDrag>(0.0f, 0.1f);
 
     float springConstant = 100.f;
@@ -115,6 +117,7 @@ int main(int argc, char** argv)
 
     forceRegistry->Add(particle4, forceGravity);
     forceRegistry->Add(particle5, forceGravity);
+    //forceRegistry->Add(particle8, forceGravity);
     #pragma endregion
 
     // Game variables
@@ -302,6 +305,11 @@ int main(int argc, char** argv)
         ImGui::Text("Particle velocity: (%f, %f, %f)", particle8->velocity.x, particle8->velocity.y, particle8->velocity.z);
         ImGui::Text("Particle acceleration: (%f, %f, %f)", particle8->acceleration.x, particle8->acceleration.y, particle8->acceleration.z);
         ImGui::Text("Particle mass: %f", particle8->mass);
+        ImGui::BeginGroup();
+        ImGui::SliderFloat("Drag coeff", &dragCoeff, 0.01f, 1.f);
+        ImGui::SliderFloat("Drag coeff 2", &dragCoeff2, 0.01f, 1.f);
+        forceDrag->SetDragCoefficients(dragCoeff, dragCoeff2);
+        ImGui::EndGroup();
         ImGui::End();
         ImGui::Begin("Particle Data");
         ImGui::Text("Particle name: %s", particle3->name.c_str());
