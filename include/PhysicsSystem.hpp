@@ -13,7 +13,7 @@ class PhysicsSystem
 {
 public:
 	//PhysicsSystem();
-	PhysicsSystem(ForceRegistry forceRegistry);
+	PhysicsSystem(std::shared_ptr<ForceRegistry> forceRegistry);
 	PhysicsSystem(PhysicsSystem&&) = default;
 	PhysicsSystem(const PhysicsSystem&) = delete;
 
@@ -28,7 +28,7 @@ public:
 private:
 	static PhysicsSystem* s_instance;
 	std::vector<std::shared_ptr<Particle>> m_particles;
-	ForceRegistry m_forceRegistry;
+	std::shared_ptr<ForceRegistry> m_forceRegistry;
 	//std::vector<ParticleContactGenerator*> contactGenerators;
 	//ParticleContactResolver contactResolver;
 	EulerIntegrator* m_integrator;

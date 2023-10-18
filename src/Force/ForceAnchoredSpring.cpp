@@ -10,6 +10,9 @@ ForceAnchoredSpring::ForceAnchoredSpring(float k, float restLength, Vector3f anc
 
 void ForceAnchoredSpring::UpdateForce(std::shared_ptr<Particle> particle, float deltaTime)
 {
+	if (particle->mass < 1.0f)
+		return;
+
 	// calculate the vector of the spring
 	Vector3f springVector = particle->position - m_anchor;
 

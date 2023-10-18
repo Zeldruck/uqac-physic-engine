@@ -21,7 +21,7 @@ public:
 	Vector3f velocity;
 	Vector3f acceleration;
 	
-	float mass = MIN_MASS;
+	float mass;
 
 	void AddForce(const Vector3f& force);
 	void RemoveForce(const Vector3f& force);

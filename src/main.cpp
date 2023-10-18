@@ -40,8 +40,8 @@ void Vector3ClassTest();
 double HiresTimeInSeconds();
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 1920;
+const unsigned int SCR_HEIGHT = 1080;
 
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -71,33 +71,48 @@ int main(int argc, char** argv)
     Vector3ClassTest();
 
     #pragma region Physics
-    ForceRegistry forceRegistry;
+    std::shared_ptr<ForceRegistry> forceRegistry = std::make_shared<ForceRegistry>();
     PhysicsSystem physics(forceRegistry);
     std::shared_ptr<Particle> particle(new Particle(Vector3f(0.0f, 0.0f, 0.0f), Vector3f(1.0f, 1.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.000001f, "Particle"));
-    std::shared_ptr<Particle> particle2(new Particle(Vector3f(1.0f, 1.0f, 1.0f), Vector3f(1.0f, 1.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.000001f, "Particle2"));
-    std::shared_ptr<Particle> particle3(new Particle(Vector3f(2.0f, 2.0f, 2.0f), Vector3f(1.0f, 1.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.000001f, "Particle3"));
-    std::shared_ptr<Particle> particle4(new Particle(Vector3f(3.0f, 3.0f, 3.0f), Vector3f(1.0f, 1.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.000001f, "Particle4"));
-    std::shared_ptr<Particle> particle5(new Particle(Vector3f(4.0f, 4.0f, 4.0f), Vector3f(1.0f, 1.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.000001f, "Particle5"));
-    std::shared_ptr<Particle> particle6(new Particle(Vector3f(5.0f, 5.0f, 5.0f), Vector3f(1.0f, 1.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.000001f, "Particle6"));
+    std::shared_ptr<Particle> particle3(new Particle(Vector3f(2.0f, 0.0f, 0.0f), Vector3f(1.0f, 0.0f, 1.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.0001f, "Particle3Drag"));
+    std::shared_ptr<Particle> particle2(new Particle(Vector3f(0.0f, 1.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), 1.f, "Particle2Spring2"));
+    std::shared_ptr<Particle> particle4(new Particle(Vector3f(3.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), 1.f, "Particle4Spring1"));
+    std::shared_ptr<Particle> particle5(new Particle(Vector3f(4.0f, 4.0f, 4.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), 1.f, "Particle5AnchoredSpring"));
+    std::shared_ptr<Particle> particle6(new Particle(Vector3f(5.0f, 5.0f, 5.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.0001f, "Particle6Buoyancy"));
+    std::shared_ptr<Particle> particle7(new Particle(Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.0001f, "Particle7Gravity"));
+    std::shared_ptr<Particle> particle8(new Particle(Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 1.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.0001f, "Particle8Drag"));
 
     std::shared_ptr<ForceGravity> forceGravity = std::make_shared<ForceGravity>();
     
-    std::shared_ptr<ForceDrag> forceDrag = std::make_shared<ForceDrag>(0.1f, 0.1f);
+    std::shared_ptr<ForceDrag> forceDrag = std::make_shared<ForceDrag>(0.1f, 0.0f);
+    std::shared_ptr<ForceDrag> forceDrag2 = std::make_shared<ForceDrag>(0.0f, 0.1f);
 
-    float restLength = (particle3->position - particle2->position).GetLength();
+    float restLength = (particle4->position - particle2->position).GetLength();
     std::shared_ptr<ForceSpring> forceSpring = std::make_shared<ForceSpring>(100.f, restLength, particle2);
     
-    std::shared_ptr<Particle> anchor(new Particle(Vector3f(6.0f, 6.0f, 6.0f), Vector3f(1.0f, 1.0f, 2.0f), Vector3f(0.0f, 0.0f, 0.0f), 0.000001f, "Anchor"));
-    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpring = std::make_shared<ForceAnchoredSpring>(100.f, restLength, anchor->position);
+    std::shared_ptr<Particle> anchor(new Particle(Vector3f(.0f, 6.0f, .0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), 1.f, "Anchor"));
+    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpring = std::make_shared<ForceAnchoredSpring>(10.f, restLength, anchor->position);
     
     std::shared_ptr<ForceBuoyancy> forceBuoyancy = std::make_shared<ForceBuoyancy>(1.f, 1.f, 1.f, 1.f);
 
-    forceRegistry.Add(particle, forceGravity);
-    forceRegistry.Add(particle, forceDrag);
-    forceRegistry.Add(particle3, forceDrag);
-    forceRegistry.Add(particle4, forceSpring);
-    forceRegistry.Add(particle5, forceAnchoredSpring);
-    forceRegistry.Add(particle6, forceBuoyancy);
+    //physics.AddParticle(particle);
+    physics.AddParticle(particle2);
+    physics.AddParticle(particle3);
+    physics.AddParticle(particle4);
+    physics.AddParticle(particle5);
+    physics.AddParticle(particle6);
+    physics.AddParticle(particle7);
+    physics.AddParticle(particle8);
+    //forceRegistry->Add(particle, forceGravity);
+    forceRegistry->Add(particle7, forceGravity);
+    forceRegistry->Add(particle8, forceDrag);
+    forceRegistry->Add(particle3, forceDrag2);
+    forceRegistry->Add(particle4, forceSpring);
+    forceRegistry->Add(particle5, forceAnchoredSpring);
+    forceRegistry->Add(particle6, forceBuoyancy);
+
+    forceRegistry->Add(particle4, forceGravity);
+    forceRegistry->Add(particle5, forceGravity);
     #pragma endregion
 
     // Game variables
@@ -263,9 +278,58 @@ int main(int argc, char** argv)
         }
 
         imguiCpp.NewFrame();
-
+        cubePositions[0] = glm::vec3(particle7->position.x, particle7->position.y, particle7->position.z);
+        cubePositions[1] = glm::vec3(particle8->position.x, particle8->position.y, particle8->position.z);
+        cubePositions[2] = glm::vec3(particle3->position.x, particle3->position.y, particle3->position.z);
+        cubePositions[3] = glm::vec3(particle4->position.x, particle4->position.y, particle4->position.z);
+        cubePositions[4] = glm::vec3(particle5->position.x, particle5->position.y, particle5->position.z);
+        cubePositions[5] = glm::vec3(particle6->position.x, particle6->position.y, particle6->position.z);
         ImguiStatsPanel(deltaTime);
         ImguiGamePanel(particle, physics, direction, power, isParticleLaunched, isGravityEnabled, alpha);
+
+        /* Particle Panel Data*/
+        ImGui::Begin("Particle Data");
+        ImGui::Text("Particle name: %s", particle7->name.c_str());
+        ImGui::Text("Particle position: (%f, %f, %f)", particle7->position.x, particle7->position.y, particle7->position.z);
+        ImGui::Text("Particle velocity: (%f, %f, %f)", particle7->velocity.x, particle7->velocity.y, particle7->velocity.z);
+        ImGui::Text("Particle acceleration: (%f, %f, %f)", particle7->acceleration.x, particle7->acceleration.y, particle7->acceleration.z);
+        ImGui::Text("Particle mass: %f", particle7->mass);
+        ImGui::End();
+        ImGui::Begin("Particle Data");
+        ImGui::Text("Particle name: %s", particle8->name.c_str());
+        ImGui::Text("Particle position: (%f, %f, %f)", particle8->position.x, particle8->position.y, particle8->position.z);
+        ImGui::Text("Particle velocity: (%f, %f, %f)", particle8->velocity.x, particle8->velocity.y, particle8->velocity.z);
+        ImGui::Text("Particle acceleration: (%f, %f, %f)", particle8->acceleration.x, particle8->acceleration.y, particle8->acceleration.z);
+        ImGui::Text("Particle mass: %f", particle8->mass);
+        ImGui::End();
+        ImGui::Begin("Particle Data");
+        ImGui::Text("Particle name: %s", particle3->name.c_str());
+        ImGui::Text("Particle position: (%f, %f, %f)", particle3->position.x, particle3->position.y, particle3->position.z);
+        ImGui::Text("Particle velocity: (%f, %f, %f)", particle3->velocity.x, particle3->velocity.y, particle3->velocity.z);
+        ImGui::Text("Particle acceleration: (%f, %f, %f)", particle3->acceleration.x, particle3->acceleration.y, particle3->acceleration.z);
+        ImGui::Text("Particle mass: %f", particle3->mass);
+        ImGui::End();
+        ImGui::Begin("Particle Data");
+        ImGui::Text("Particle name: %s", particle4->name.c_str());
+        ImGui::Text("Particle position: (%f, %f, %f)", particle4->position.x, particle4->position.y, particle4->position.z);
+        ImGui::Text("Particle velocity: (%f, %f, %f)", particle4->velocity.x, particle4->velocity.y, particle4->velocity.z);
+        ImGui::Text("Particle acceleration: (%f, %f, %f)", particle4->acceleration.x, particle4->acceleration.y, particle4->acceleration.z);
+        ImGui::Text("Particle mass: %f", particle4->mass);
+        ImGui::End();
+        ImGui::Begin("Particle Data");
+        ImGui::Text("Particle name: %s", particle5->name.c_str());
+        ImGui::Text("Particle position: (%f, %f, %f)", particle5->position.x, particle5->position.y, particle5->position.z);
+        ImGui::Text("Particle velocity: (%f, %f, %f)", particle5->velocity.x, particle5->velocity.y, particle5->velocity.z);
+        ImGui::Text("Particle acceleration: (%f, %f, %f)", particle5->acceleration.x, particle5->acceleration.y, particle5->acceleration.z);
+        ImGui::Text("Particle mass: %f", particle5->mass);
+        ImGui::End();
+        ImGui::Begin("Particle Data");
+        ImGui::Text("Particle name: %s", particle6->name.c_str());
+        ImGui::Text("Particle position: (%f, %f, %f)", particle6->position.x, particle6->position.y, particle6->position.z);
+        ImGui::Text("Particle velocity: (%f, %f, %f)", particle5->velocity.x, particle6->velocity.y, particle6->velocity.z);
+        ImGui::Text("Particle acceleration: (%f, %f, %f)", particle6->acceleration.x, particle6->acceleration.y, particle6->acceleration.z);
+        ImGui::Text("Particle mass: %f", particle6->mass);
+        ImGui::End();
 
         imguiCpp.Render(); // Draw the imgui frame
 

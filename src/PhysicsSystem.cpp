@@ -4,7 +4,7 @@
 #include "Particle.hpp"
 #include "EulerIntegrator.hpp"
 
-PhysicsSystem::PhysicsSystem(ForceRegistry forceRegistry) :
+PhysicsSystem::PhysicsSystem(std::shared_ptr<ForceRegistry> forceRegistry) :
 	m_forceRegistry(forceRegistry),
 	m_integrator(new EulerIntegrator())
 {
@@ -13,13 +13,13 @@ PhysicsSystem::PhysicsSystem(ForceRegistry forceRegistry) :
 void PhysicsSystem::Update(float deltaTime, bool isGravityEnabled)
 {
 	// Clear force in all particles
-	for(auto& particle : m_particles)
+	for (std::shared_ptr<Particle> particle : m_particles)
 	{
 		particle->ClearForce();
 	}
 
 	// Mise à jour des forces
-	m_forceRegistry.UpdateForces(deltaTime);
+	m_forceRegistry->UpdateForces(deltaTime);
 
 	// Génération des contacts
 	//std::vector<ParticleContact> contacts;
@@ -32,6 +32,7 @@ void PhysicsSystem::Update(float deltaTime, bool isGravityEnabled)
 
 	// Mise à jour des particules
 	m_integrator->Update(m_particles, deltaTime, isGravityEnabled);	
+
 }
 
 void PhysicsSystem::AddParticle(std::shared_ptr<Particle> particle)

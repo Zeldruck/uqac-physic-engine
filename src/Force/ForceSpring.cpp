@@ -10,6 +10,9 @@ ForceSpring::ForceSpring(float k, float restLength, std::shared_ptr<Particle> ot
 
 void ForceSpring::UpdateForce(std::shared_ptr<Particle> particle, float deltaTime)
 {
+	if (particle->mass < 1.0f)
+		return;
+
 	// calculate the vector of the spring
 	Vector3f springVector = particle->position - m_otherEnd->position;
 
