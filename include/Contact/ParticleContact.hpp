@@ -6,7 +6,7 @@
 class ParticleContact
 {
 public:
-	ParticleContact(Particle* particles, float restitution);
+	ParticleContact(Particle* particles[2], float restitution, float penetration, Vector3f contactNormal);
 	~ParticleContact();
 
 	void Resolve(float duration);

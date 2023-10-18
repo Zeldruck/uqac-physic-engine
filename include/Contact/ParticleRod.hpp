@@ -9,7 +9,7 @@ public:
 	ParticleRod(Particle* particles[2], float length);
 	~ParticleRod();
 
-	unsigned int AddContact(ParticleContact* contact, unsigned int limit) const override;
+	unsigned int AddContact(ParticleContact* contact, unsigned int limit) override;
 
 public:
 	float length;

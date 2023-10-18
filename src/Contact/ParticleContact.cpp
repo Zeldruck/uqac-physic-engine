@@ -1,10 +1,13 @@
 #include "Contact/ParticleContact.hpp"
 
-ParticleContact::ParticleContact(Particle* particles, float restitution)
+ParticleContact::ParticleContact(Particle* particles[2], float restitution, float penetration, Vector3f contactNormal)
 {
-	this->particles[0] = &particles[0];
-	this->particles[1] = &particles[1];
+	this->particles[0] = particles[0];
+	this->particles[1] = particles[1];
+
 	this->restitution = restitution;
+	this->penetration = penetration;
+	this->contactNormal = contactNormal;
 }
 
 void ParticleContact::Resolve(float duration)
