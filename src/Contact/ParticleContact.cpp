@@ -1,9 +1,8 @@
 #include "Contact/ParticleContact.hpp"
 
-ParticleContact::ParticleContact(Particle* particles[2], float restitution, float penetration, Vector3f contactNormal)
+ParticleContact::ParticleContact(std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles, float restitution, float penetration, Vector3f contactNormal)
 {
-	this->particles[0] = particles[0];
-	this->particles[1] = particles[1];
+	this->particles = particles;
 
 	this->restitution = restitution;
 	this->penetration = penetration;
@@ -23,11 +22,11 @@ float ParticleContact::CalculateSeparatingVelocity()
 
 void ParticleContact::ResolveVelocity()
 {
-	float k = Vector3f::DotProduct((restitution + 1) * (particles[0]->velocity - particles[1]->velocity), contactNormal) /
-		(1 / particles[0]->mass + 1 / particles[1]->mass);
+	float k = Vector3f::DotProduct((restitution + 1) * (particles->at(1)->velocity - particles->at(1)->velocity), contactNormal) /
+		(1 / particles->at(1)->mass + 1 / particles->at(1)->mass);
 	
-	Vector3f v0 = particles[0]->velocity - k * contactNormal / particles[0]->mass;
-	Vector3f v1 = particles[1]->velocity + k * contactNormal / particles[1]->mass;
+	Vector3f v0 = particles->at(1)->velocity - k * contactNormal / particles->at(1)->mass;
+	Vector3f v1 = particles->at(1)->velocity + k * contactNormal / particles->at(1)->mass;
 
 	// TODO
 }
@@ -36,8 +35,8 @@ void ParticleContact::ResolveInterpenetration()
 {
 	if (penetration <= 0.f) return;
 
-	Vector3f Pa = (particles[1]->mass / particles[0]->mass + particles[1]->mass) * penetration * contactNormal;
-	Vector3f Pb = -(particles[0]->mass / particles[0]->mass + particles[1]->mass) * penetration * contactNormal;
+	Vector3f Pa = (particles->at(1)->mass / particles->at(1)->mass + particles->at(1)->mass) * penetration * contactNormal;
+	Vector3f Pb = -(particles->at(1)->mass / particles->at(1)->mass + particles->at(1)->mass) * penetration * contactNormal;
 
 	// TODO
 

@@ -2,22 +2,24 @@
 #include "Contact/ParticleContact.hpp"
 #include "Particle.hpp"
 
-ParticleCable::ParticleCable(Particle* particles[2], float maxLength, float restitution) : ParticleLink(particles)
+ParticleCable::ParticleCable(std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles, float maxLength, float restitution) : ParticleLink(particles)
 {
 	this->maxLength = maxLength;
 	this->restitution = restitution;
 }
 
-unsigned int ParticleCable::AddContact(ParticleContact* contact, unsigned int limit)
+void ParticleCable::AddContact(std::shared_ptr<std::vector<ParticleContact>> contact, unsigned int limit)
 {
 	// TODO
 
-	float penetration = maxLength - (particles[1]->position - particles[0]->position).GetLength();
-	Vector3f normal = (particles[1]->position - particles[0]->position).GetUnitNormalized();
+	float penetration = maxLength - (particles->at(1)->position - particles->at(1)->position).GetLength();
+
+	if (penetration > 0) return;
+
+	Vector3f normal = (particles->at(1)->position - particles->at(1)->position).GetUnitNormalized();
 
 	ParticleContact newContact(particles, restitution, penetration, normal);
 
 	// Add to array
-
-	return 0;
+	contact->push_back(newContact);
 }

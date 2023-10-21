@@ -1,13 +1,16 @@
 #include "Contact/ParticleLink.hpp"
 #include "Particle.hpp"
 
-ParticleLink::ParticleLink(Particle* particles[2])
+ParticleLink::ParticleLink(std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles)
 {
-    this->particles[0] = particles[0];
-    this->particles[1] = particles[1];
+    this->particles = particles;
 }
 
 float ParticleLink::CurrentLength() const
 {
-    return (particles[0]->position - particles[1]->position).GetLength();
+    return (particles->at(1)->position - particles->at(1)->position).GetLength();
+}
+
+void ParticleLink::AddContact(std::shared_ptr<std::vector<ParticleContact>> contact, unsigned int limit)
+{
 }

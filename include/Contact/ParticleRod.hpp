@@ -3,13 +3,12 @@
 
 class Particle;
 
-class ParticleRod : ParticleLink
+class ParticleRod : public ParticleLink
 {
 public:
-	ParticleRod(Particle* particles[2], float length);
-	~ParticleRod();
+	ParticleRod(std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles, float length);
 
-	unsigned int AddContact(ParticleContact* contact, unsigned int limit) override;
+	void AddContact(std::shared_ptr<std::vector<ParticleContact>> contact, unsigned int limit) override;
 
 public:
 	float length;

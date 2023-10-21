@@ -7,10 +7,10 @@ class Particle;
 class ParticleCable : ParticleLink
 {
 public:
-	ParticleCable(Particle* particles[2], float maxLength, float restitution);
+	ParticleCable(std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles, float maxLength, float restitution);
 	~ParticleCable();
 
-	unsigned int AddContact(ParticleContact* contact, unsigned int limit) override;
+	void AddContact(std::shared_ptr<std::vector<ParticleContact>> contact, unsigned int limit) override;
 
 public:
 	float maxLength;

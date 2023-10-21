@@ -4,15 +4,15 @@
 
 class Particle;
 
-class ParticleLink : ParticleContactGenerator
+class ParticleLink : public ParticleContactGenerator
 {
 public:
-	ParticleLink(Particle* particles[2]);
+	ParticleLink(std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles);
 
 	float CurrentLength() const;
 
-	unsigned int AddContact(ParticleContact* contact, unsigned int limit) override = 0;
+	void AddContact(std::shared_ptr<std::vector<ParticleContact>> contact, unsigned int limit) override;
 
 public:
-	Particle* particles[2];
+	std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles;
 };

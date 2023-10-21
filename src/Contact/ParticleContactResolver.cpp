@@ -6,12 +6,14 @@ ParticleContactResolver::ParticleContactResolver(unsigned int iteration)
 	this->iteration = iteration;
 }
 
-void ParticleContactResolver::ResolveContacts(ParticleContact* contactArray, unsigned int numContact, float duration)
+void ParticleContactResolver::ResolveContacts(std::shared_ptr<std::vector<ParticleContact>> contactArray, unsigned int numContact, float duration)
 {
 	for (int i = 0; i < iteration; i++)
 	{
 		if (i >= numContact) break;
 
-		(&contactArray[i])->Resolve(duration);
+		contactArray->at(i).Resolve(duration);
+
+		contactArray->erase(contactArray->begin() + i);
 	}
 }

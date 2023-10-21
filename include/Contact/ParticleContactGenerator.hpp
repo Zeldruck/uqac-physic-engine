@@ -1,9 +1,11 @@
 #pragma once
+#include <vector>
+#include <memory>
 
 class ParticleContact;
 
 class ParticleContactGenerator
 {
 public:
-	virtual unsigned int AddContact(ParticleContact* contact, unsigned int limit) = 0;
+	virtual void AddContact(std::shared_ptr<std::vector<ParticleContact>> contact, unsigned int limit);
 };
