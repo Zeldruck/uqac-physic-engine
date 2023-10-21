@@ -53,7 +53,7 @@ const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 10.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -82,10 +82,10 @@ int main(int argc, char** argv)
     #pragma region Physics
     std::shared_ptr<ForceRegistry> forceRegistry = std::make_shared<ForceRegistry>();
     PhysicsSystem physics(forceRegistry);
-    std::shared_ptr<Particle> particle(new Particle(Vector3f(5.f, 10.f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), 1.f, "Particle"));
-    std::shared_ptr<Particle> particle2(new Particle(Vector3f(-5.f, 10.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), 1.f, "Particle2"));
-    std::shared_ptr<Particle> particle3(new Particle(Vector3f(5.0f, 5.f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), 1.f, "Particle3"));
-    std::shared_ptr<Particle> particle4(new Particle(Vector3f(-5.0f, 5.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), 1.f, "Particle4"));
+    std::shared_ptr<Particle> particle(new Particle(Vector3f(5.f, 20.f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), 1.f, "Particle"));
+    std::shared_ptr<Particle> particle2(new Particle(Vector3f(-5.f, 20.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), 1.f, "Particle2"));
+    std::shared_ptr<Particle> particle3(new Particle(Vector3f(5.0f, 10.f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), 1.f, "Particle3"));
+    std::shared_ptr<Particle> particle4(new Particle(Vector3f(-5.0f, 10.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), 1.f, "Particle4"));
 
     std::shared_ptr<ForceGravity> forceGravity = std::make_shared<ForceGravity>();
     
@@ -155,10 +155,10 @@ int main(int argc, char** argv)
     std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles34 = std::make_shared<std::vector<std::shared_ptr<Particle>>>(std::vector<std::shared_ptr<Particle>>{particle3, particle4});
     std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles41 = std::make_shared<std::vector<std::shared_ptr<Particle>>>(std::vector<std::shared_ptr<Particle>>{particle4, particle});
 
-    contacts->push_back(ParticleRod(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles12), 2.f));
-    contacts->push_back(ParticleRod(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles23), 2.f));
-    contacts->push_back(ParticleRod(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles34), 2.f));
-    contacts->push_back(ParticleRod(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles41), 2.f));
+    contacts->push_back(ParticleRod(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles12), 10.f));
+    contacts->push_back(ParticleRod(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles23), 10.f));
+    contacts->push_back(ParticleRod(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles34), 10.f));
+    contacts->push_back(ParticleRod(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles41), 10.f));
     #pragma endregion
 
 
@@ -283,8 +283,8 @@ int main(int argc, char** argv)
 
         ProcessInput(window.GetHandle(), deltaTime);
 
-        //ContactsGenerator(contactArray, contacts);
-        //contactResolver.ResolveContacts(contactArray, 0, 0.01);
+        ContactsGenerator(contactArray, contacts);
+        contactResolver.ResolveContacts(contactArray, 0, 0.01);
        
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
