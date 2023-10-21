@@ -14,13 +14,13 @@ void ForceSpring::UpdateForce(std::shared_ptr<Particle> particle, float deltaTim
 		return;
 
 	// calculate the vector of the spring
-	Vector3f springVector = particle->position - m_otherEnd->position;
+	Vector3f springVector = m_otherEnd->position - particle->position;
 
 	// calculate the magnitude of the spring
 	float magnitude = springVector.GetLength();
 
 	// calculate the final force and apply it
-	Vector3f force = -m_k * (magnitude - m_restLength) * springVector.GetNormalized();
+	Vector3f force = -m_k * (magnitude - m_restLength) * springVector.GetUnitNormalized();
 	particle->AddForce(force);
 }
 

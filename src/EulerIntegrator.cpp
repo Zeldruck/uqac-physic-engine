@@ -8,9 +8,5 @@ void EulerIntegrator::Update(std::vector<std::shared_ptr<Particle>>& particles, 
 	{
 		particle->position += particle->velocity * deltaTime;
 		particle->velocity += particle->acceleration * deltaTime;
-		
-		//if(isGravityEnabled)
-		//	particle->velocity += (particle->acceleration + g) * deltaTime;
-		//else
 	}
 }

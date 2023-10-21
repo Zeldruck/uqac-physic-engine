@@ -26,11 +26,6 @@ void ForceRegistry::Clear()
 
 void ForceRegistry::UpdateForces(float deltaTime)
 {
-	//for (auto& entry : m_registry)
-	//{
-	//	entry.particle->ClearForce();
-	//}
-
 	for (auto& entry : m_registry)
 	{
 		entry.forceGenerator->UpdateForce(entry.particle, deltaTime);
