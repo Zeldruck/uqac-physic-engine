@@ -41,7 +41,7 @@ void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 void MouseCallback(GLFWwindow* window, double xpos, double ypos);
 void ProcessInput(GLFWwindow* window, float deltaTime);
 
-void ContactsGenerator(std::shared_ptr<std::vector<ParticleContact>> contactArray, std::shared_ptr<std::vector<ParticleContactGenerator>> contacts);
+void ContactsGenerator(std::shared_ptr<std::vector<ParticleContact>> contactArray, std::shared_ptr<std::vector<std::shared_ptr<ParticleContactGenerator>>> contacts);
 
 void ImguiGamePanel(std::shared_ptr<Particle> particle, PhysicsSystem& physics, Vector3f& direction, float& power, bool& isParticleLaunched, bool& isGravityEnabled, float deltaTime);
 void ImguiStatsPanel(float deltaTime);
@@ -53,7 +53,7 @@ const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 10.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 20.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -90,7 +90,7 @@ int main(int argc, char** argv)
     std::shared_ptr<ForceGravity> forceGravity = std::make_shared<ForceGravity>();
     
     std::shared_ptr<ForceDrag> weakForceDrag = std::make_shared<ForceDrag>(5.0f, 0.0f);
-    std::shared_ptr<ForceDrag> strongForceDrag = std::make_shared<ForceDrag>(10.0f, 0.0f);
+    std::shared_ptr<ForceDrag> strongForceDrag = std::make_shared<ForceDrag>(1.0f, 0.0f);
 
     float springConstant = 100.0f;
     std::shared_ptr<ForceSpring> forceSpring12 = std::make_shared<ForceSpring>(
@@ -132,7 +132,7 @@ int main(int argc, char** argv)
     forceRegistry->Add(particle, forceGravity);
     //forceRegistry->Add(particle3, forceGravity);
 
-    forceRegistry->Add(particle, strongForceDrag);
+    forceRegistry->Add(particle, weakForceDrag);
     forceRegistry->Add(particle2, strongForceDrag);
     forceRegistry->Add(particle3, strongForceDrag);
     forceRegistry->Add(particle4, strongForceDrag);
@@ -148,17 +148,17 @@ int main(int argc, char** argv)
     ParticleContactResolver contactResolver(50);
 
     std::shared_ptr<std::vector<ParticleContact>> contactArray = std::make_shared<std::vector<ParticleContact>>(std::vector<ParticleContact>());
-    std::shared_ptr<std::vector<ParticleContactGenerator>> contacts = std::make_shared<std::vector<ParticleContactGenerator>>(std::vector<ParticleContactGenerator>());
+    std::shared_ptr<std::vector<std::shared_ptr<ParticleContactGenerator>>> contacts = std::make_shared<std::vector<std::shared_ptr<ParticleContactGenerator>>>(std::vector<std::shared_ptr<ParticleContactGenerator>>());
 
     std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles12 = std::make_shared<std::vector<std::shared_ptr<Particle>>>(std::vector<std::shared_ptr<Particle>>{particle, particle2});
     std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles23 = std::make_shared<std::vector<std::shared_ptr<Particle>>>(std::vector<std::shared_ptr<Particle>>{particle2, particle3});
     std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles34 = std::make_shared<std::vector<std::shared_ptr<Particle>>>(std::vector<std::shared_ptr<Particle>>{particle3, particle4});
     std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles41 = std::make_shared<std::vector<std::shared_ptr<Particle>>>(std::vector<std::shared_ptr<Particle>>{particle4, particle});
 
-    contacts->push_back(ParticleRod(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles12), 10.f));
-    contacts->push_back(ParticleRod(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles23), 10.f));
-    contacts->push_back(ParticleRod(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles34), 10.f));
-    contacts->push_back(ParticleRod(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles41), 10.f));
+    contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles12), 1.f, 0.0f));
+    contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles23), 1.f, 0.0f));
+    contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles34), 1.f, 0.0f));
+    contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles41), 1.f, 0.0f));
     #pragma endregion
 
 
@@ -482,10 +482,13 @@ void MouseCallback(GLFWwindow* window, double xposIn, double yposIn)
     camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-void ContactsGenerator(std::shared_ptr<std::vector<ParticleContact>> contactArray, std::shared_ptr<std::vector<ParticleContactGenerator>> contacts)
+void ContactsGenerator(std::shared_ptr<std::vector<ParticleContact>> contactArray, std::shared_ptr<std::vector<std::shared_ptr<ParticleContactGenerator>>> contacts)
 {
+    if(contacts->size() == 0)
+		return;
+
     for (int i = 0; i < contacts->size(); i++)
     {
-        contacts->at(i).AddContact(contactArray, 0);
+        contacts->at(i)->AddContact(contactArray, 0);
     }
 }
