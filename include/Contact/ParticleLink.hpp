@@ -11,7 +11,7 @@ public:
 
 	float CurrentLength() const;
 
-	void AddContact(std::shared_ptr<std::vector<ParticleContact>> contact, unsigned int limit) override;
+	void virtual AddContact(std::shared_ptr<std::vector<ParticleContact>> contact, unsigned int limit);
 
 public:
 	std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles;
