@@ -124,7 +124,7 @@ int main(int argc, char** argv)
     //forceRegistry->Add(particle3, forceSpring23);
     //forceRegistry->Add(particle4, forceSpring34);
 
-    forceRegistry->Add(particle, forceAnchoredSpring);
+    /*forceRegistry->Add(particle, forceAnchoredSpring);
     forceRegistry->Add(particle2, forceAnchoredSpring);
     forceRegistry->Add(particle3, forceAnchoredSpring);
     forceRegistry->Add(particle4, forceAnchoredSpring);
@@ -135,7 +135,7 @@ int main(int argc, char** argv)
     forceRegistry->Add(particle, weakForceDrag);
     forceRegistry->Add(particle2, strongForceDrag);
     forceRegistry->Add(particle3, strongForceDrag);
-    forceRegistry->Add(particle4, strongForceDrag);
+    forceRegistry->Add(particle4, strongForceDrag);*/
     #pragma endregion
 
     // Game variables
@@ -155,10 +155,10 @@ int main(int argc, char** argv)
     std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles34 = std::make_shared<std::vector<std::shared_ptr<Particle>>>(std::vector<std::shared_ptr<Particle>>{particle3, particle4});
     std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles41 = std::make_shared<std::vector<std::shared_ptr<Particle>>>(std::vector<std::shared_ptr<Particle>>{particle4, particle});
 
-    contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles12), 1.f, 0.0f));
-    contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles23), 1.f, 0.0f));
-    contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles34), 1.f, 0.0f));
-    contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles41), 1.f, 0.0f));
+    contacts->push_back(std::make_shared<ParticleRod>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles12), 10.f));
+    contacts->push_back(std::make_shared<ParticleRod>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles23), 10.f));
+    contacts->push_back(std::make_shared<ParticleRod>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles34), 10.f));
+    contacts->push_back(std::make_shared<ParticleRod>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles41), 10.f));
     #pragma endregion
 
 
@@ -284,7 +284,7 @@ int main(int argc, char** argv)
         ProcessInput(window.GetHandle(), deltaTime);
 
         ContactsGenerator(contactArray, contacts);
-        contactResolver.ResolveContacts(contactArray, 0, 0.01);
+        contactResolver.ResolveContacts(contactArray, contactArray->size(), 0.01);
        
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

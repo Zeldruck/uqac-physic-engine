@@ -13,7 +13,7 @@ void ParticleContactResolver::ResolveContacts(std::shared_ptr<std::vector<Partic
 
 	for (int i = 0; i < iteration; i++)
 	{
-		if (i >= numContact) break;
+		if (i >= contactArray->size()) break;
 
 		contactArray->at(i).Resolve(duration);
 

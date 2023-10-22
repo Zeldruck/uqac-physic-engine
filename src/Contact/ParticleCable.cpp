@@ -12,11 +12,11 @@ void ParticleCable::AddContact(std::shared_ptr<std::vector<ParticleContact>> con
 {
 	// TODO
 
-	float penetration = maxLength - (particles->at(1)->position - particles->at(1)->position).GetLength();
+	float penetration = (particles->at(1)->position - particles->at(0)->position).GetLength() - maxLength;
 
-	if (penetration > 0) return;
+	if (penetration <= 0) return;
 
-	Vector3f normal = (particles->at(1)->position - particles->at(1)->position).GetUnitNormalized();
+	Vector3f normal = (particles->at(0)->position - particles->at(1)->position).GetUnitNormalized();
 
 	ParticleContact newContact(particles, restitution, penetration, normal);
 
