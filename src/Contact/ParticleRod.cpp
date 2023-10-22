@@ -9,15 +9,15 @@ ParticleRod::ParticleRod(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>
 
 void ParticleRod::AddContact(std::shared_ptr<std::vector<ParticleContact>> contact, unsigned int limit)
 {
-	Vector3f d = particles->at(0)->position - particles->at(1)->position;
+	Vector3f d = particles->at(1)->position - particles->at(0)->position;
 
 	float penetration = length - d.GetLength();
 
 	if (penetration < 0.01f && penetration > 0.01f) return;
 
-	Vector3f normal = penetration >= 0.f ? d.GetUnitNormalized() : (particles->at(1)->position - particles->at(0)->position).GetUnitNormalized();
+	Vector3f normal = penetration >= 0.f ? d.GetUnitNormalized() : (particles->at(0)->position - particles->at(1)->position).GetUnitNormalized();
 
-	ParticleContact newContact(particles, 0.f, penetration, normal);
+	ParticleContact newContact(particles, 0.5f, penetration, normal);
 
 	// Add to array
 	contact->push_back(newContact);
