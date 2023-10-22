@@ -13,12 +13,11 @@ void ParticleRod::AddContact(std::shared_ptr<std::vector<ParticleContact>> conta
 
 	float penetration = length - d.GetLength();
 
-	if (penetration < 0.05f && penetration > 0.05f) return;
+	if (penetration < 0.05f && penetration > -0.05f) return;
 
-	Vector3f normal = (particles->at(0)->position - particles->at(1)->position).GetUnitNormalized();
+	Vector3f normal = (particles->at(0)->position - particles->at(1)->position).GetNormalized();
 
 	ParticleContact newContact(particles, 0.5f, penetration, normal);
 
-	// Add to array
 	contact->push_back(newContact);
 }

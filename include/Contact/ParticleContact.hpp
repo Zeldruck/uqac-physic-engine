@@ -24,4 +24,7 @@ public:
 	float restitution;
 	float penetration;
 	Vector3f contactNormal;
+
+private:
+	float duration;
 };

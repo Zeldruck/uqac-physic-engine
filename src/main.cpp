@@ -92,7 +92,7 @@ int main(int argc, char** argv)
     std::shared_ptr<ForceDrag> weakForceDrag = std::make_shared<ForceDrag>(5.0f, 0.0f);
     std::shared_ptr<ForceDrag> strongForceDrag = std::make_shared<ForceDrag>(1.0f, 0.0f);
 
-    float springConstant = 100.0f;
+    float springConstant = 100.f;
     std::shared_ptr<ForceSpring> forceSpring12 = std::make_shared<ForceSpring>(
         springConstant,
         (particle->position - particle2->position).GetLength() - 5.f,
@@ -124,7 +124,7 @@ int main(int argc, char** argv)
     //forceRegistry->Add(particle3, forceSpring23);
     //forceRegistry->Add(particle4, forceSpring34);
 
-    /*forceRegistry->Add(particle, forceAnchoredSpring);
+    forceRegistry->Add(particle, forceAnchoredSpring);
     forceRegistry->Add(particle2, forceAnchoredSpring);
     forceRegistry->Add(particle3, forceAnchoredSpring);
     forceRegistry->Add(particle4, forceAnchoredSpring);
@@ -135,7 +135,7 @@ int main(int argc, char** argv)
     forceRegistry->Add(particle, weakForceDrag);
     forceRegistry->Add(particle2, strongForceDrag);
     forceRegistry->Add(particle3, strongForceDrag);
-    forceRegistry->Add(particle4, strongForceDrag);*/
+    forceRegistry->Add(particle4, strongForceDrag);
     #pragma endregion
 
     // Game variables
@@ -155,10 +155,10 @@ int main(int argc, char** argv)
     std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles34 = std::make_shared<std::vector<std::shared_ptr<Particle>>>(std::vector<std::shared_ptr<Particle>>{particle3, particle4});
     std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles41 = std::make_shared<std::vector<std::shared_ptr<Particle>>>(std::vector<std::shared_ptr<Particle>>{particle4, particle});
 
-    contacts->push_back(std::make_shared<ParticleRod>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles12), 10.f));
-    contacts->push_back(std::make_shared<ParticleRod>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles23), 10.f));
-    contacts->push_back(std::make_shared<ParticleRod>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles34), 10.f));
-    contacts->push_back(std::make_shared<ParticleRod>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles41), 10.f));
+    contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles12), 15.f, 0.5f));
+    contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles23), 15.f, 0.5f));
+    contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles34), 15.f, 0.5f));
+    contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles41), 15.f, 0.5f));
     #pragma endregion
 
 
@@ -309,8 +309,7 @@ int main(int argc, char** argv)
         glBindVertexArray(VAO);
         for (unsigned int i = 0; i <= cubePositions->length(); i++)
         {
-            // calculate the model matrix for each object and pass it to shader before drawing
-            glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+            glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
             ourShader.SetMat4("model", model);
 

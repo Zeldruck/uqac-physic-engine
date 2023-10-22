@@ -20,7 +20,7 @@ void ForceSpring::UpdateForce(std::shared_ptr<Particle> particle, float deltaTim
 	float magnitude = springVector.GetLength();
 
 	// calculate the final force and apply it
-	Vector3f force = -m_k * (magnitude - m_restLength) * springVector.GetUnitNormalized();
+	Vector3f force = -m_k * (magnitude - m_restLength) * springVector.GetNormalized();
 	particle->AddForce(force);
 }
 
