@@ -43,6 +43,4 @@ void ParticleContact::ResolveInterpenetration()
 
 	particles->at(0)->position += Pa;
 	particles->at(1)->position += Pb;
-
-	// Gestion contact au repos
 }

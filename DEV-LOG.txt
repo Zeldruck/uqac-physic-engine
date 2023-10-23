@@ -1,3 +1,4 @@
+TP1:
 Tâches:
 - Vecteur: Félix Jouanneau
 - Particule: Lan-Anh Virginie Nguyen
@@ -10,3 +11,16 @@ Références utilisées:
 - https://learnopengl.com
 - https://wikipedia.org
 - https://xmake.io
+
+
+
+TP2:
+Tâches:
+- Générateurs de forces: Lan-Anh Virginie Nguyen
+- Générateurs de contacts: Félix Jouanneau
+- Graphiques: Lan-Anh Virginie Nguyen & Félix Jouanneau
+
+
+Références utilisées:
+- https://learnopengl.com
+- https://wikipedia.org
