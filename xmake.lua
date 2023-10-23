@@ -1,6 +1,6 @@
 add_rules("mode.debug", "mode.release")
 
-add_requires("opengl", "glfw", "glad")
+add_requires("opengl", "glfw", "glad", "glm")
 add_requires("imgui", { configs = { glfw_opengl3 = true, useglad = true } })
 
 set_allowedarchs("windows|x64")
@@ -22,7 +22,7 @@ target("uqac-physic-engine")
     add_headerfiles("include/**.h", "include/**.hpp", "include/**.inl")
     add_includedirs("include", { public = true })
     add_files("src/**.cpp")
-    add_packages("imgui", "opengl", "glfw", "glad", { public = true })
+    add_packages("imgui", "opengl", "glfw", "glad", "glm", { public = true })
 
 --
 -- If you want to known more usage about xmake, please see https://xmake.io
