@@ -155,10 +155,10 @@ int main(int argc, char** argv)
     std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles34 = std::make_shared<std::vector<std::shared_ptr<Particle>>>(std::vector<std::shared_ptr<Particle>>{particle3, particle4});
     std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles41 = std::make_shared<std::vector<std::shared_ptr<Particle>>>(std::vector<std::shared_ptr<Particle>>{particle4, particle});
 
-    contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles12), 15.f, 0.5f));
-    contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles23), 15.f, 0.5f));
-    contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles34), 15.f, 0.5f));
-    contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles41), 15.f, 0.5f));
+    contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles12), 15.f, 1.f));
+    contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles23), 15.f, 1.f));
+    contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles34), 15.f, 1.f));
+    contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles41), 15.f, 1.f));
     #pragma endregion
 
 
