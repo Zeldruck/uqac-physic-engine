@@ -2,17 +2,17 @@
 
 #include "Contact/ParticleContactGenerator.hpp"
 
-class Particle;
+class PhysicsBody;
 
 class ParticleLink : public ParticleContactGenerator
 {
 public:
-	ParticleLink(std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles);
+	ParticleLink(std::vector<std::shared_ptr<PhysicsBody>>& particles);
 
 	float CurrentLength() const;
 
-	void virtual AddContact(std::shared_ptr<std::vector<ParticleContact>> contact, unsigned int limit);
+	void virtual AddContact(std::vector<std::shared_ptr<ParticleContact>> contact, unsigned int limit);
 
 public:
-	std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles;
+	std::vector<std::shared_ptr<PhysicsBody>> particles;
 };

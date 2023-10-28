@@ -5,9 +5,9 @@
 #include "Force/ForceRegistry.hpp"
 #include "Contact/ParticleContactGenerator.hpp"
 #include "Contact/ParticleContactResolver.hpp"
+#include "EulerIntegrator.hpp"
 
 class PhysicsBody;
-class EulerIntegrator;
 
 class PhysicsSystem
 {
@@ -27,10 +27,10 @@ public:
 
 private:
 	//static PhysicsSystem* s_instance;
-	std::vector<std::shared_ptr<PhysicsBody>> m_particles;
+	std::vector<std::shared_ptr<PhysicsBody>> m_physicsbodies;
 	std::shared_ptr<ForceRegistry> m_forceRegistry;
 	//std::shared_ptr<ContactRegistry> m_contactRegistry;
 	//std::vector<ParticleContactGenerator*> contactGenerators;
 	//ParticleContactResolver contactResolver;
-	EulerIntegrator* m_integrator;
+	std::unique_ptr<EulerIntegrator> m_integrator;
 };

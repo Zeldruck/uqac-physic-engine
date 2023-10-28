@@ -5,5 +5,5 @@
 class GroundContactGenerator : ParticleContactGenerator
 {
 public:
-	unsigned int AddContact(ParticleContact* contact, unsigned int limit) const override;
+	unsigned int AddContact(std::shared_ptr<ParticleContact> contact, unsigned int limit) const override;
 };

@@ -1,23 +1,24 @@
 #include "Contact/ParticleRod.hpp"
 #include "Contact/ParticleContact.hpp"
-#include "Particle.hpp"
+#include "PhysicsBody.hpp"
 
-ParticleRod::ParticleRod(std::shared_ptr<std::vector<std::shared_ptr<Particle>>> particles, float length) : ParticleLink(particles)
+ParticleRod::ParticleRod(std::vector<std::shared_ptr<PhysicsBody>>& particles, float length) :
+	ParticleLink(particles)
 {
 	this->length = length;
 }
 
-void ParticleRod::AddContact(std::shared_ptr<std::vector<ParticleContact>> contact, unsigned int limit)
+void ParticleRod::AddContact(std::vector<std::shared_ptr<ParticleContact>>& contact, unsigned int limit)
 {
-	Vector3f d = particles->at(1)->position - particles->at(0)->position;
+	Vector3f d = particles.at(1)->GetPosition() - particles.at(0)->GetPosition();
 
 	float penetration = length - d.GetLength();
 
 	if (penetration < 0.05f && penetration > -0.05f) return;
 
-	Vector3f normal = (particles->at(0)->position - particles->at(1)->position).GetNormalized();
+	Vector3f normal = (particles.at(0)->GetPosition() - particles.at(1)->GetPosition()).GetNormalized();
 
-	ParticleContact newContact(particles, 0.5f, penetration, normal);
+	std::shared_ptr<ParticleContact> newContact = std::make_shared<ParticleContact>(particles, 0.5f, penetration, normal);
 
-	contact->push_back(newContact);
+	contact.push_back(newContact);
 }

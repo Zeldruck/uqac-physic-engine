@@ -16,4 +16,5 @@ public:
 	Vector3f momentOfInertia;
 
 	Vector3f GetPosition() const override;
+	void SetPosition(Vector3f newPosition) override;
 };

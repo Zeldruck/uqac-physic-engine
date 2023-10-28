@@ -9,9 +9,7 @@ class ParticleContactResolver
 public:
 	ParticleContactResolver(unsigned int iteration);
 
-	void ResolveContacts(std::shared_ptr<std::vector<ParticleContact>> contactArray, unsigned int numContact, float duration);
-
-private:
+	void ResolveContacts(std::vector<std::shared_ptr<ParticleContact>>& contactArray, unsigned int numContact, float duration);
 
 protected:
 	unsigned int iteration;

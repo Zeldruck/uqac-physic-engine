@@ -10,6 +10,8 @@
 class EulerIntegrator
 {
 public:
+	EulerIntegrator() = default;
+
 	void Update(std::vector<std::shared_ptr<PhysicsBody>>& particle, const float& deltaTime, bool isGravityEnabled = true);
 private:
 	Vector3<float> g = Vector3<float>(0.0f, -GRAVITY, 0.0f);

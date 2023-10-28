@@ -22,3 +22,8 @@ Vector3f Rigidbody::GetPosition() const
 {
 	return transform.position;
 }
+
+void Rigidbody::SetPosition(Vector3f newPosition)
+{
+	transform.position = newPosition;
+}
