@@ -5,11 +5,21 @@ PhysicsBody::PhysicsBody() :
 	mass(MIN_MASS),
 	velocity(Vector3f::Zero),
 	acceleration(Vector3f::Zero),
-	force(Vector3f::Zero)
+	force(Vector3f::Zero),
+	name("PhysicsBody")
 {
 }
 
-PhysicsBody::PhysicsBody(Vector3f velocity, Vector3f acceleration, float mass) :
+PhysicsBody::PhysicsBody(std::string name) :
+	mass(MIN_MASS),
+	velocity(Vector3f::Zero),
+	acceleration(Vector3f::Zero),
+	force(Vector3f::Zero),
+	name(name)
+{
+}	
+
+PhysicsBody::PhysicsBody(Vector3f velocity, Vector3f acceleration, float mass, std::string name) :
 	mass(mass <= 0.0f ? MIN_MASS : mass),
 	velocity(velocity),
 	acceleration(acceleration),

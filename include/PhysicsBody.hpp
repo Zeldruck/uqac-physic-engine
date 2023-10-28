@@ -1,12 +1,16 @@
 #pragma once
 
+#include <string>
 #include "Vector3.hpp"
 
 class PhysicsBody
 {
 public:
 	PhysicsBody();
-	PhysicsBody(Vector3f velocity, Vector3f acceleration, float mass);
+	PhysicsBody(std::string name);
+	PhysicsBody(Vector3f velocity, Vector3f acceleration, float mass, std::string name);
+
+	std::string name;
 
 	float mass;
 	Vector3f velocity;

@@ -2,6 +2,7 @@
 
 #include "Vector3.hpp"
 #include "Matrix3.hpp"
+#include <cmath>
 #include <ostream>
 
 template<typename T>
@@ -37,6 +38,7 @@ public:
 
 	void MoveToRightHalfSphere();
 
+	T Norm();
 	T Norm2();
 
 	void Quaternion2Matrix(Matrix3f& R);
@@ -46,7 +48,7 @@ public:
 	void GetSinExponential(T& x, T& y, T& z);
 
 protected:
-	real s, x, y, z;
+	T s, x, y, z;
 
 };
 
