@@ -5,6 +5,7 @@
 
 #include "Particle.hpp"
 #include "Vector3.hpp"
+#include "Constants/PhysicConstants.hpp"
 
 class Particle;
 

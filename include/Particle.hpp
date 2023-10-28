@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Vector3.hpp"
-#include "Constants/PhysicConstants.hpp"
 #include <string>
+#include "Vector3.hpp"
+#include "PhysicsBody.hpp"
 
-class Particle
+class Particle : public PhysicsBody
 {
 public:
 	Particle();
@@ -18,14 +18,6 @@ public:
 
 	std::string name;
 	Vector3f position;
-	Vector3f velocity;
-	Vector3f acceleration;
-	
-	float mass;
-
-	void AddForce(const Vector3f& force);
-	void RemoveForce(const Vector3f& force);
-	void ClearForce();
 
 ;	//template <typename T>
 	//T& GetComponent() {

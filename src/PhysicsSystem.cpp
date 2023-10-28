@@ -58,6 +58,6 @@ void PhysicsSystem::PrintParticles()
 	{
 		std::cout << "Particle position: " << particle->position << std::endl;
 		std::cout << "Particle velocity: " << particle->velocity << std::endl;
-		std::cout << "Particle acceleration: " << particle->acceleration << std::endl;
+		std::cout << "Particle acceleration: " << particle->GetAcceleration() << std::endl;
 	}
 }

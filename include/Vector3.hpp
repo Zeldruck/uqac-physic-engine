@@ -32,6 +32,9 @@ struct Vector3
 	static float DotProduct(const Vector3& vecA, const Vector3& vecB);
 	static Vector3 CrossProduct(const Vector3& vecA, const Vector3& vecB);
 
+	static const Vector3 Zero;
+	static Vector3 GetZero() { return Vector3(0, 0, 0); }
+
 	T x, y, z;
 };
 
@@ -42,5 +45,8 @@ template<typename T> std::ostream& operator<<(std::ostream& os, const Vector3<T>
 
 using Vector3f = Vector3<float>;
 using Vector3i = Vector3<int>;
+
+template<typename T>
+const Vector3<T> Vector3<T>::Zero = Vector3<T>::GetZero();
 
 #include <Vector3.inl>
