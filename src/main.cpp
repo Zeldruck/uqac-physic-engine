@@ -91,7 +91,8 @@ int main(int argc, char** argv)
     std::shared_ptr<PhysicsBody> particle4 = std::make_shared<Particle>(Vector3f(-5.0f, 10.0f, 0.0f), Vector3f::Zero, Vector3f::Zero, 1.f, "Particle4");
 
     std::shared_ptr<PhysicsBody> rigidbody = std::make_shared<Rigidbody>(Transform(), Vector3f::Zero, Vector3f::Zero, 1.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody");
-    
+    std::shared_ptr<PhysicsBody> rigidbody2 = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(0.f,0.f,0.f,0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 1.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody2");
+
     std::shared_ptr<ForceGravity> forceGravity = std::make_shared<ForceGravity>();
     
     std::shared_ptr<ForceDrag> weakForceDrag = std::make_shared<ForceDrag>(5.0f, 0.0f);
@@ -119,30 +120,38 @@ int main(int argc, char** argv)
     
     std::shared_ptr<ForceBuoyancy> forceBuoyancy = std::make_shared<ForceBuoyancy>(1.f, 1.f, 1.f, 1.f);
 
-    physics.AddParticle(particle);
-    physics.AddParticle(particle2);
-    physics.AddParticle(particle3);
-    physics.AddParticle(particle4);
-
+    //physics.AddParticle(particle);
+    //physics.AddParticle(particle2);
+    //physics.AddParticle(particle3);
+    //physics.AddParticle(particle4);
+    
     physics.AddParticle(rigidbody);
+    
+    physics.AddParticle(rigidbody2);
 
     //forceRegistry->Add(particle, forceSpring41);
     //forceRegistry->Add(particle2, forceSpring12);
     //forceRegistry->Add(particle3, forceSpring23);
     //forceRegistry->Add(particle4, forceSpring34);
 
-    forceRegistry->Add(particle, forceAnchoredSpring);
-    forceRegistry->Add(particle2, forceAnchoredSpring);
-    forceRegistry->Add(particle3, forceAnchoredSpring);
-    forceRegistry->Add(particle4, forceAnchoredSpring);
+    //forceRegistry->Add(particle, forceAnchoredSpring);
+    //forceRegistry->Add(particle2, forceAnchoredSpring);
+    //forceRegistry->Add(particle3, forceAnchoredSpring);
+    //forceRegistry->Add(particle4, forceAnchoredSpring);
+    //
+    //forceRegistry->Add(particle, forceGravity);
+    //forceRegistry->Add(particle3, forceGravity);
+    //
+    //forceRegistry->Add(particle, weakForceDrag);
+    //forceRegistry->Add(particle2, strongForceDrag);
+    //forceRegistry->Add(particle3, strongForceDrag);
+    //forceRegistry->Add(particle4, strongForceDrag);
 
-    forceRegistry->Add(particle, forceGravity);
-    forceRegistry->Add(particle3, forceGravity);
-
-    forceRegistry->Add(particle, weakForceDrag);
-    forceRegistry->Add(particle2, strongForceDrag);
-    forceRegistry->Add(particle3, strongForceDrag);
-    forceRegistry->Add(particle4, strongForceDrag);
+    //forceRegistry->Add(rigidbody, forceGravity);
+    forceRegistry->Add(rigidbody2, forceGravity);
+    //
+    //forceRegistry->Add(rigidbody, weakForceDrag);
+    forceRegistry->Add(rigidbody2, weakForceDrag);
     #pragma endregion
 
     // Game variables
@@ -167,15 +176,19 @@ int main(int argc, char** argv)
     std::shared_ptr<ParticleCable> particleCable3 = std::make_shared<ParticleCable>(particles34, 15.f, 1.f);
     std::shared_ptr<ParticleCable> particleCable4 = std::make_shared<ParticleCable>(particles41, 15.f, 1.f);
     
-    contacts.push_back(particleCable);
-    contacts.push_back(particleCable2);
-    contacts.push_back(particleCable3);
-    contacts.push_back(particleCable4);
+    //contacts.push_back(particleCable);
+    //contacts.push_back(particleCable2);
+    //contacts.push_back(particleCable3);
+    //contacts.push_back(particleCable4);
 
     //contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles12), 15.f, 1.f));
     //contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles23), 15.f, 1.f));
     //contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles34), 15.f, 1.f));
     //contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles41), 15.f, 1.f));
+    
+    std::vector<std::shared_ptr<PhysicsBody>> rigidbody12 = { rigidbody, rigidbody2 };
+    std::shared_ptr<ParticleCable> rigidbodyCable = std::make_shared<ParticleCable>(rigidbody12, 15.f, 1.f);
+    contacts.push_back(rigidbodyCable);
     #pragma endregion
 
 
@@ -241,10 +254,12 @@ int main(int argc, char** argv)
     };
 
     glm::vec3 cubePositions[] = {
-    glm::vec3(0.0f,  0.0f,  0.0f),
-    glm::vec3(2.0f,  5.0f, -15.0f),
+    glm::vec3(0.0f, 0.0f, 0.0f),
+    glm::vec3(2.0f, 5.0f, -15.0f),
     glm::vec3(-1.5f, -2.2f, -2.5f),
     glm::vec3(-3.8f, -2.0f, -12.3f),
+    glm::vec3(0.0f, -5.0f, 0.0f),
+    glm::vec3(0.0f, -10.0f, 0.0f)
     };
 
     unsigned int VBO, VAO;
@@ -313,14 +328,17 @@ int main(int argc, char** argv)
         glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         ourShader.SetMat4("projection", projection);
 
+
         // camera/view transformation
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.SetMat4("view", view);
 
-        cubePositions[0] = glm::vec3(particle->GetPosition().x, particle->GetPosition().y, particle->GetPosition().z);
-        cubePositions[1] = glm::vec3(particle2->GetPosition().x, particle2->GetPosition().y, particle2->GetPosition().z);
+        cubePositions[4] = glm::vec3(particle->GetPosition().x, particle->GetPosition().y, particle->GetPosition().z);
+        cubePositions[5] = glm::vec3(particle2->GetPosition().x, particle2->GetPosition().y, particle2->GetPosition().z);
         cubePositions[2] = glm::vec3(particle3->GetPosition().x, particle3->GetPosition().y, particle3->GetPosition().z);
         cubePositions[3] = glm::vec3(particle4->GetPosition().x, particle4->GetPosition().y, particle4->GetPosition().z);
+        cubePositions[0] = glm::vec3(rigidbody->GetPosition().x, rigidbody->GetPosition().y, rigidbody->GetPosition().z);
+        cubePositions[1] = glm::vec3(rigidbody2->GetPosition().x, rigidbody2->GetPosition().y, rigidbody2->GetPosition().z);
         
         // render boxes
         glBindVertexArray(VAO);
@@ -349,6 +367,18 @@ int main(int argc, char** argv)
         ImGui::Text("Particle velocity: (%f, %f, %f)", particle2->velocity.x, particle2->velocity.y, particle2->velocity.z);
         ImGui::Text("Particle acceleration: (%f, %f, %f)", particle2->GetAcceleration().x, particle2->GetAcceleration().y, particle2->GetAcceleration().z);
         ImGui::Text("Particle mass: %f", particle2->mass);
+
+        ImGui::Text("Rigidbody name: %s", rigidbody->name.c_str());
+        ImGui::Text("Rigidbody position: (%f, %f, %f)", rigidbody->GetPosition().x, rigidbody->GetPosition().y, rigidbody->GetPosition().z);
+        ImGui::Text("Rigidbody velocity: (%f, %f, %f)", rigidbody->velocity.x, rigidbody->velocity.y, rigidbody->velocity.z);
+        ImGui::Text("Rigidbody acceleration: (%f, %f, %f)", rigidbody->GetAcceleration().x, rigidbody->GetAcceleration().y, rigidbody->GetAcceleration().z);
+        ImGui::Text("Rigidbody mass: %f", rigidbody->mass);
+
+        ImGui::Text("Rigidbody name: %s", rigidbody2->name.c_str());
+        ImGui::Text("Rigidbody position: (%f, %f, %f)", rigidbody2->GetPosition().x, rigidbody2->GetPosition().y, rigidbody2->GetPosition().z);
+        ImGui::Text("Rigidbody velocity: (%f, %f, %f)", rigidbody2->velocity.x, rigidbody2->velocity.y, rigidbody2->velocity.z);
+        ImGui::Text("Rigidbody acceleration: (%f, %f, %f)", rigidbody2->GetAcceleration().x, rigidbody2->GetAcceleration().y, rigidbody2->GetAcceleration().z);
+        ImGui::Text("Rigidbody mass: %f", rigidbody2->mass);
         ImGui::End();
 
         imguiCpp.Render(); // Draw the imgui frame

@@ -177,3 +177,9 @@ std::ostream& operator<<(std::ostream& os, const Vector3<T>& vec)
 {
 	return os << "Vector3(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
 }
+
+template<typename T>
+const Vector3<T> Vector3<T>::Zero = Vector3<T>::GetZero();
+
+template<typename T>
+const Vector3<T> Vector3<T>::One = Vector3<T>::GetOne();
