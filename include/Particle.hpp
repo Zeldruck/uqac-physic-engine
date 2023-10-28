@@ -17,4 +17,7 @@ public:
 	Particle& operator=(Particle&&) = default;
 
 	Vector3f position;
+
+	Vector3f GetPosition() const override;
+	void SetPosition(Vector3f newPosition) override;
 };

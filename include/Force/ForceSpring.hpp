@@ -11,14 +11,14 @@ private:
 	// rest length of spring
 	float m_restLength;
 	// other end of spring
-	std::shared_ptr<Particle> m_otherEnd;
+	std::shared_ptr<PhysicsBody> m_otherEnd;
 
 public:
-	ForceSpring(float k, float restLength, std::shared_ptr<Particle> otherEnd);
+	ForceSpring(float k, float restLength, std::shared_ptr<PhysicsBody> otherEnd);
 
 	// apply spring force
-	void UpdateForce(std::shared_ptr<Particle> particle, float deltaTime) override;
+	void UpdateForce(std::shared_ptr<PhysicsBody> physicBody, float deltaTime) override;
 
-	void SetOtherEnd(std::shared_ptr<Particle> otherEnd);
+	void SetOtherEnd(std::shared_ptr<PhysicsBody> otherEnd);
 	void SetSpringConstant(float k);
 };

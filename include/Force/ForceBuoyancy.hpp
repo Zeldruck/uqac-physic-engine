@@ -18,5 +18,5 @@ public:
 	ForceBuoyancy(float maxDepth, float volume, float waterHeight, float liquidDensity);
 
 	// apply buoyancy force
-	void UpdateForce(std::shared_ptr<Particle> particle, float deltaTime) override;
+	void UpdateForce(std::shared_ptr<PhysicsBody> physicBody, float deltaTime) override;
 };

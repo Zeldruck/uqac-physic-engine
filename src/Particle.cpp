@@ -12,3 +12,13 @@ Particle::Particle(Vector3f position, Vector3f velocity, Vector3f acceleration, 
 	position(position)
 {
 }
+
+Vector3f Particle::GetPosition() const
+{
+	return position;
+}
+
+void Particle::SetPosition(Vector3f newPosition)
+{
+	position = newPosition;
+}

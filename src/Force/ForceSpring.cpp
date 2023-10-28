@@ -1,30 +1,30 @@
 #include "Force/ForceSpring.hpp"
 #include "Particle.hpp"
 
-ForceSpring::ForceSpring(float k, float restLength, std::shared_ptr<Particle> otherEnd) :
+ForceSpring::ForceSpring(float k, float restLength, std::shared_ptr<PhysicsBody> otherEnd) :
 	m_k(k), 
 	m_restLength(restLength), 
 	m_otherEnd(otherEnd) 
 {
 }
 
-void ForceSpring::UpdateForce(std::shared_ptr<Particle> particle, float deltaTime)
+void ForceSpring::UpdateForce(std::shared_ptr<PhysicsBody> physicBody, float deltaTime)
 {
-	if (particle->mass < 1.0f)
+	if (physicBody->mass < 1.0f)
 		return;
 
 	// calculate the vector of the spring
-	Vector3f springVector = m_otherEnd->position - particle->position;
+	Vector3f springVector = m_otherEnd->GetPosition() - physicBody->GetPosition();
 
 	// calculate the magnitude of the spring
 	float magnitude = springVector.GetLength();
 
 	// calculate the final force and apply it
 	Vector3f force = -m_k * (magnitude - m_restLength) * springVector.GetNormalized();
-	particle->AddForce(force);
+	physicBody->AddForce(force);
 }
 
-void ForceSpring::SetOtherEnd(std::shared_ptr<Particle> otherEnd)
+void ForceSpring::SetOtherEnd(std::shared_ptr<PhysicsBody> otherEnd)
 {
 	m_otherEnd = otherEnd;
 }

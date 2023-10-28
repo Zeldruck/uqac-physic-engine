@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "PhysicsSystem.hpp"
-#include "Particle.hpp"
+#include "PhysicsBody.hpp"
 #include "EulerIntegrator.hpp"
 
 PhysicsSystem::PhysicsSystem(std::shared_ptr<ForceRegistry> forceRegistry) :
@@ -13,9 +13,9 @@ PhysicsSystem::PhysicsSystem(std::shared_ptr<ForceRegistry> forceRegistry) :
 void PhysicsSystem::Update(float deltaTime, bool isGravityEnabled)
 {
 	// Clear force in all particles
-	for (std::shared_ptr<Particle> particle : m_particles)
+	for (std::shared_ptr<PhysicsBody> physicsBody : m_particles)
 	{
-		particle->ClearForce();
+		physicsBody->ClearForce();
 	}
 
 	// Mise à jour des forces
@@ -35,12 +35,13 @@ void PhysicsSystem::Update(float deltaTime, bool isGravityEnabled)
 
 }
 
-void PhysicsSystem::AddParticle(std::shared_ptr<Particle> particle)
+void PhysicsSystem::AddParticle(std::shared_ptr<PhysicsBody> particle)
 {
 	m_particles.push_back(particle);
+	std::cout << particle->GetPosition() << std::endl;
 }
 
-void PhysicsSystem::RemoveParticle(std::shared_ptr<Particle> particle)
+void PhysicsSystem::RemoveParticle(std::shared_ptr<PhysicsBody> particle)
 {
 	for (auto it = m_particles.begin(); it != m_particles.end(); ++it)
 	{
@@ -54,9 +55,9 @@ void PhysicsSystem::RemoveParticle(std::shared_ptr<Particle> particle)
 
 void PhysicsSystem::PrintParticles()
 {
-	for (const std::shared_ptr<Particle> particle : m_particles)
+	for (const std::shared_ptr<PhysicsBody> particle : m_particles)
 	{
-		std::cout << "Particle position: " << particle->position << std::endl;
+		std::cout << "Particle position: " << particle->GetPosition() << std::endl;
 		std::cout << "Particle velocity: " << particle->velocity << std::endl;
 		std::cout << "Particle acceleration: " << particle->GetAcceleration() << std::endl;
 	}

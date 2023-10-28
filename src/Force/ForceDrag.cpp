@@ -7,7 +7,7 @@ ForceDrag::ForceDrag(float k1, float k2) :
 {
 };
 
-void ForceDrag::UpdateForce(std::shared_ptr<Particle> particle, float deltaTime)
+void ForceDrag::UpdateForce(std::shared_ptr<PhysicsBody> particle, float deltaTime)
 {
 	if (particle->velocity.GetLength() < 0.001f)
 		return;

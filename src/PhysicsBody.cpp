@@ -52,3 +52,7 @@ Vector3f PhysicsBody::GetPosition() const
 {
 	return Vector3f::Zero;
 }
+
+void PhysicsBody::SetPosition(Vector3f newPosition)
+{
+}

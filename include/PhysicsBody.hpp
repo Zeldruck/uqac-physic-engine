@@ -22,6 +22,7 @@ public:
 	Vector3f const GetAcceleration();
 
 	virtual Vector3f GetPosition() const;	
+	virtual void SetPosition(Vector3f newPosition);
 
 protected:
 	Vector3f acceleration;

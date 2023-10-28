@@ -2,10 +2,10 @@
 
 #include <memory>
 
-class Particle;
+class PhysicsBody;
 
 class ForceGenerator
 {
 public:
-	virtual void UpdateForce(std::shared_ptr<Particle> particle, float duration) = 0;
+	virtual void UpdateForce(std::shared_ptr<PhysicsBody> physicBody, float deltaTime) = 0;
 }; 
