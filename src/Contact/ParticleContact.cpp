@@ -1,6 +1,6 @@
 #include "Contact/ParticleContact.hpp"
 
-ParticleContact::ParticleContact(std::vector<std::shared_ptr<PhysicsBody>>& particles, float restitution, float penetration, Vector3f contactNormal)
+ParticleContact::ParticleContact(std::vector<std::shared_ptr<Particle>>& particles, float restitution, float penetration, Vector3f contactNormal)
 {
 	this->particles = particles;
 
@@ -41,6 +41,6 @@ void ParticleContact::ResolveInterpenetration()
 	Vector3f Pa = (particles.at(1)->mass / particles.at(0)->mass + particles.at(1)->mass) * penetration * contactNormal;
 	Vector3f Pb = -(particles.at(0)->mass / particles.at(0)->mass + particles.at(1)->mass) * penetration * contactNormal;
 
-	particles.at(0)->GetPosition() += Pa;
-	particles.at(1)->GetPosition() += Pb;
+	particles.at(0)->position += Pa;
+	particles.at(1)->position += Pb;
 }

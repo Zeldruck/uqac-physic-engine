@@ -27,6 +27,11 @@ public:
 	Quaternion operator* (Quaternion q2) const;
 	Quaternion operator/ (Quaternion q2) const;
 
+	Quaternion operator+=(const Quaternion& q2);
+	Quaternion operator-=(const Quaternion& q2);
+	Quaternion operator*=(const Quaternion& q2);
+	Quaternion operator/=(const Quaternion& q2);
+
 	Quaternion conj();
 
 	Quaternion& operator= (Quaternion rhs);

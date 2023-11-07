@@ -1,8 +1,8 @@
 #include "Contact/ParticleCable.hpp"
 #include "Contact/ParticleContact.hpp"
-#include "PhysicsBody.hpp"
+#include "Particle.hpp"
 
-ParticleCable::ParticleCable(std::vector<std::shared_ptr<PhysicsBody>>& particles, float maxLength, float restitution) : 
+ParticleCable::ParticleCable(std::vector<std::shared_ptr<Particle>>& particles, float maxLength, float restitution) : 
 	ParticleLink(particles)
 {
 	this->maxLength = maxLength;
@@ -11,11 +11,11 @@ ParticleCable::ParticleCable(std::vector<std::shared_ptr<PhysicsBody>>& particle
 
 void ParticleCable::AddContact(std::vector <std::shared_ptr<ParticleContact>>& contact, unsigned int limit)
 {
-	float penetration = (particles.at(1)->GetPosition() - particles.at(0)->GetPosition()).GetLength() - maxLength;
+	float penetration = (particles.at(1)->position - particles.at(0)->position).GetLength() - maxLength;
 
 	if (penetration <= 0) return;
 
-	Vector3f normal = (particles.at(0)->GetPosition() - particles.at(1)->GetPosition()).GetNormalized();
+	Vector3f normal = (particles.at(0)->position - particles.at(1)->position).GetNormalized();
 
 	std::shared_ptr<ParticleContact> newContact = std::make_shared<ParticleContact>(particles, restitution, penetration, normal);
 

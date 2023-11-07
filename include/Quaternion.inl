@@ -124,7 +124,21 @@ Quaternion<T> Quaternion<T>::operator+ (Quaternion<T> q2) const
 }
 
 template <typename T>
+Quaternion<T> Quaternion<T>::operator+=(const Quaternion<T>& q2)
+{
+	Quaternion<T> w(s + q2.s, x + q2.x, y + q2.y, z + q2.z);
+	return w;
+}
+
+template <typename T>
 Quaternion<T> Quaternion<T>::operator- (Quaternion<T> q2) const
+{
+	Quaternion<T> w(s - q2.s, x - q2.x, y - q2.y, z - q2.z);
+	return w;
+}
+
+template <typename T>
+Quaternion<T> Quaternion<T>::operator-=(const Quaternion<T>& q2)
 {
 	Quaternion<T> w(s - q2.s, x - q2.x, y - q2.y, z - q2.z);
 	return w;
@@ -143,7 +157,32 @@ Quaternion<T> Quaternion<T>::operator* (Quaternion<T> q2) const
 }
 
 template <typename T>
+Quaternion<T> Quaternion<T>::operator*= (const Quaternion<T>& q2)
+{
+	Quaternion<T> w(
+		s * q2.s - x * q2.x - y * q2.y - z * q2.z,
+		s * q2.x + q2.s * x + y * q2.z - q2.y * z,
+		s * q2.y + q2.s * y + q2.x * z - x * q2.z,
+		s * q2.z + q2.s * z + x * q2.y - q2.x * y);
+
+	return w;
+}
+
+template <typename T>
 Quaternion<T> Quaternion<T>::operator/ (Quaternion<T> q2) const
+{
+	Quaternion<T> invQ2;
+	real invNorm2 = 1.0 / q2.Norm2();
+	invQ2.s = q2.s * invNorm2;
+	invQ2.x = -q2.x * invNorm2;
+	invQ2.y = -q2.y * invNorm2;
+	invQ2.z = -q2.z * invNorm2;
+
+	return (*this * invQ2);
+}
+
+template <typename T>
+Quaternion<T> Quaternion<T>::operator/= (const Quaternion<T>& q2)
 {
 	Quaternion<T> invQ2;
 	real invNorm2 = 1.0 / q2.Norm2();
@@ -232,11 +271,11 @@ void Quaternion<T>::MoveToRightHalfSphere()
 template<typename T>
 Quaternion<T> operator* (T alpha, Quaternion<T>& q2)
 {
-	return Quaternion<T>(alpha * q2.s, alpha * q2.x, alpha * q2.y, alpha * q2.z);
+	return Quaternion<T>(alpha * q2.GetS(), alpha * q2.GetX(), alpha * q2.GetY(), alpha * q2.GetZ());
 }
 
 template<typename T>
-std::ostream& operator<<(std::ostream& os, const Quaternion<T>& qua)
+std::ostream& operator<<(std::ostream& os, Quaternion<T>& qua)
 {
-	return os << "Quaternion(" << s << ", " << x << ", " << y << ", " << z << ")";
+	return os << "Quaternion(" << qua.GetS() << ", " << qua.GetX() << ", " << qua.GetY() << ", " << qua.GetZ() << ")";
 }

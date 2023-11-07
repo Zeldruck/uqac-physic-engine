@@ -14,7 +14,8 @@ public:
 	ForceDrag(float k1, float k2);
 
 	// apply simplified drag force
-	void UpdateForce(std::shared_ptr<PhysicsBody> physicBody, float deltaTime) override;
+	void UpdateForce(std::shared_ptr<Particle> particle, float deltaTime) override;
+	void UpdateForce(std::shared_ptr<Rigidbody> rigidBody, float deltaTime) override;
 
 	void SetDragCoefficients(float k1, float k2);
 };

@@ -1,32 +1,58 @@
 #include "Force/ForceSpring.hpp"
 #include "Particle.hpp"
+#include "Rigidbody.hpp"
 
-ForceSpring::ForceSpring(float k, float restLength, std::shared_ptr<PhysicsBody> otherEnd) :
+ForceSpring::ForceSpring(float k, float restLength, std::shared_ptr<Particle> otherEnd) :
 	m_k(k), 
 	m_restLength(restLength), 
-	m_otherEnd(otherEnd) 
+	m_otherParticle(otherEnd), 
+	m_otherRigidbody(nullptr)
 {
 }
 
-void ForceSpring::UpdateForce(std::shared_ptr<PhysicsBody> physicBody, float deltaTime)
+ForceSpring::ForceSpring(float k, float restLength, std::shared_ptr<Rigidbody> otherEnd) :
+	m_k(k),
+	m_restLength(restLength),
+	m_otherParticle(nullptr),
+	m_otherRigidbody(otherEnd)
 {
-	if (physicBody->mass < 1.0f)
+}
+
+void ForceSpring::UpdateForce(std::shared_ptr<Particle> particle, float deltaTime)
+{
+	if (particle->mass < 1.0f)
 		return;
 
 	// calculate the vector of the spring
-	Vector3f springVector = m_otherEnd->GetPosition() - physicBody->GetPosition();
+	Vector3f springVector = m_otherParticle->position - particle->position;
 
 	// calculate the magnitude of the spring
 	float magnitude = springVector.GetLength();
 
 	// calculate the final force and apply it
 	Vector3f force = -m_k * (magnitude - m_restLength) * springVector.GetNormalized();
-	physicBody->AddForce(force);
+	particle->AddForce(force);
 }
 
-void ForceSpring::SetOtherEnd(std::shared_ptr<PhysicsBody> otherEnd)
+void ForceSpring::UpdateForce(std::shared_ptr<Rigidbody> rigidbody, float deltaTime)
 {
-	m_otherEnd = otherEnd;
+	if (rigidbody->mass < 1.0f)
+		return;
+
+	// calculate the vector of the spring
+	Vector3f springVector = m_otherRigidbody->transform.position - rigidbody->transform.position;
+
+	// calculate the magnitude of the spring
+	float magnitude = springVector.GetLength();
+
+	// calculate the final force and apply it
+	Vector3f force = -m_k * (magnitude - m_restLength) * springVector.GetNormalized();
+	rigidbody->AddForce(force);
+}
+
+void ForceSpring::SetOtherEnd(std::shared_ptr<Particle> otherEnd)
+{
+	m_otherParticle = otherEnd;
 }
 
 void ForceSpring::SetSpringConstant(float k)

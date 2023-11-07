@@ -8,7 +8,7 @@
 class ParticleContact
 {
 public:
-	ParticleContact(std::vector<std::shared_ptr<PhysicsBody>>& particles, float restitution, float penetration, Vector3f contactNormal);
+	ParticleContact(std::vector<std::shared_ptr<Particle>>& particles, float restitution, float penetration, Vector3f contactNormal);
 
 	void Resolve(float duration);
 	float CalculateSeparatingVelocity();
@@ -19,7 +19,7 @@ private:
 
 
 public:
-	std::vector<std::shared_ptr<PhysicsBody>> particles;
+	std::vector<std::shared_ptr<Particle>> particles;
 
 	float restitution;
 	float penetration;

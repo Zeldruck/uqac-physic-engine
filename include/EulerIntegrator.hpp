@@ -3,16 +3,18 @@
 #include <vector>
 #include <memory>
 
-#include "PhysicsBody.hpp"
 #include "Vector3.hpp"
 #include "Constants/PhysicConstants.hpp"
+
+class Particle;
+class Rigidbody;
 
 class EulerIntegrator
 {
 public:
 	EulerIntegrator() = default;
 
-	void Update(std::vector<std::shared_ptr<PhysicsBody>>& particle, const float& deltaTime, bool isGravityEnabled = true);
+	void Update(std::vector<std::shared_ptr<Particle>>& particles, std::vector<std::shared_ptr<Rigidbody>> rigidbodies, const float& deltaTime, bool isGravityEnabled = true);
 private:
 	Vector3<float> g = Vector3<float>(0.0f, -GRAVITY, 0.0f);
 };

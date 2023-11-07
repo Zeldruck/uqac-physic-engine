@@ -2,13 +2,13 @@
 
 #include "Contact/ParticleLink.hpp"
 
-class PhysicsBody;
+class Particle;
+class Rigidbody;
 
 class ParticleCable : public ParticleLink
 {
 public:
-	ParticleCable(std::vector<std::shared_ptr<PhysicsBody>>& particles, float maxLength, float restitution);
-
+	ParticleCable(std::vector<std::shared_ptr<Particle>>& particles, float maxLength, float restitution);
 	void AddContact(std::vector<std::shared_ptr<ParticleContact>>& contact, unsigned int limit) override;
 
 public:

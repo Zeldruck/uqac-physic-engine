@@ -1,29 +1,79 @@
 #include "Rigidbody.hpp"
+#include "Constants/PhysicConstants.hpp"
 
 Rigidbody::Rigidbody()
-	: PhysicsBody("Rigidbody"),
+	:
 	transform(Transform()),
-	angularVelocity(0.0f, 0.0f, 0.0f),
-	angularAcceleration(0.0f, 0.0f, 0.0f),
-	momentOfInertia(0.0f, 0.0f, 0.0f)
+	velocity(Vector3f::Zero),
+	m_acceleration(Vector3f::Zero),
+	force(Vector3f::Zero),
+	angularVelocity(Vector3f::Zero),
+	m_angularAcceleration(Vector3f::Zero),
+	momentOfInertia(Vector3f::Zero),
+	mass(MIN_MASS)
 {
 }
 
 Rigidbody::Rigidbody(Transform transform, Vector3f velocity, Vector3f acceleration, float mass, Vector3f angularVelocity, Vector3f angularAcceleration, Vector3f momentOfInertia, std::string name)
-	: PhysicsBody(velocity, acceleration, mass, name),
+	:
 	transform(transform),
+	velocity(velocity),
+	m_acceleration(acceleration),
+	force(Vector3f::Zero),
+	mass(mass > MIN_MASS ? mass : MIN_MASS),
 	angularVelocity(angularVelocity),
-	angularAcceleration(angularAcceleration),
-	momentOfInertia(momentOfInertia)
+	m_angularAcceleration(angularAcceleration),
+	momentOfInertia(momentOfInertia),
+	name(name)
 {
 }
 
-Vector3f Rigidbody::GetPosition() const
+void Rigidbody::ClearForce()
 {
-	return transform.position;
+	force = Vector3f::Zero;
 }
 
-void Rigidbody::SetPosition(Vector3f newPosition)
+void Rigidbody::AddForce(const Vector3f& f)
 {
-	transform.position = newPosition;
+	force += f;
+}
+
+void Rigidbody::RemoveForce(const Vector3f& f)
+{
+	force -= f;
+}
+
+void Rigidbody::AddTorque(const Vector3f& t)
+{
+	torque += t;
+}
+
+void Rigidbody::RemoveTorque(const Vector3f& t)
+{
+	torque -= t;
+}
+
+Vector3f const Rigidbody::GetAcceleration()
+{
+	m_acceleration = force / mass;
+	return m_acceleration;
+}
+
+void Rigidbody::SetAcceleration(const Vector3f& acceleration)
+{
+	m_acceleration = acceleration;
+}
+
+Vector3f const Rigidbody::GetAngularAcceleration()
+{
+	if (momentOfInertia.x == 0.f && momentOfInertia.y == 0.f && momentOfInertia.z == 0.f)
+		return Vector3f::Zero;
+
+	m_angularAcceleration = torque / momentOfInertia;
+	return m_angularAcceleration;
+}
+
+void Rigidbody::SetAngularAcceleration(const Vector3f& acceleration)
+{
+	m_angularAcceleration = acceleration;
 }

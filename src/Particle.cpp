@@ -1,24 +1,49 @@
 #include "Particle.hpp"
 #include "Constants/PhysicConstants.hpp"
 
-Particle::Particle()
-    : PhysicsBody("Particle"),
-    position(0.0f, 0.0f, 0.0f)
+Particle::Particle() 
+	: 
+	position(Vector3f::Zero),
+	velocity(Vector3f::Zero),
+	m_acceleration(Vector3f::Zero),
+	mass(MIN_MASS),
+	name(std::string("Particle"))
 {
 }
 
 Particle::Particle(Vector3f position, Vector3f velocity, Vector3f acceleration, float mass, std::string name)
-    : PhysicsBody(velocity, acceleration, mass, name),
-	position(position)
+    :
+	position(position),
+	velocity(velocity),
+	m_acceleration(acceleration),
+	mass(mass > MIN_MASS ? mass : MIN_MASS),
+	name(name)
 {
 }
 
-Vector3f Particle::GetPosition() const
+void Particle::ClearForce()
 {
-	return position;
+	force = Vector3f::Zero;
 }
 
-void Particle::SetPosition(Vector3f newPosition)
+void Particle::AddForce(const Vector3f& f)
 {
-	position = newPosition;
+	force += f;
+}
+
+void Particle::RemoveForce(const Vector3f& f)
+{
+	force -= f;
+}
+
+Vector3f const Particle::GetAcceleration()
+{
+	m_acceleration = force / mass;
+	return m_acceleration;
+}
+
+Vector3f Particle::SetAcceleration(const Vector3f& acceleration)
+{
+	m_acceleration = acceleration;
+	return m_acceleration;
 }
