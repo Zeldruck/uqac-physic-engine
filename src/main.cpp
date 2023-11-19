@@ -40,6 +40,8 @@
 #include "Transform.hpp"
 #include "Quaternion.hpp"
 
+#include "Primitives/Sphere.hpp"
+
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 void MouseCallback(GLFWwindow* window, double xpos, double ypos);
 void ProcessInput(GLFWwindow* window, float deltaTime);
@@ -221,9 +223,17 @@ int main(int argc, char** argv)
 
     Shader ourShader("assets/shaders/test.vert", "assets/shaders/test.frag"); // To fix, so we can use real files for vert and frag shaders
 
+    GLuint vertexPosition_modelspaceID = glGetAttribLocation(ourShader.ID, "vertexPosition_modelspace");
+
     #pragma endregion
 
     #pragma region Model
+
+    Sphere sphere(0.f, 0.f);
+    sphere.Init(vertexPosition_modelspaceID);
+
+    glm::vec3 spherePosition = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 sphereRotation = glm::vec3(0.0f, 0.0f, 0.0f);
 
     // Set up vertex data (and buffer(s)) and configure vertex attributes
     float vertices[] = {
@@ -366,9 +376,16 @@ int main(int argc, char** argv)
         cubePositions[2] = glm::vec3(particle3->position.x, particle3->position.y, particle3->position.z);
         cubePositions[3] = glm::vec3(particle4->position.x, particle4->position.y, particle4->position.z);
         //cubePositions[0] = glm::vec3(rigidbody->transform.position.x, rigidbody->transform.position.y, rigidbody->transform.position.z);
-        cubePositions[1] = glm::vec3(rigidbody2Box->transform.position.x, rigidbody2Box->transform.position.y, rigidbody2Box->transform.position.z);
+        /*cubePositions[1] = glm::vec3(rigidbody2Box->transform.position.x, rigidbody2Box->transform.position.y, rigidbody2Box->transform.position.z);
         
-        cubeRotations[1] = glm::vec3(rigidbody2Box->transform.rotation.GetX(), rigidbody2Box->transform.rotation.GetY(), rigidbody2Box->transform.rotation.GetZ());
+        cubeRotations[1] = glm::vec3(rigidbody2Box->transform.rotation.GetX(), rigidbody2Box->transform.rotation.GetY(), rigidbody2Box->transform.rotation.GetZ());*/
+
+
+        spherePosition = glm::vec3(rigidbody2Box->transform.position.x, rigidbody2Box->transform.position.y, rigidbody2Box->transform.position.z);
+        sphereRotation = glm::vec3(rigidbody2Box->transform.rotation.GetX(), rigidbody2Box->transform.rotation.GetY(), rigidbody2Box->transform.rotation.GetZ());
+        sphere.Draw();
+
+
         // render boxes
         glBindVertexArray(VAO);
         for (unsigned int i = 0; i <= cubePositions->length(); i++)
