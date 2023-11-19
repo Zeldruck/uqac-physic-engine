@@ -91,8 +91,8 @@ int main(int argc, char** argv)
     std::shared_ptr<Particle> particle3 = std::make_shared<Particle>(Vector3f(5.0f, 10.f, 0.0f), Vector3f::Zero, Vector3f::Zero, 1.f, "Particle3");
     std::shared_ptr<Particle> particle4 = std::make_shared<Particle>(Vector3f(-5.0f, 10.0f, 0.0f), Vector3f::Zero, Vector3f::Zero, 1.f, "Particle4");
 
-    std::shared_ptr<Rigidbody> rigidbody = std::make_shared<Rigidbody>(Transform(), Vector3f::Zero, Vector3f::Zero, 1.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody");
-    std::shared_ptr<Rigidbody> rigidbody2 = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(0.f,0.f,0.f,0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 1.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody2");
+    //std::shared_ptr<Rigidbody> rigidbody = std::make_shared<Rigidbody>(Transform(), Vector3f::Zero, Vector3f::Zero, 100.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody");
+    std::shared_ptr<Rigidbody> rigidbody2 = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(0.f,0.f,45.f,0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 100.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody2");
 
     std::shared_ptr<ForceGravity> forceGravity = std::make_shared<ForceGravity>();
     
@@ -126,8 +126,7 @@ int main(int argc, char** argv)
     //physics.AddParticle(particle3);
     //physics.AddParticle(particle4);
     
-    physics.AddRigidbody(rigidbody);
-    
+    //physics.AddRigidbody(rigidbody);
     physics.AddRigidbody(rigidbody2);
 
     //forceRegistry->Add(particle, forceSpring41);
@@ -153,6 +152,7 @@ int main(int argc, char** argv)
     //
     //forceRegistry->Add(rigidbody, weakForceDrag);
     forceRegistry->Add(rigidbody2, weakForceDrag);
+
     #pragma endregion
 
     // Game variables
@@ -264,6 +264,17 @@ int main(int argc, char** argv)
     glm::vec3(0.0f, -10.0f, 0.0f)
     };
 
+    // Cube rotation in Degrees
+    glm::vec3 cubeRotations[] =
+    {
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(0.0f, 45.0f, 0.0f),
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(0.0f, 0.0f, 0.0f),
+    };
+
     unsigned int VBO, VAO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -339,15 +350,24 @@ int main(int argc, char** argv)
         cubePositions[5] = glm::vec3(particle2->position.x, particle2->position.y, particle2->position.z);
         cubePositions[2] = glm::vec3(particle3->position.x, particle3->position.y, particle3->position.z);
         cubePositions[3] = glm::vec3(particle4->position.x, particle4->position.y, particle4->position.z);
-        cubePositions[0] = glm::vec3(rigidbody->transform.position.x, rigidbody->transform.position.y, rigidbody->transform.position.z);
+        //cubePositions[0] = glm::vec3(rigidbody->transform.position.x, rigidbody->transform.position.y, rigidbody->transform.position.z);
         cubePositions[1] = glm::vec3(rigidbody2->transform.position.x, rigidbody2->transform.position.y, rigidbody2->transform.position.z);
         
+        cubeRotations[1] = glm::vec3(rigidbody2->transform.rotation.GetX(), rigidbody2->transform.rotation.GetY(), rigidbody2->transform.rotation.GetZ());
         // render boxes
         glBindVertexArray(VAO);
         for (unsigned int i = 0; i <= cubePositions->length(); i++)
         {
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
+
+            // rotation on X Axis
+            model = glm::rotate(model, glm::radians(cubeRotations[i].x), glm::vec3(1.0f, 0.0f, 0.0f));
+            // rotation on Y Axis
+            model = glm::rotate(model, glm::radians(cubeRotations[i].y), glm::vec3(0.0f, 1.0f, 0.0f));
+            // rotation on Z Axis
+            model = glm::rotate(model, glm::radians(cubeRotations[i].z), glm::vec3(0.0f, 0.0f, 1.0f));
+
             ourShader.SetMat4("model", model);
 
             glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -370,17 +390,27 @@ int main(int argc, char** argv)
         ImGui::Text("Particle acceleration: (%f, %f, %f)", particle2->GetAcceleration().x, particle2->GetAcceleration().y, particle2->GetAcceleration().z);
         ImGui::Text("Particle mass: %f", particle2->mass);
 
-        ImGui::Text("Rigidbody name: %s", rigidbody->name.c_str());
-        ImGui::Text("Rigidbody position: (%f, %f, %f)", rigidbody->transform.position.x, rigidbody->transform.position.y, rigidbody->transform.position.z);
-        ImGui::Text("Rigidbody velocity: (%f, %f, %f)", rigidbody->velocity.x, rigidbody->velocity.y, rigidbody->velocity.z);
-        ImGui::Text("Rigidbody acceleration: (%f, %f, %f)", rigidbody->GetAcceleration().x, rigidbody->GetAcceleration().y, rigidbody->GetAcceleration().z);
-        ImGui::Text("Rigidbody mass: %f", rigidbody->mass);
+        //ImGui::Text("%s", rigidbody->name.c_str());
+        //ImGui::Text("Rigidbody position: (%f, %f, %f)", rigidbody->transform.position.x, rigidbody->transform.position.y, rigidbody->transform.position.z);
+        //ImGui::Text("Rigidbody velocity: (%f, %f, %f)", rigidbody->velocity.x, rigidbody->velocity.y, rigidbody->velocity.z);
+        //ImGui::Text("Rigidbody acceleration: (%f, %f, %f)", rigidbody->GetAcceleration().x, rigidbody->GetAcceleration().y, rigidbody->GetAcceleration().z);
+        //ImGui::Text("Rigidbody mass: %f", rigidbody->mass);
 
-        ImGui::Text("Rigidbody name: %s", rigidbody2->name.c_str());
-        ImGui::Text("Rigidbody position: (%f, %f, %f)", rigidbody2->transform.position.x, rigidbody2->transform.position.y, rigidbody2->transform.position.z);
-        ImGui::Text("Rigidbody velocity: (%f, %f, %f)", rigidbody2->velocity.x, rigidbody2->velocity.y, rigidbody2->velocity.z);
-        ImGui::Text("Rigidbody acceleration: (%f, %f, %f)", rigidbody2->GetAcceleration().x, rigidbody2->GetAcceleration().y, rigidbody2->GetAcceleration().z);
-        ImGui::Text("Rigidbody mass: %f", rigidbody2->mass);
+        ImGui::Text("%s", rigidbody2->name.c_str());
+        ImGui::Text("%s position: (%f, %f, %f)", rigidbody2->name.c_str(), rigidbody2->transform.position.x, rigidbody2->transform.position.y, rigidbody2->transform.position.z);
+        ImGui::Text("%s velocity: (%f, %f, %f)", rigidbody2->name.c_str(), rigidbody2->velocity.x, rigidbody2->velocity.y, rigidbody2->velocity.z);
+        ImGui::Text("%s acceleration: (%f, %f, %f)", rigidbody2->name.c_str(), rigidbody2->GetAcceleration().x, rigidbody2->GetAcceleration().y, rigidbody2->GetAcceleration().z);
+        ImGui::Text("%s mass: %f", rigidbody2->name.c_str(), rigidbody2->mass);
+        ImGui::Text("%s rotation: (%f, %f, %f)", rigidbody2->name.c_str(), rigidbody2->transform.rotation.GetX(), rigidbody2->transform.rotation.GetY(), rigidbody2->transform.rotation.GetZ());
+        ImGui::Text("%s angular velocity: (%f, %f, %f)", rigidbody2->name.c_str(), rigidbody2->angularVelocity.x, rigidbody2->angularVelocity.y, rigidbody2->angularVelocity.z);
+        ImGui::Text("%s angular acceleration: (%f, %f, %f)", rigidbody2->name.c_str(), rigidbody2->GetAngularAcceleration().x, rigidbody2->GetAngularAcceleration().y, rigidbody2->GetAngularAcceleration().z);
+        ImGui::Text("%s inverseMass: %f", rigidbody2->name.c_str(), rigidbody2->inverseMass);
+        ImGui::Text("%s transformMatrix:\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f", 
+            rigidbody2->name.c_str(), 
+            rigidbody2->transformMatrix.Value(0, 0), rigidbody2->transformMatrix.Value(0, 1), rigidbody2->transformMatrix.Value(0, 2), rigidbody2->transformMatrix.Value(0, 3),
+            rigidbody2->transformMatrix.Value(1, 0), rigidbody2->transformMatrix.Value(1, 1), rigidbody2->transformMatrix.Value(1, 2), rigidbody2->transformMatrix.Value(1, 3),
+            rigidbody2->transformMatrix.Value(2, 0), rigidbody2->transformMatrix.Value(2, 1), rigidbody2->transformMatrix.Value(2, 2), rigidbody2->transformMatrix.Value(2, 3),
+            rigidbody2->transformMatrix.Value(3, 0), rigidbody2->transformMatrix.Value(3, 1), rigidbody2->transformMatrix.Value(3, 2), rigidbody2->transformMatrix.Value(3, 3));
         ImGui::End();
 
         imguiCpp.Render(); // Draw the imgui frame

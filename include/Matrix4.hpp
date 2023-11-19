@@ -3,6 +3,7 @@
 #include <Vector2.hpp>
 #include <Vector3.hpp>
 #include <Vector4.hpp>
+#include <Matrix3.hpp>
 #include <array>
 #include <ostream>
 
@@ -33,7 +34,11 @@ public:
 	static Matrix4 RotateAroundY(float degreeAngle);
 	static Matrix4 RotateAroundZ(float degreeAngle);
 	static Matrix4 Scale(const Vector3<T>& scale);
+	//static Matrix4 Rotate(Quaternion<T> rotation);
 	static Matrix4 Translate(const Vector3<T>& translation);
+
+	void SetSubmatrix3(std::size_t startRow, std::size_t startCol, const Matrix3<T>& submatrix);
+	Matrix3<T> GetSubmatrix3(std::size_t startRow, std::size_t startCol);
 
 private:
 	std::array<T, 4 * 4> m_values;

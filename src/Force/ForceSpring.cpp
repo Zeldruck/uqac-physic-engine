@@ -24,13 +24,17 @@ void ForceSpring::UpdateForce(std::shared_ptr<Particle> particle, float deltaTim
 		return;
 
 	// calculate the vector of the spring
-	Vector3f springVector = m_otherParticle->position - particle->position;
+	Vector3f force = m_otherParticle->position - particle->position;
 
 	// calculate the magnitude of the spring
-	float magnitude = springVector.GetLength();
+	float magnitude = force.GetLength();
+	magnitude = std::abs(magnitude - m_restLength);
+	magnitude *= m_k;
 
-	// calculate the final force and apply it
-	Vector3f force = -m_k * (magnitude - m_restLength) * springVector.GetNormalized();
+	// calculate final force and apply it
+	force.Normalize();
+	force *= -magnitude;
+
 	particle->AddForce(force);
 }
 
@@ -39,15 +43,23 @@ void ForceSpring::UpdateForce(std::shared_ptr<Rigidbody> rigidbody, float deltaT
 	if (rigidbody->mass < 1.0f)
 		return;
 
-	// calculate the vector of the spring
-	Vector3f springVector = m_otherRigidbody->transform.position - rigidbody->transform.position;
+	// calculate local to world space point
+	Vector3f localInWorldSpace = rigidbody->GetPointInWorldSpace(connectionPoint);
+	Vector3f otherInWorldSpace = rigidbody->GetPointInWorldSpace(otherConnectionPoint);
+
+	// calculate the force of the spring
+	Vector3f force = localInWorldSpace - otherInWorldSpace;
 
 	// calculate the magnitude of the spring
-	float magnitude = springVector.GetLength();
+	float magnitude = force.GetLength();
+	magnitude = std::abs(magnitude - m_restLength);
+	magnitude *= m_k;
+	
+	// calculate final force and apply it
+	force.Normalize();
+	force *= -magnitude;
 
-	// calculate the final force and apply it
-	Vector3f force = -m_k * (magnitude - m_restLength) * springVector.GetNormalized();
-	rigidbody->AddForce(force);
+	rigidbody->AddForceAtPoint(force, localInWorldSpace);
 }
 
 void ForceSpring::SetOtherEnd(std::shared_ptr<Particle> otherEnd)

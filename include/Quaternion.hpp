@@ -2,6 +2,7 @@
 
 #include "Vector3.hpp"
 #include "Matrix3.hpp"
+#include "Matrix4.hpp"
 #include <cmath>
 #include <ostream>
 
@@ -46,11 +47,16 @@ public:
 	T Norm();
 	T Norm2();
 
-	void Quaternion2Matrix(Matrix3f& R);
+	void QuaternionToMatrix(Matrix3f& R);
+	void QuaternionToMatrix4(Matrix4<T>& R);
 
 	void GetRotation(T& angle, Vector3<T> unitAxis);
 
 	void GetSinExponential(T& x, T& y, T& z);
+
+	void RotateByVector(const Vector3<T>& v);
+
+	void AddScaleVector(const Vector3<T>& v, T scale);
 
 protected:
 	T s, x, y, z;

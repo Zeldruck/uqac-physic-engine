@@ -31,6 +31,8 @@ struct Vector3
 
 	static float DotProduct(const Vector3& vecA, const Vector3& vecB);
 	static Vector3 CrossProduct(const Vector3& vecA, const Vector3& vecB);
+	
+	Vector3 Cross(const Vector3<T>& vecB) const;
 
 	static const Vector3 Zero;
 	static const Vector3 One;

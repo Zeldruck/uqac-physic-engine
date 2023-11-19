@@ -105,6 +105,28 @@ Vector2<T> Matrix3<T>::operator*(const Vector2<T>& vec) const
 }
 
 template<typename T>
+Vector3<T> Matrix3<T>::operator*(const Vector3<T>& vec) const
+{
+	Vector3<T> result;
+	result.x = Value(0, 0) * vec.x + Value(0, 1) * vec.y + Value(0, 2) * vec.z;
+	result.y = Value(1, 0) * vec.x + Value(1, 1) * vec.y + Value(1, 2) * vec.z;
+	result.z = Value(2, 0) * vec.z + Value(2, 1) * vec.y + Value(2, 2) * vec.z;
+
+	return result;
+}
+
+template<typename T>
+Vector4<T> Matrix3<T>::operator*(const Vector4<T>& vec) const
+{
+	Vector4<T> result;
+	result.x = Value(0, 0) * vec.x + Value(0, 1) * vec.y + Value(0, 2) * vec.z;
+	result.y = Value(1, 0) * vec.x + Value(1, 1) * vec.y + Value(1, 2) * vec.z;
+	result.z = Value(2, 0) * vec.z + Value(2, 1) * vec.y + Value(2, 2) * vec.z;
+
+	return result;
+}
+
+template<typename T>
 Matrix3<T> Matrix3<T>::Identity()
 {
 	return Matrix3({

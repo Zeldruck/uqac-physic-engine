@@ -1,6 +1,8 @@
 #pragma once
 
 #include <Vector2.hpp>
+#include <Vector3.hpp>
+#include <Vector4.hpp>
 #include <array>
 #include <ostream>
 
@@ -25,6 +27,8 @@ public:
 
 	Matrix3 operator*(const Matrix3& rhs) const;
 	Vector2<T> operator*(const Vector2<T>& vec) const;
+	Vector3<T> operator*(const Vector3<T>& vec) const;
+	Vector4<T> operator*(const Vector4<T>& vec) const;
 
 	static Matrix3 Identity();
 	static Matrix3 Rotate(float degreeAngle);

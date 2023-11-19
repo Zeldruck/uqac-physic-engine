@@ -47,4 +47,9 @@ void ForceRegistry::UpdateForces(float deltaTime)
 	{
 		entry.forceGenerator->UpdateForce(entry.particle, deltaTime);
 	}
+
+	for (auto& entry : m_registryRigidbody)
+	{
+		entry.forceGenerator->UpdateForce(entry.rigidbody, deltaTime);
+	}
 }

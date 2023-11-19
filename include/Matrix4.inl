@@ -62,7 +62,7 @@ Matrix4<T> Matrix4<T>::Inverse() const
 template<typename T>
 Matrix4<T> Matrix4<T>::Transpose() const
 {
-	Matrix3 mat;
+	Matrix4<T> mat;
 	for (std::size_t i = 0; i < 4; ++i)
 	{
 		for (std::size_t j = 0; j < 4; ++j)
@@ -212,6 +212,22 @@ Matrix4<T> Matrix4<T>::Scale(const Vector3<T>& scale)
 		});
 }
 
+//template<typename T>
+//Matrix4<T> Matrix4<T>::Rotate(const Quaternion<T>& rotation)
+//{
+//	T s = rotation.GetS();
+//	T x = rotation.GetX();
+//	T y = rotation.GetY(); 
+//	T z = rotation.GetZ();
+//
+//	return Matrix4({
+//		1.0f - 2.0f * y * y - 2.0f * z * z,    2.0f * x * y + 2.0f * s * z,    2.0f * x * z - 2.0f * s * y,     0.0f,
+//		2.0f * x * y - 2.0f * s * z,     1.0f - 2.0f * x * x - 2.0f * z * z, 2.0f * y * z + 2.0f * s * x,     0.0f,
+//		2.0f * x * z + 2.0f * s * y,     2.0f * y * z - 2.0f * s * x,     1.0f - 2.0f * x * x - 2.0f * y * y, 0.0f,
+//		0.0f,                         0.0f,                         0.0f,                         1.0f
+//		});
+//}
+
 template<typename T>
 Matrix4<T> Matrix4<T>::Translate(const Vector3<T>& translation)
 {
@@ -230,4 +246,30 @@ std::ostream& operator<<(std::ostream& os, const Matrix4<T>& mat)
 		<< "        " << mat.Value(1, 0) << ", " << mat.Value(1, 1) << ", " << mat.Value(1, 2) << ", " << mat.Value(1, 3) << "\n"
 		<< "        " << mat.Value(2, 0) << ", " << mat.Value(2, 1) << ", " << mat.Value(2, 2) << ", " << mat.Value(2, 3) << "\n"
 		<< "        " << mat.Value(3, 0) << ", " << mat.Value(3, 1) << ", " << mat.Value(3, 2) << ", " << mat.Value(3, 3) << ")";
+}
+
+template<typename T>
+void Matrix4<T>::SetSubmatrix3(std::size_t startRow, std::size_t startCol, const Matrix3<T>& submatrix)
+{
+	for (std::size_t i = 0; i < 3; i++) 
+	{
+		for (std::size_t j = 0; j < 3; j++)
+		{
+			Value(i, j) = submatrix(i, j);
+		}
+	}
+}
+
+template<typename T>
+Matrix3<T> Matrix4<T>::GetSubmatrix3(std::size_t startRow, std::size_t startCol)
+{
+	Matrix3<T> submatrix;
+	for (std::size_t i = 0; i < 3; i++)
+	{
+		for (std::size_t j = 0; j < 3; j++)
+		{
+			submatrix(i, j) = Value(startRow + i, startCol + j);
+		}
+	}
+	return submatrix;
 }

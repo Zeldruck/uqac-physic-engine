@@ -202,11 +202,20 @@ Quaternion<T> Quaternion<T>::conj()
 }
 
 template <typename T>
-void Quaternion<T>::Quaternion2Matrix(Matrix3f& R)
+void Quaternion<T>::QuaternionToMatrix(Matrix3f& R)
 {
 	R[0] = 1 - 2 * y * y - 2 * z * z; R[1] = 2 * x * y - 2 * s * z;     R[2] = 2 * x * z + 2 * s * y;
 	R[3] = 2 * x * y + 2 * s * z;     R[4] = 1 - 2 * x * x - 2 * z * z; R[5] = 2 * y * z - 2 * s * x;
 	R[6] = 2 * x * z - 2 * s * y;     R[7] = 2 * y * z + 2 * s * x;     R[8] = 1 - 2 * x * x - 2 * y * y;
+}
+
+template <typename T>
+void Quaternion<T>::QuaternionToMatrix4(Matrix4<T>& R)
+{
+	R.Value(0, 0) = 1 - 2 * y * y - 2 * z * z; R.Value(0, 1) = 2 * x * y - 2 * s * z;     R.Value(0, 2) = 2 * x * z + 2 * s * y;	R.Value(0, 3) = 0.0f;
+	R.Value(1, 0) = 2 * x * y + 2 * s * z;     R.Value(1, 1) = 1 - 2 * x * x - 2 * z * z; R.Value(1, 2) = 2 * y * z - 2 * s * x;	R.Value(1, 3) = 0.0f;
+	R.Value(2, 0) = 2 * x * z - 2 * s * y;     R.Value(2, 1) = 2 * y * z + 2 * s * x;     R.Value(2, 2) = 1 - 2 * x * x - 2 * y * y;	R.Value(2, 3) = 0.0f;
+	R.Value(3, 0) = 0;                         R.Value(3, 1) = 0;						  R.Value(3, 2) = 0.0f;						R.Value(3, 3) = 1.0f;
 }
 
 template <typename T>
@@ -278,4 +287,22 @@ template<typename T>
 std::ostream& operator<<(std::ostream& os, Quaternion<T>& qua)
 {
 	return os << "Quaternion(" << qua.GetS() << ", " << qua.GetX() << ", " << qua.GetY() << ", " << qua.GetZ() << ")";
+}
+
+template<typename T>
+void Quaternion<T>::RotateByVector(const Vector3<T>& v)
+{
+	Quaternion<T> q(0, v.x, v.y, v.z);
+	(*this) *= q;
+}
+
+template<typename T>
+void Quaternion<T>::AddScaleVector(const Vector3<T>& v, T scale)
+{
+	Quaternion<T> q(0, v.x * scale, v.y * scale, v.z * scale);
+	q *= (*this);
+	s += q.s * ((T)0.5);
+	x += q.x * ((T)0.5);
+	y += q.y * ((T)0.5);
+	z += q.z * ((T)0.5);
 }

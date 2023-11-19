@@ -161,6 +161,13 @@ Vector3<T> Vector3<T>::CrossProduct(const Vector3& vecA, const Vector3& vecB)
 }
 
 template<typename T>
+Vector3<T> Vector3<T>::Cross(const Vector3<T>& vecB) const
+{
+	return CrossProduct(*this, vecB);
+}
+
+
+template<typename T>
 Vector3<T> operator*(T value, const Vector3<T>& vec)
 {
 	return Vector3{ vec.x * value, vec.y * value, vec.z * value };

@@ -13,12 +13,16 @@ PhysicsSystem::PhysicsSystem(std::shared_ptr<ForceRegistry> forceRegistry) :
 
 void PhysicsSystem::Update(float deltaTime, bool isGravityEnabled)
 {
-	// Clear force in all particles
-	for (std::shared_ptr<Particle> particle : m_particles)
+	for (auto& particle : m_particles)
 	{
 		particle->ClearForce();
 	}
-
+	for (auto& rigidbody : m_rigidbodies)
+	{
+		rigidbody->ClearForce();
+		rigidbody->ClearTorque();
+	
+	}
 	// Mise à jour des forces
 	m_forceRegistry->UpdateForces(deltaTime);
 
@@ -54,6 +58,23 @@ void PhysicsSystem::RemoveParticle(std::shared_ptr<Particle> particle)
 	}
 }
 
+void PhysicsSystem::AddRigidbody(std::shared_ptr<Rigidbody> rigidbody)
+{
+	m_rigidbodies.push_back(rigidbody);
+}
+
+void PhysicsSystem::RemoveRigidbody(std::shared_ptr<Rigidbody> rigidbody)
+{
+	for (auto it = m_rigidbodies.begin(); it != m_rigidbodies.end(); ++it)
+	{
+		if (*it == rigidbody)
+		{
+			m_rigidbodies.erase(it);
+			return;
+		}
+	}
+}
+
 void PhysicsSystem::PrintParticles()
 {
 	for (const std::shared_ptr<Particle> particle : m_particles)
@@ -78,23 +99,5 @@ void PhysicsSystem::PrintRigidbodies()
 		std::cout << rigidbody->name << " torque" << rigidbody->torque << std::endl;
 		std::cout << rigidbody->name << " mass"	 << rigidbody->mass << std::endl;
 		std::cout << rigidbody->name << " force" << rigidbody->force << std::endl;
-		std::cout << rigidbody->name << " momentOfInertia" << rigidbody->momentOfInertia << std::endl;
-	}
-}
-
-void PhysicsSystem::AddRigidbody(std::shared_ptr<Rigidbody> rigidbody)
-{
-	m_rigidbodies.push_back(rigidbody);
-}
-
-void PhysicsSystem::RemoveRigidbody(std::shared_ptr<Rigidbody> rigidbody)
-{
-	for (auto it = m_rigidbodies.begin(); it != m_rigidbodies.end(); ++it)
-	{
-		if (*it == rigidbody)
-		{
-			m_rigidbodies.erase(it);
-			return;
-		}
 	}
 }

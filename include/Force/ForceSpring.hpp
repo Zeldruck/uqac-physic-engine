@@ -15,6 +15,9 @@ private:
 	// other end of spring rigidbody
 	std::shared_ptr<Rigidbody> m_otherRigidbody;
 
+	Vector3f connectionPoint;
+	Vector3f otherConnectionPoint;
+
 
 public:
 	ForceSpring(float k, float restLength, std::shared_ptr<Particle> otherEnd);
