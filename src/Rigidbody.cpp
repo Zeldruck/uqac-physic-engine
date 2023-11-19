@@ -199,10 +199,9 @@ Matrix3f Rigidbody::GetSphereInertiaTensorLocal()
 
 Matrix3f Rigidbody::GetSphereInertiaTensorWorld()
 {
-	Matrix3f inertiaTensorLocal = GetSphereInertiaTensorLocal();
-
-	return inertiaTensorLocal;
-
+	inertiaTensor = GetSphereInertiaTensorLocal();
+	CalculateInverseInertiaTensor();
+	return GetInertiaTensorWorld();
 }
 
 void Rigidbody::SetInertiaTensor(const Matrix3f& _inertiaTensor)
@@ -343,6 +342,7 @@ void Rigidbody::CalculateProductOfInertia()
 			float y2 = massPoints[j].y;
 			float z2 = massPoints[j].z;
 
+			// TO DO: change mass1 and mass 2 to take the mass of point on rigidbody
 			float mass1 = 1.0f;
 			float mass2 = 1.0f;
 
