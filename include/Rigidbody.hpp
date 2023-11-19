@@ -5,6 +5,8 @@
 #include "Matrix3.hpp"
 #include <vector>
 
+class Particle;
+
 // TO REMOVE LATER
 enum RigidbodyType
 {
@@ -17,7 +19,7 @@ class Rigidbody
 {
 public:
 	Rigidbody();
-	Rigidbody(Transform transform, Vector3f velocity, Vector3f acceleration, float mass, Vector3f angularVelocity, Vector3f angularAcceleration, Vector3f momentOfInertia, std::string name, RigidbodyType type);
+	Rigidbody(Transform transform, Vector3f velocity, Vector3f acceleration, float mass, Vector3f angularVelocity, Vector3f angularAcceleration, Vector3f momentOfInertia, std::string name, RigidbodyType type, std::vector<Particle> massPoints = std::vector<Particle>());
 
 	std::string name;
 	RigidbodyType type;
@@ -26,11 +28,13 @@ public:
 	Vector3f force;
 	Vector3f angularVelocity;
 	Vector3f torque;
+	Vector3f centerOfMass;
 	float mass;
 	float inverseMass;
 	
-	std::vector<Vector3f> massPoints;
-	void CalculateProductOfInertia();
+	std::vector<Particle> massPoints;
+	void CalculateInertiaMatrix();
+	void CalculateCenterOfMass();
 
 	Matrix4f transformMatrix;
 	Matrix3f inertiaTensor;

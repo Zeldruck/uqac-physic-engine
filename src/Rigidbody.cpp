@@ -4,6 +4,7 @@
 #include "Matrix4.hpp"
 #include "Matrix3.hpp"
 #include "Quaternion.hpp"
+#include "Particle.hpp"
 
 Rigidbody::Rigidbody()
 	:
@@ -16,12 +17,14 @@ Rigidbody::Rigidbody()
 	inertiaTensor(GetBoxInertiaTensorLocal()),
 	mass(MIN_MASS),
 	inverseMass(1.0f / MIN_MASS),
-	type(RigidbodyType::BOX)
+	type(RigidbodyType::BOX),
+	massPoints(std::vector<Particle>())
 {
 	CalculateDerivedData();
+	CalculateCenterOfMass();
 }
 
-Rigidbody::Rigidbody(Transform transform, Vector3f velocity, Vector3f acceleration, float mass, Vector3f angularVelocity, Vector3f angularAcceleration, Vector3f momentOfInertia, std::string name, RigidbodyType type)
+Rigidbody::Rigidbody(Transform transform, Vector3f velocity, Vector3f acceleration, float mass, Vector3f angularVelocity, Vector3f angularAcceleration, Vector3f momentOfInertia, std::string name, RigidbodyType type, std::vector<Particle> massPoints /*= std::vector<Particle>()*/)
 	:
 	transform(transform),
 	velocity(velocity),
@@ -32,9 +35,11 @@ Rigidbody::Rigidbody(Transform transform, Vector3f velocity, Vector3f accelerati
 	m_angularAcceleration(angularAcceleration),
 	inertiaTensor(GetBoxInertiaTensorLocal()),
 	name(name),
-	type(type)
+	type(type),
+	massPoints(std::vector<Particle>())
 {
 	CalculateDerivedData();
+	CalculateCenterOfMass();
 	inverseMass = 1.0f / mass;
 }
 
@@ -185,16 +190,15 @@ Matrix3f Rigidbody::GetBoxInertiaTensorWorld()
 
 Matrix3f Rigidbody::GetSphereInertiaTensorLocal()
 {
-		float mass = this->mass;
-		float radius = transform.scale.x;
+	float radius = transform.scale.x;
 
-		float I = (2.0f / 5.0f) * (mass * radius * radius);
+	float I = (2.0f / 5.0f) * (mass * radius * radius);
 
-		return Matrix3f({
-			I, 0.0f, 0.0f,
-			0.0f, I, 0.0f,
-			0.0f, 0.0f, I
-			});
+	return Matrix3f({
+		I, 0.0f, 0.0f,
+		0.0f, I, 0.0f,
+		0.0f, 0.0f, I
+		});
 }
 
 Matrix3f Rigidbody::GetSphereInertiaTensorWorld()
@@ -324,31 +328,54 @@ Matrix3f Rigidbody::GetInertiaTensorWorld()
 	return iitWorld;
 }
 
-void Rigidbody::CalculateProductOfInertia()
+void Rigidbody::CalculateInertiaMatrix()
 {
+	float Ixx = 0.0f;
+	float Iyy = 0.0f;
+	float Izz = 0.0f;
 	float Ixy = 0.0f;
 	float Ixz = 0.0f;
 	float Iyz = 0.0f;
 
-	for (std::size_t i = 0; i < massPoints.size(); i++) 
+	//// Calculate the product of inertia components
+	//for (const Particle& massPoint : massPoints) {
+	//	double x = massPoint.position.x;
+	//	double y = massPoint.position.y;
+	//	double z = massPoint.position.z;
+	//	double m = massPoint.mass;
+
+	//	// Update the matrix components
+	//	inertiaMatrix[0][0] += m * (y * y + z * z);
+	//	inertiaMatrix[0][1] -= m * (x * y);
+	//	inertiaMatrix[0][2] -= m * (x * z);
+	//	inertiaMatrix[1][0] -= m * (x * y);
+	//	inertiaMatrix[1][1] += m * (x * x + z * z);
+	//	inertiaMatrix[1][2] -= m * (y * z);
+	//	inertiaMatrix[2][0] -= m * (x * z);
+	//	inertiaMatrix[2][1] -= m * (y * z);
+	//	inertiaMatrix[2][2] += m * (x * x + y * y);
+	//}
+
+	//return inertiaMatrix;
+}
+
+void Rigidbody::CalculateCenterOfMass()
+{
+	float totalMass = 0.0f;
+	Vector3f totalPosition = Vector3f::Zero;
+
+	for (const Particle& massPoint : massPoints) 
 	{
-		for (std::size_t j = i + 1; j < massPoints.size(); j++) 
-		{
-			float x1 = massPoints[i].x;
-			float y1 = massPoints[i].y;
-			float z1 = massPoints[i].z;
+		totalMass += massPoint.mass;
+		totalPosition += massPoint.position;
+	}
 
-			float x2 = massPoints[j].x;
-			float y2 = massPoints[j].y;
-			float z2 = massPoints[j].z;
-
-			// TO DO: change mass1 and mass 2 to take the mass of point on rigidbody
-			float mass1 = 1.0f;
-			float mass2 = 1.0f;
-
-			Ixy += (y1 * y2 + z1 * z2) * mass1 * mass2;
-			Ixz += (x1 * x2 + z1 * z2) * mass1 * mass2;
-			Iyz += (x1 * x2 + y1 * y2) * mass1 * mass2;
-		}
+	if (totalMass != 0.0f) 
+	{
+		centerOfMass = (totalMass * totalPosition) / mass;
+	}
+	else
+	{
+		centerOfMass = Vector3f::Zero;
 	}
 }
