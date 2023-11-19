@@ -7,7 +7,8 @@
 template <typename T>
 Quaternion<T>::Quaternion()
 {
-	s = x = y = z = 0;
+	x = y = z = 0;
+	s = 1;
 }
 
 template <typename T>

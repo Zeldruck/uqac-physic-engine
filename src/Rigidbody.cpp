@@ -13,9 +13,9 @@ Rigidbody::Rigidbody()
 	force(Vector3f::Zero),
 	angularVelocity(Vector3f::Zero),
 	m_angularAcceleration(Vector3f::Zero),
-	//momentOfInertia(Vector3f::Zero),
-	inertiaTensor(GetBoxInertiaTensorWorld()),
-	mass(MIN_MASS)
+	inertiaTensor(GetBoxInertiaTensorLocal()),
+	mass(MIN_MASS),
+	inverseMass(1.0f / MIN_MASS)
 {
 	CalculateDerivedData();
 }
@@ -29,11 +29,11 @@ Rigidbody::Rigidbody(Transform transform, Vector3f velocity, Vector3f accelerati
 	mass(mass > MIN_MASS ? mass : MIN_MASS),
 	angularVelocity(angularVelocity),
 	m_angularAcceleration(angularAcceleration),
-	//momentOfInertia(momentOfInertia),
-	inertiaTensor(GetBoxInertiaTensorWorld()),
+	inertiaTensor(GetBoxInertiaTensorLocal()),
 	name(name)
 {
 	CalculateDerivedData();
+	inverseMass = 1.0f / mass;
 }
 
 void Rigidbody::ClearForce()
@@ -61,15 +61,15 @@ Vector3f Rigidbody::GetPointInWorldSpace(const Vector3f& point)
 	return transformMatrix * point;
 }
 
-//void Rigidbody::AddTorque(const Vector3f& t)
-//{
-//	torque += t;
-//}
-//
-//void Rigidbody::RemoveTorque(const Vector3f& t)
-//{
-//	torque -= t;
-//}
+void Rigidbody::AddTorque(const Vector3f& t)
+{
+	torque += t;
+}
+
+void Rigidbody::RemoveTorque(const Vector3f& t)
+{
+	torque -= t;
+}
 
 void Rigidbody::AddForceAtPoint(const Vector3f& f, const Vector3f& point)
 {
@@ -97,7 +97,7 @@ void Rigidbody::RemoveForceAtBodyPoint(const Vector3f& f, const Vector3f& point)
 
 Vector3f const Rigidbody::GetAcceleration()
 {
-	m_acceleration = force / mass;
+	m_acceleration = force * inverseMass;
 	return m_acceleration;
 }
 
@@ -119,25 +119,40 @@ void Rigidbody::SetAngularAcceleration(const Vector3f& acceleration)
 
 void Rigidbody::CalculateTransformMatrix()
 {
-	transformMatrix = Matrix4f::Identity();
-	transformMatrix = transformMatrix * Matrix4f::Scale(transform.scale);
-	Quaternionf q = transform.rotation;
-	q.QuaternionToMatrix4(transformMatrix);
-	//Matrix3f transformMatrix3 = transformMatrix.GetSubmatrix3(0, 0);
-	//q.QuaternionToMatrix(transformMatrix3);
-	//transformMatrix = transformMatrix * Matrix4f::RotateAroundX(transform.rotation.GetX());
-	//transformMatrix = transformMatrix * Matrix4f::RotateAroundY(transform.rotation.GetY());
-	//transformMatrix = transformMatrix * Matrix4f::RotateAroundZ(transform.rotation.GetZ());
-	//transformMatrix = transformMatrix * Matrix4f::Rotate(transform.rotation);
-	transformMatrix = transformMatrix * Matrix4f::Translate(transform.position);
+	float x = transform.rotation.GetX();
+	float y = transform.rotation.GetY();
+	float z = transform.rotation.GetZ();
+	float s = transform.rotation.GetS();
+	float posX = transform.position.x;
+	float posY = transform.position.y;
+	float posZ = transform.position.z;
+
+	transformMatrix = Matrix4f({
+		1.0f - 2.0f * y * y - 2.0f * z * z,     2.0f * x * y - 2.0f * s * z,			2.0f * x * z + 2.0f * s * y,			posX,
+		2.0f * x * y + 2.0f * s * z,			1.0f - 2.0f * x * x - 2.0f * z * z,		2.0f * y * z - 2.0f * s * x,			posY,
+		2.0f * x * z - 2.0f * s * y,			2.0f * y * z + 2.0f * s * x,			1.0f - 2.0f * x * x - 2.0f * y * y,		posZ,
+		0.0f,									0.0f,									0.0f,									1.0f
+		}
+	);
+
+	//transformMatrix = Matrix4f::Identity();
+	//transformMatrix = transformMatrix * Matrix4f::Scale(transform.scale);
+	//Quaternionf q = transform.rotation;
+	//q.QuaternionToMatrix4(transformMatrix);
+	////Matrix3f transformMatrix3 = transformMatrix.GetSubmatrix3(0, 0);
+	////q.QuaternionToMatrix(transformMatrix3);
+	////transformMatrix = transformMatrix * Matrix4f::RotateAroundX(transform.rotation.GetX());
+	////transformMatrix = transformMatrix * Matrix4f::RotateAroundY(transform.rotation.GetY());
+	////transformMatrix = transformMatrix * Matrix4f::RotateAroundZ(transform.rotation.GetZ());
+	////transformMatrix = transformMatrix * Matrix4f::Rotate(transform.rotation);
+	//transformMatrix = transformMatrix * Matrix4f::Translate(transform.position);
 }
 
 void Rigidbody::CalculateDerivedData()
 {
-	//transform.rotation.Normalize();
+	transform.rotation.Normalize();
 	CalculateTransformMatrix();
-	inverseMass = 1.f / mass;
-	CalculateInverseInertiaTensor();
+	CalculateInverseInertiaTensorWorld();
 }
 
 Matrix3f Rigidbody::GetBoxInertiaTensorLocal()
@@ -158,20 +173,53 @@ Matrix3f Rigidbody::GetBoxInertiaTensorLocal()
 
 Matrix3f Rigidbody::GetBoxInertiaTensorWorld()
 {
-	Matrix3f inertiaTensorLocal = GetBoxInertiaTensorLocal();
+	inertiaTensor = GetBoxInertiaTensorLocal();
+	CalculateInverseInertiaTensor();
+	Matrix3f iitLocal = inverseInertiaTensor;
+	Quaternion q = transform.rotation;
+	Matrix4f rotM = transformMatrix;
 
-	// Create a 4x4 identity matrix with the upper-left 3x3 block containing the inertiaTensorLocal
-	Matrix4f inertiaTensorLocal4x4 = Matrix4f::Identity();
-	inertiaTensorLocal4x4.SetSubmatrix3(0, 0, inertiaTensorLocal);
+	float t4 = rotM.Value(0, 0) * iitLocal.Value(0, 0) +
+			  rotM.Value(0, 1) * iitLocal.Value(1, 0) +
+			rotM.Value(0, 2) * iitLocal.Value(2, 0);
+	float t9 = rotM.Value(0, 0) * iitLocal.Value(0, 1) +
+			  rotM.Value(0, 1) * iitLocal.Value(1, 1) +
+			rotM.Value(0, 2) * iitLocal.Value(2, 1);
+	float t14 = rotM.Value(0, 0) * iitLocal.Value(0, 2) +
+			  rotM.Value(0, 1) * iitLocal.Value(1, 2) +
+			rotM.Value(0, 2) * iitLocal.Value(2, 2);
+	float t28 = rotM.Value(1, 0) * iitLocal.Value(0, 0) +
+			  rotM.Value(1, 1) * iitLocal.Value(1, 0) +
+			rotM.Value(1, 2) * iitLocal.Value(2, 0);
+	float t33 = rotM.Value(1, 0) * iitLocal.Value(0, 1) +
+			  rotM.Value(1, 1) * iitLocal.Value(1, 1) +
+			rotM.Value(1, 2) * iitLocal.Value(2, 1);
+	float t38 = rotM.Value(1, 0) * iitLocal.Value(0, 2) +
+			  rotM.Value(1, 1) * iitLocal.Value(1, 2) + 
+			rotM.Value(1, 2) * iitLocal.Value(2, 2);
+	float t52 = rotM.Value(2, 0) * iitLocal.Value(0, 0) + 
+			  rotM.Value(2, 1) * iitLocal.Value(1, 0) + 
+			rotM.Value(2, 2) * iitLocal.Value(2, 0);
+	float t57 = rotM.Value(2, 0) * iitLocal.Value(0, 1) + 
+			  rotM.Value(2, 1) * iitLocal.Value(1, 1) + 
+			rotM.Value(2, 2) * iitLocal.Value(2, 1);
+	float t62 = rotM.Value(2, 0) * iitLocal.Value(0, 2) + 
+			  rotM.Value(2, 1) * iitLocal.Value(1, 2) + 
+			rotM.Value(2, 2) * iitLocal.Value(2, 2);
 
-	// Calculate the inertiaTensorWorld using the full transformation matrix
-	Matrix4f transformMatrixTranspose = transformMatrix.Transpose();
-	Matrix4f inertiaTensorWorld4x4 = transformMatrix * inertiaTensorLocal4x4 * transformMatrixTranspose;
+	Matrix3f iitWorld = Matrix3f({
+		t4 * rotM.Value(0, 0) + t9 * rotM.Value(0, 1) + t14 * rotM.Value(0, 2),
+		t4 * rotM.Value(1, 0) + t9 * rotM.Value(1, 1) + t14 * rotM.Value(1, 2),
+		t4 * rotM.Value(2, 0) + t9 * rotM.Value(2, 1) + t14 * rotM.Value(2, 2),
+		t28 * rotM.Value(0, 0) + t33 * rotM.Value(0, 1) + t38 * rotM.Value(0, 2),
+		t28 * rotM.Value(1, 0) + t33 * rotM.Value(1, 1) + t38 * rotM.Value(1, 2),
+		t28 * rotM.Value(2, 0) + t33 * rotM.Value(2, 1) + t38 * rotM.Value(2, 2),
+		t52 * rotM.Value(0, 0) + t57 * rotM.Value(0, 1) + t62 * rotM.Value(0, 2),
+		t52 * rotM.Value(1, 0) + t57 * rotM.Value(1, 1) + t62 * rotM.Value(1, 2),
+		t52 * rotM.Value(2, 0) + t57 * rotM.Value(2, 1) + t62 * rotM.Value(2, 2)
+		});
 
-	// Extract the upper-left 3x3 block as the final inertiaTensorWorld
-	Matrix3f inertiaTensorWorld = inertiaTensorWorld4x4.GetSubmatrix3(0, 0);
-
-	return inertiaTensorWorld;
+	return iitWorld;
 }
 
 
@@ -192,8 +240,7 @@ Matrix3f Rigidbody::GetSphereInertiaTensorLocal()
 Matrix3f Rigidbody::GetSphereInertiaTensorWorld()
 {
 	Matrix3f inertiaTensorLocal = GetSphereInertiaTensorLocal();
-	//Matrix3f inertiaTensorWorld = tranformMatrix.GetBasisMatrix() * inertiaTensorLocal * tranformMatrix.GetBasisMatrix().Transpose();
-	//return inertiaTensorWorld;
+
 	return inertiaTensorLocal;
 
 }
@@ -206,4 +253,9 @@ void Rigidbody::SetInertiaTensor(const Matrix3f& _inertiaTensor)
 void Rigidbody::CalculateInverseInertiaTensor()
 {
 	inverseInertiaTensor = inertiaTensor.Inverse();
+}
+
+void Rigidbody::CalculateInverseInertiaTensorWorld()
+{
+	inverseInertiaTensor = GetBoxInertiaTensorWorld().Inverse();
 }

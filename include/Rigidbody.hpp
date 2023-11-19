@@ -15,10 +15,7 @@ public:
 	Vector3f velocity;
 	Vector3f force;
 	Vector3f angularVelocity;
-	//Vector3f momentOfInertia;
 	Vector3f torque;
-	Vector3f linearDamping;
-	Vector3f angularDamping;
 	float mass;
 	float inverseMass;
 	
@@ -35,8 +32,8 @@ public:
 	void ClearTorque();
 	void AddForce(const Vector3f& force);
 	void RemoveForce(const Vector3f& force);
-	//void AddTorque(const Vector3f& torque);
-	//void RemoveTorque(const Vector3f& torque);
+	void AddTorque(const Vector3f& torque);
+	void RemoveTorque(const Vector3f& torque);
 	void AddForceAtPoint(const Vector3f& force, const Vector3f& point);
 	void AddForceAtBodyPoint(const Vector3f& force, const Vector3f& point);
 	void RemoveForceAtPoint(const Vector3f& force, const Vector3f& point);
@@ -44,6 +41,7 @@ public:
 
 	void CalculateTransformMatrix();
 	void CalculateInverseInertiaTensor();
+	void CalculateInverseInertiaTensorWorld();
 	void CalculateDerivedData();
 
 	Vector3f const GetAcceleration();

@@ -92,7 +92,7 @@ int main(int argc, char** argv)
     std::shared_ptr<Particle> particle4 = std::make_shared<Particle>(Vector3f(-5.0f, 10.0f, 0.0f), Vector3f::Zero, Vector3f::Zero, 1.f, "Particle4");
 
     //std::shared_ptr<Rigidbody> rigidbody = std::make_shared<Rigidbody>(Transform(), Vector3f::Zero, Vector3f::Zero, 100.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody");
-    std::shared_ptr<Rigidbody> rigidbody2 = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(0.f,0.f,45.f,0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 100.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody2");
+    std::shared_ptr<Rigidbody> rigidbody2 = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f,0.f,0.f * Deg2Rad,0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 100.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody2");
 
     std::shared_ptr<ForceGravity> forceGravity = std::make_shared<ForceGravity>();
     
