@@ -22,6 +22,7 @@ private:
 public:
 	ForceSpring(float k, float restLength, std::shared_ptr<Particle> otherEnd);
 	ForceSpring(float k, float restLength, std::shared_ptr<Rigidbody> otherEnd);
+	ForceSpring(float k, float restength, std::shared_ptr<Rigidbody> otherEnd, Vector3f connectionPoint, Vector3f otherConnectionPoint);
 
 	// apply spring force
 	void UpdateForce(std::shared_ptr<Particle> particle, float deltaTime) override;

@@ -9,6 +9,13 @@ ForceAnchoredSpring::ForceAnchoredSpring(float k, float restLength, Vector3f anc
 {
 }
 
+ForceAnchoredSpring::ForceAnchoredSpring(float k, float restLength, Vector3f anchor, Vector3f connectionPoint) :
+	m_k(k),
+	m_restLength(restLength),
+	m_anchor(anchor),
+	connectionPoint(connectionPoint)
+{}
+
 void ForceAnchoredSpring::UpdateForce(std::shared_ptr<Particle> particle, float deltaTime)
 {
 	if (particle->mass < 1.0f)
@@ -33,18 +40,22 @@ void ForceAnchoredSpring::UpdateForce(std::shared_ptr<Rigidbody> rigidbody, floa
 	if (rigidbody->mass < 1.0f)
 		return;
 
-	// calculate the vector of the spring
-	Vector3f springVector = rigidbody->transform.position - m_anchor;
+	// calculate local to world space point
+	Vector3f localInWorldSpace = rigidbody->GetPointInWorldSpace(connectionPoint);
 
-	if (springVector.x == 0 && springVector.y == 0 && springVector.z == 0)
-		return;
+	// calculate the force of the spring
+	Vector3f force = localInWorldSpace - m_anchor;
 
-	// calculate the magnitude of the force
-	float magnitude = springVector.GetLength();
+	// calculate the magnitude of the spring
+	float magnitude = force.GetLength();
+	magnitude = std::abs(magnitude - m_restLength);
+	magnitude *= m_k;
 
-	// calculate the final force and apply it
-	Vector3f force = -m_k * (magnitude - m_restLength) * springVector.GetNormalized();
-	rigidbody->AddForce(force);
+	// calculate final force and apply it
+	force.Normalize();
+	force *= -magnitude;
+
+	rigidbody->AddForceAtPoint(force, localInWorldSpace);
 }
 
 void ForceAnchoredSpring::SetAnchor(Vector3f anchor)

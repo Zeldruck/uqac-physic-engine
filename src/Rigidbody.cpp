@@ -73,14 +73,16 @@ void Rigidbody::RemoveTorque(const Vector3f& t)
 
 void Rigidbody::AddForceAtPoint(const Vector3f& f, const Vector3f& point)
 {
+	Vector3f pt = point;
+	pt -= transform.position;
 	force += f;
-	torque += (point - transform.position).Cross(f);
+	torque += pt.Cross(f);
 }
 
 void Rigidbody::AddForceAtBodyPoint(const Vector3f& f, const Vector3f& point)
 {
-	force += f;
-	torque += point.Cross(f);
+	Vector3f pt = GetPointInWorldSpace(point);
+	AddForceAtPoint(f, pt);
 }
 
 void Rigidbody::RemoveForceAtPoint(const Vector3f& f, const Vector3f& point)

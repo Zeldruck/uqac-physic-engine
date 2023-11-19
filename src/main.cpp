@@ -91,15 +91,15 @@ int main(int argc, char** argv)
     std::shared_ptr<Particle> particle3 = std::make_shared<Particle>(Vector3f(5.0f, 10.f, 0.0f), Vector3f::Zero, Vector3f::Zero, 1.f, "Particle3");
     std::shared_ptr<Particle> particle4 = std::make_shared<Particle>(Vector3f(-5.0f, 10.0f, 0.0f), Vector3f::Zero, Vector3f::Zero, 1.f, "Particle4");
 
-    //std::shared_ptr<Rigidbody> rigidbody = std::make_shared<Rigidbody>(Transform(), Vector3f::Zero, Vector3f::Zero, 100.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody");
-    std::shared_ptr<Rigidbody> rigidbody2 = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f,0.f,0.f * Deg2Rad,0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 100.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody2");
+    std::shared_ptr<Rigidbody> rigidbody = std::make_shared<Rigidbody>(Transform(Vector3f(5.f, 0.f, 0.f), Quaternionf(1.f, 0.f, 0.f, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody");
+    std::shared_ptr<Rigidbody> rigidbody2 = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f,0.f,45.f,0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody2");
 
     std::shared_ptr<ForceGravity> forceGravity = std::make_shared<ForceGravity>();
     
     std::shared_ptr<ForceDrag> weakForceDrag = std::make_shared<ForceDrag>(5.0f, 0.0f);
     std::shared_ptr<ForceDrag> strongForceDrag = std::make_shared<ForceDrag>(1.0f, 0.0f);
 
-    float springConstant = 100.f;
+    float springConstant = 10.f;
     std::shared_ptr<ForceSpring> forceSpring12 = std::make_shared<ForceSpring>(
         springConstant,
         (particle->position - particle2->position).GetLength() - 5.f,
@@ -116,9 +116,18 @@ int main(int argc, char** argv)
         springConstant,
         (particle4->position - particle->position).GetLength(),
         particle4);
+
+    std::shared_ptr<ForceSpring> forceSpringr2r1 = std::make_shared<ForceSpring>(
+        springConstant,
+        (rigidbody2->transform.position - rigidbody->transform.position).GetLength() - 1.0f,
+        rigidbody,
+        Vector3f(1.0f, -1.0f, 0.0f),
+        Vector3f(-1.0f, 1.0f, 0.0f));
     
-    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpring = std::make_shared<ForceAnchoredSpring>(springConstant, 5.0f, Vector3f(.0f, .0f, .0f));
+    float anchoredSpringConstant = 100.0f;
+    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpring = std::make_shared<ForceAnchoredSpring>(anchoredSpringConstant, 5.0f, Vector3f::Zero);
     
+    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpringRigidbody = std::make_shared<ForceAnchoredSpring>(anchoredSpringConstant, 5.0f, Vector3f::Zero, Vector3f(1.0f, -1.0f, 0.0f));
     std::shared_ptr<ForceBuoyancy> forceBuoyancy = std::make_shared<ForceBuoyancy>(1.f, 1.f, 1.f, 1.f);
 
     //physics.AddParticle(particle);
@@ -126,7 +135,7 @@ int main(int argc, char** argv)
     //physics.AddParticle(particle3);
     //physics.AddParticle(particle4);
     
-    //physics.AddRigidbody(rigidbody);
+    physics.AddRigidbody(rigidbody);
     physics.AddRigidbody(rigidbody2);
 
     //forceRegistry->Add(particle, forceSpring41);
@@ -148,10 +157,13 @@ int main(int argc, char** argv)
     //forceRegistry->Add(particle4, strongForceDrag);
 
     //forceRegistry->Add(rigidbody, forceGravity);
-    forceRegistry->Add(rigidbody2, forceGravity);
-    //
-    //forceRegistry->Add(rigidbody, weakForceDrag);
+    //forceRegistry->Add(rigidbody2, forceGravity);
+    
+    //forceRegistry->Add(rigidbody, strongForceDrag);
     forceRegistry->Add(rigidbody2, weakForceDrag);
+
+    forceRegistry->Add(rigidbody2, forceAnchoredSpringRigidbody);
+    //forceRegistry->Add(rigidbody2, forceSpringr2r1);
 
     #pragma endregion
 

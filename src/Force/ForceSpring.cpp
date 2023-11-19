@@ -18,6 +18,16 @@ ForceSpring::ForceSpring(float k, float restLength, std::shared_ptr<Rigidbody> o
 {
 }
 
+ForceSpring::ForceSpring(float k, float restLength, std::shared_ptr<Rigidbody> otherEnd, Vector3f connectionPoint, Vector3f otherConnectionPoint) :
+	m_k(k),
+	m_restLength(restLength),
+	m_otherParticle(nullptr),
+	m_otherRigidbody(otherEnd),
+	connectionPoint(connectionPoint),
+	otherConnectionPoint(otherConnectionPoint)
+{
+}
+
 void ForceSpring::UpdateForce(std::shared_ptr<Particle> particle, float deltaTime)
 {
 	if (particle->mass < 1.0f)
