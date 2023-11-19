@@ -143,23 +143,10 @@ void Rigidbody::CalculateTransformMatrix()
 		0.0f,									0.0f,									0.0f,									1.0f
 		}
 	);
-
-	//transformMatrix = Matrix4f::Identity();
-	//transformMatrix = transformMatrix * Matrix4f::Scale(transform.scale);
-	//Quaternionf q = transform.rotation;
-	//q.QuaternionToMatrix4(transformMatrix);
-	////Matrix3f transformMatrix3 = transformMatrix.GetSubmatrix3(0, 0);
-	////q.QuaternionToMatrix(transformMatrix3);
-	////transformMatrix = transformMatrix * Matrix4f::RotateAroundX(transform.rotation.GetX());
-	////transformMatrix = transformMatrix * Matrix4f::RotateAroundY(transform.rotation.GetY());
-	////transformMatrix = transformMatrix * Matrix4f::RotateAroundZ(transform.rotation.GetZ());
-	////transformMatrix = transformMatrix * Matrix4f::Rotate(transform.rotation);
-	//transformMatrix = transformMatrix * Matrix4f::Translate(transform.position);
 }
 
 void Rigidbody::CalculateDerivedData()
 {
-	transform.rotation.Normalize();
 	CalculateTransformMatrix();
 	CalculateInverseInertiaTensorWorld();
 }
