@@ -92,7 +92,7 @@ int main(int argc, char** argv)
     std::shared_ptr<Particle> particle4 = std::make_shared<Particle>(Vector3f(-5.0f, 10.0f, 0.0f), Vector3f::Zero, Vector3f::Zero, 1.f, "Particle4");
 
     std::shared_ptr<Rigidbody> rigidbody = std::make_shared<Rigidbody>(Transform(Vector3f(5.f, 0.f, 0.f), Quaternionf(1.f, 0.f, 0.f, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody");
-    std::shared_ptr<Rigidbody> rigidbody2 = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f,0.f,45.f,0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody2");
+    std::shared_ptr<Rigidbody> rigidbody2 = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f,0.f,45.f * Deg2Rad,0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody2");
 
     std::shared_ptr<ForceGravity> forceGravity = std::make_shared<ForceGravity>();
     
@@ -374,11 +374,11 @@ int main(int argc, char** argv)
             model = glm::translate(model, cubePositions[i]);
 
             // rotation on X Axis
-            model = glm::rotate(model, glm::radians(cubeRotations[i].x), glm::vec3(1.0f, 0.0f, 0.0f));
+            model = glm::rotate(model, cubeRotations[i].x, glm::vec3(1.0f, 0.0f, 0.0f));
             // rotation on Y Axis
-            model = glm::rotate(model, glm::radians(cubeRotations[i].y), glm::vec3(0.0f, 1.0f, 0.0f));
+            model = glm::rotate(model, cubeRotations[i].y, glm::vec3(0.0f, 1.0f, 0.0f));
             // rotation on Z Axis
-            model = glm::rotate(model, glm::radians(cubeRotations[i].z), glm::vec3(0.0f, 0.0f, 1.0f));
+            model = glm::rotate(model, cubeRotations[i].z, glm::vec3(0.0f, 0.0f, 1.0f));
 
             ourShader.SetMat4("model", model);
 
@@ -413,7 +413,7 @@ int main(int argc, char** argv)
         ImGui::Text("%s velocity: (%f, %f, %f)", rigidbody2->name.c_str(), rigidbody2->velocity.x, rigidbody2->velocity.y, rigidbody2->velocity.z);
         ImGui::Text("%s acceleration: (%f, %f, %f)", rigidbody2->name.c_str(), rigidbody2->GetAcceleration().x, rigidbody2->GetAcceleration().y, rigidbody2->GetAcceleration().z);
         ImGui::Text("%s mass: %f", rigidbody2->name.c_str(), rigidbody2->mass);
-        ImGui::Text("%s rotation: (%f, %f, %f)", rigidbody2->name.c_str(), rigidbody2->transform.rotation.GetX(), rigidbody2->transform.rotation.GetY(), rigidbody2->transform.rotation.GetZ());
+        ImGui::Text("%s rotation (rad): (%f, %f, %f) %f", rigidbody2->name.c_str(), rigidbody2->transform.rotation.GetX(), rigidbody2->transform.rotation.GetY(), rigidbody2->transform.rotation.GetZ(), rigidbody2->transform.rotation.GetS());
         ImGui::Text("%s angular velocity: (%f, %f, %f)", rigidbody2->name.c_str(), rigidbody2->angularVelocity.x, rigidbody2->angularVelocity.y, rigidbody2->angularVelocity.z);
         ImGui::Text("%s angular acceleration: (%f, %f, %f)", rigidbody2->name.c_str(), rigidbody2->GetAngularAcceleration().x, rigidbody2->GetAngularAcceleration().y, rigidbody2->GetAngularAcceleration().z);
         ImGui::Text("%s inverseMass: %f", rigidbody2->name.c_str(), rigidbody2->inverseMass);

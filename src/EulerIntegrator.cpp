@@ -13,8 +13,6 @@ void EulerIntegrator::Update(std::vector<std::shared_ptr<Particle>>& particles, 
 		Vector3f newPosition = particle->position + particle->velocity * deltaTime;
 		particle->position = newPosition;
 		particle->velocity += particle->GetAcceleration() * deltaTime;
-		
-		particle->ClearForce();
 	}
 
 	// Update Rigidbodies position and rotation
@@ -25,12 +23,9 @@ void EulerIntegrator::Update(std::vector<std::shared_ptr<Particle>>& particles, 
 		rigidbody->velocity += rigidbody->GetAcceleration() * deltaTime;
 		
 		rigidbody->angularVelocity += rigidbody->GetAngularAcceleration() * deltaTime;
-		Quaternionf rotationChange = Quaternionf(rigidbody->angularVelocity.x, rigidbody->angularVelocity.y, rigidbody->angularVelocity.z, 0.0f) * deltaTime;
-		rigidbody->transform.rotation += 0.5f * rotationChange * rigidbody->transform.rotation;
+		Quaternionf newRotation = Quaternionf(0.0f, rigidbody->angularVelocity.x, rigidbody->angularVelocity.y, rigidbody->angularVelocity.z);// *deltaTime;
+		rigidbody->transform.rotation = rigidbody->transform.rotation + newRotation * 0.5f;
 
 		rigidbody->CalculateDerivedData();
-
-		//rigidbody->ClearForce();
-		//rigidbody->ClearTorque();
 	}
 }
