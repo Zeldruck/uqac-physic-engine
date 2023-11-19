@@ -26,6 +26,9 @@ public:
 	Matrix3f GetSphereInertiaTensorLocal();
 	Matrix3f GetBoxInertiaTensorWorld();
 	Matrix3f GetSphereInertiaTensorWorld();
+	Matrix3f GetTriangleInertiaTensorLocal();
+	Matrix3f GetTriangleInertiaTensorWorld();
+	Matrix3f GetInertiaTensorWorld();
 	void SetInertiaTensor(const Matrix3f& inertiaTensor);
 
 	void ClearForce();

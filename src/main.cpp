@@ -157,7 +157,7 @@ int main(int argc, char** argv)
     //forceRegistry->Add(particle4, strongForceDrag);
 
     //forceRegistry->Add(rigidbody, forceGravity);
-    //forceRegistry->Add(rigidbody2, forceGravity);
+    forceRegistry->Add(rigidbody2, forceGravity);
     
     //forceRegistry->Add(rigidbody, strongForceDrag);
     forceRegistry->Add(rigidbody2, weakForceDrag);

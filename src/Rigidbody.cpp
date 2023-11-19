@@ -177,51 +177,7 @@ Matrix3f Rigidbody::GetBoxInertiaTensorWorld()
 {
 	inertiaTensor = GetBoxInertiaTensorLocal();
 	CalculateInverseInertiaTensor();
-	Matrix3f iitLocal = inverseInertiaTensor;
-	Quaternion q = transform.rotation;
-	Matrix4f rotM = transformMatrix;
-
-	float t4 = rotM.Value(0, 0) * iitLocal.Value(0, 0) +
-			  rotM.Value(0, 1) * iitLocal.Value(1, 0) +
-			rotM.Value(0, 2) * iitLocal.Value(2, 0);
-	float t9 = rotM.Value(0, 0) * iitLocal.Value(0, 1) +
-			  rotM.Value(0, 1) * iitLocal.Value(1, 1) +
-			rotM.Value(0, 2) * iitLocal.Value(2, 1);
-	float t14 = rotM.Value(0, 0) * iitLocal.Value(0, 2) +
-			  rotM.Value(0, 1) * iitLocal.Value(1, 2) +
-			rotM.Value(0, 2) * iitLocal.Value(2, 2);
-	float t28 = rotM.Value(1, 0) * iitLocal.Value(0, 0) +
-			  rotM.Value(1, 1) * iitLocal.Value(1, 0) +
-			rotM.Value(1, 2) * iitLocal.Value(2, 0);
-	float t33 = rotM.Value(1, 0) * iitLocal.Value(0, 1) +
-			  rotM.Value(1, 1) * iitLocal.Value(1, 1) +
-			rotM.Value(1, 2) * iitLocal.Value(2, 1);
-	float t38 = rotM.Value(1, 0) * iitLocal.Value(0, 2) +
-			  rotM.Value(1, 1) * iitLocal.Value(1, 2) + 
-			rotM.Value(1, 2) * iitLocal.Value(2, 2);
-	float t52 = rotM.Value(2, 0) * iitLocal.Value(0, 0) + 
-			  rotM.Value(2, 1) * iitLocal.Value(1, 0) + 
-			rotM.Value(2, 2) * iitLocal.Value(2, 0);
-	float t57 = rotM.Value(2, 0) * iitLocal.Value(0, 1) + 
-			  rotM.Value(2, 1) * iitLocal.Value(1, 1) + 
-			rotM.Value(2, 2) * iitLocal.Value(2, 1);
-	float t62 = rotM.Value(2, 0) * iitLocal.Value(0, 2) + 
-			  rotM.Value(2, 1) * iitLocal.Value(1, 2) + 
-			rotM.Value(2, 2) * iitLocal.Value(2, 2);
-
-	Matrix3f iitWorld = Matrix3f({
-		t4 * rotM.Value(0, 0) + t9 * rotM.Value(0, 1) + t14 * rotM.Value(0, 2),
-		t4 * rotM.Value(1, 0) + t9 * rotM.Value(1, 1) + t14 * rotM.Value(1, 2),
-		t4 * rotM.Value(2, 0) + t9 * rotM.Value(2, 1) + t14 * rotM.Value(2, 2),
-		t28 * rotM.Value(0, 0) + t33 * rotM.Value(0, 1) + t38 * rotM.Value(0, 2),
-		t28 * rotM.Value(1, 0) + t33 * rotM.Value(1, 1) + t38 * rotM.Value(1, 2),
-		t28 * rotM.Value(2, 0) + t33 * rotM.Value(2, 1) + t38 * rotM.Value(2, 2),
-		t52 * rotM.Value(0, 0) + t57 * rotM.Value(0, 1) + t62 * rotM.Value(0, 2),
-		t52 * rotM.Value(1, 0) + t57 * rotM.Value(1, 1) + t62 * rotM.Value(1, 2),
-		t52 * rotM.Value(2, 0) + t57 * rotM.Value(2, 1) + t62 * rotM.Value(2, 2)
-		});
-
-	return iitWorld;
+	return GetInertiaTensorWorld();
 }
 
 
@@ -260,4 +216,96 @@ void Rigidbody::CalculateInverseInertiaTensor()
 void Rigidbody::CalculateInverseInertiaTensorWorld()
 {
 	inverseInertiaTensor = GetBoxInertiaTensorWorld().Inverse();
+}
+
+Matrix3f Rigidbody::GetTriangleInertiaTensorLocal()
+{
+	// Calculate the center of mass
+	Vector3f v0 = Vector3f::One;
+	Vector3f v1 = Vector3f::One;
+	Vector3f v2 = Vector3f::One;
+
+	Vector3f centerOfMass = (v0 + v1 + v2) / 3.0f;
+
+	// Calculate the mass of the triangle
+	float area = 0.5f * Vector3f::CrossProduct(v1 - v0, v2 - v0).GetLength();  // Area of the triangle
+
+	// Calculate the moment arm for each vertex
+	Vector3f r0 = v0 - centerOfMass;
+	Vector3f r1 = v1 - centerOfMass;
+	Vector3f r2 = v2 - centerOfMass;
+
+	// Calculate the moment of inertia components
+	float Ixx = mass * (r0.y * r0.y + r0.z * r0.z + r1.y * r1.y + r1.z * r1.z + r2.y * r2.y + r2.z * r2.z);
+	float Iyy = mass * (r0.x * r0.x + r0.z * r0.z + r1.x * r1.x + r1.z * r1.z + r2.x * r2.x + r2.z * r2.z);
+	float Izz = mass * (r0.x * r0.x + r0.y * r0.y + r1.x * r1.x + r1.y * r1.y + r2.x * r2.x + r2.y * r2.y);
+	float Ixy = -mass * (r0.x * r0.y + r1.x * r1.y + r2.x * r2.y);
+	float Ixz = -mass * (r0.x * r0.z + r1.x * r1.z + r2.x * r2.z);
+	float Iyz = -mass * (r0.y * r0.z + r1.y * r1.z + r2.y * r2.z);
+
+	// Populate the inertia tensor matrix
+	inertiaTensor = Matrix3f(
+		{
+			Ixx, Ixy, Ixz, 
+			Ixy, Iyy, Iyz, 
+			Ixz, Iyz, Izz
+		});
+
+	return inertiaTensor;
+}
+
+Matrix3f Rigidbody::GetTriangleInertiaTensorWorld()
+{
+	inertiaTensor = GetTriangleInertiaTensorLocal();
+	CalculateInverseInertiaTensor();
+	return GetInertiaTensorWorld();
+}
+
+Matrix3f Rigidbody::GetInertiaTensorWorld()
+{
+	Matrix3f iitLocal = inverseInertiaTensor;
+	Quaternion q = transform.rotation;
+	Matrix4f rotM = transformMatrix;
+
+	float t4 = rotM.Value(0, 0) * iitLocal.Value(0, 0) +
+		rotM.Value(0, 1) * iitLocal.Value(1, 0) +
+		rotM.Value(0, 2) * iitLocal.Value(2, 0);
+	float t9 = rotM.Value(0, 0) * iitLocal.Value(0, 1) +
+		rotM.Value(0, 1) * iitLocal.Value(1, 1) +
+		rotM.Value(0, 2) * iitLocal.Value(2, 1);
+	float t14 = rotM.Value(0, 0) * iitLocal.Value(0, 2) +
+		rotM.Value(0, 1) * iitLocal.Value(1, 2) +
+		rotM.Value(0, 2) * iitLocal.Value(2, 2);
+	float t28 = rotM.Value(1, 0) * iitLocal.Value(0, 0) +
+		rotM.Value(1, 1) * iitLocal.Value(1, 0) +
+		rotM.Value(1, 2) * iitLocal.Value(2, 0);
+	float t33 = rotM.Value(1, 0) * iitLocal.Value(0, 1) +
+		rotM.Value(1, 1) * iitLocal.Value(1, 1) +
+		rotM.Value(1, 2) * iitLocal.Value(2, 1);
+	float t38 = rotM.Value(1, 0) * iitLocal.Value(0, 2) +
+		rotM.Value(1, 1) * iitLocal.Value(1, 2) +
+		rotM.Value(1, 2) * iitLocal.Value(2, 2);
+	float t52 = rotM.Value(2, 0) * iitLocal.Value(0, 0) +
+		rotM.Value(2, 1) * iitLocal.Value(1, 0) +
+		rotM.Value(2, 2) * iitLocal.Value(2, 0);
+	float t57 = rotM.Value(2, 0) * iitLocal.Value(0, 1) +
+		rotM.Value(2, 1) * iitLocal.Value(1, 1) +
+		rotM.Value(2, 2) * iitLocal.Value(2, 1);
+	float t62 = rotM.Value(2, 0) * iitLocal.Value(0, 2) +
+		rotM.Value(2, 1) * iitLocal.Value(1, 2) +
+		rotM.Value(2, 2) * iitLocal.Value(2, 2);
+
+	Matrix3f iitWorld = Matrix3f({
+		t4 * rotM.Value(0, 0) + t9 * rotM.Value(0, 1) + t14 * rotM.Value(0, 2),
+		t4 * rotM.Value(1, 0) + t9 * rotM.Value(1, 1) + t14 * rotM.Value(1, 2),
+		t4 * rotM.Value(2, 0) + t9 * rotM.Value(2, 1) + t14 * rotM.Value(2, 2),
+		t28 * rotM.Value(0, 0) + t33 * rotM.Value(0, 1) + t38 * rotM.Value(0, 2),
+		t28 * rotM.Value(1, 0) + t33 * rotM.Value(1, 1) + t38 * rotM.Value(1, 2),
+		t28 * rotM.Value(2, 0) + t33 * rotM.Value(2, 1) + t38 * rotM.Value(2, 2),
+		t52 * rotM.Value(0, 0) + t57 * rotM.Value(0, 1) + t62 * rotM.Value(0, 2),
+		t52 * rotM.Value(1, 0) + t57 * rotM.Value(1, 1) + t62 * rotM.Value(1, 2),
+		t52 * rotM.Value(2, 0) + t57 * rotM.Value(2, 1) + t62 * rotM.Value(2, 2)
+		});
+
+	return iitWorld;
 }
