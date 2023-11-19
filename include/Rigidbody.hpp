@@ -3,14 +3,24 @@
 #include "Transform.hpp"
 #include "Matrix4.hpp"
 #include "Matrix3.hpp"
+#include <vector>
+
+// TO REMOVE LATER
+enum RigidbodyType
+{
+	BOX,
+	SPHERE,
+	TRIANGLE
+};
 
 class Rigidbody
 {
 public:
 	Rigidbody();
-	Rigidbody(Transform transform, Vector3f velocity, Vector3f acceleration, float mass, Vector3f angularVelocity, Vector3f angularAcceleration, Vector3f momentOfInertia, std::string name);
+	Rigidbody(Transform transform, Vector3f velocity, Vector3f acceleration, float mass, Vector3f angularVelocity, Vector3f angularAcceleration, Vector3f momentOfInertia, std::string name, RigidbodyType type);
 
 	std::string name;
+	RigidbodyType type;
 	Transform transform;
 	Vector3f velocity;
 	Vector3f force;
@@ -19,6 +29,9 @@ public:
 	float mass;
 	float inverseMass;
 	
+	std::vector<Vector3f> massPoints;
+	void CalculateProductOfInertia();
+
 	Matrix4f transformMatrix;
 	Matrix3f inertiaTensor;
 	Matrix3f inverseInertiaTensor;

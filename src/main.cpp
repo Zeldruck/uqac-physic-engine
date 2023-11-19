@@ -91,8 +91,8 @@ int main(int argc, char** argv)
     std::shared_ptr<Particle> particle3 = std::make_shared<Particle>(Vector3f(5.0f, 10.f, 0.0f), Vector3f::Zero, Vector3f::Zero, 1.f, "Particle3");
     std::shared_ptr<Particle> particle4 = std::make_shared<Particle>(Vector3f(-5.0f, 10.0f, 0.0f), Vector3f::Zero, Vector3f::Zero, 1.f, "Particle4");
 
-    std::shared_ptr<Rigidbody> rigidbody = std::make_shared<Rigidbody>(Transform(Vector3f(5.f, 0.f, 0.f), Quaternionf(1.f, 0.f, 0.f, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody");
-    std::shared_ptr<Rigidbody> rigidbody2 = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f,0.f,45.f * Deg2Rad,0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody2");
+    std::shared_ptr<Rigidbody> rigidbody = std::make_shared<Rigidbody>(Transform(Vector3f(5.f, 0.f, 0.f), Quaternionf(1.f, 0.f, 0.f, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody", RigidbodyType::BOX);
+    std::shared_ptr<Rigidbody> rigidbody2 = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f,0.f,45.f * Deg2Rad,0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody2", RigidbodyType::BOX);
 
     std::shared_ptr<ForceGravity> forceGravity = std::make_shared<ForceGravity>();
     
@@ -127,7 +127,7 @@ int main(int argc, char** argv)
     float anchoredSpringConstant = 100.0f;
     std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpring = std::make_shared<ForceAnchoredSpring>(anchoredSpringConstant, 5.0f, Vector3f::Zero);
     
-    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpringRigidbody = std::make_shared<ForceAnchoredSpring>(anchoredSpringConstant, 5.0f, Vector3f::Zero, Vector3f(1.0f, -1.0f, 0.0f));
+    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpringRigidbody = std::make_shared<ForceAnchoredSpring>(anchoredSpringConstant, 5.0f, Vector3f::Zero, Vector3f(1.0f, 1.0f, 1.0f));
     std::shared_ptr<ForceBuoyancy> forceBuoyancy = std::make_shared<ForceBuoyancy>(1.f, 1.f, 1.f, 1.f);
 
     //physics.AddParticle(particle);

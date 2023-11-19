@@ -15,12 +15,13 @@ Rigidbody::Rigidbody()
 	m_angularAcceleration(Vector3f::Zero),
 	inertiaTensor(GetBoxInertiaTensorLocal()),
 	mass(MIN_MASS),
-	inverseMass(1.0f / MIN_MASS)
+	inverseMass(1.0f / MIN_MASS),
+	type(RigidbodyType::BOX)
 {
 	CalculateDerivedData();
 }
 
-Rigidbody::Rigidbody(Transform transform, Vector3f velocity, Vector3f acceleration, float mass, Vector3f angularVelocity, Vector3f angularAcceleration, Vector3f momentOfInertia, std::string name)
+Rigidbody::Rigidbody(Transform transform, Vector3f velocity, Vector3f acceleration, float mass, Vector3f angularVelocity, Vector3f angularAcceleration, Vector3f momentOfInertia, std::string name, RigidbodyType type)
 	:
 	transform(transform),
 	velocity(velocity),
@@ -30,7 +31,8 @@ Rigidbody::Rigidbody(Transform transform, Vector3f velocity, Vector3f accelerati
 	angularVelocity(angularVelocity),
 	m_angularAcceleration(angularAcceleration),
 	inertiaTensor(GetBoxInertiaTensorLocal()),
-	name(name)
+	name(name),
+	type(type)
 {
 	CalculateDerivedData();
 	inverseMass = 1.0f / mass;
@@ -215,7 +217,20 @@ void Rigidbody::CalculateInverseInertiaTensor()
 
 void Rigidbody::CalculateInverseInertiaTensorWorld()
 {
-	inverseInertiaTensor = GetBoxInertiaTensorWorld().Inverse();
+	switch (type) 
+	{
+	case RigidbodyType::BOX:
+		inverseInertiaTensor = GetBoxInertiaTensorWorld().Inverse();
+		break;
+	case RigidbodyType::SPHERE:
+		inverseInertiaTensor = GetSphereInertiaTensorWorld().Inverse();
+		break;
+	case RigidbodyType::TRIANGLE:
+		inverseInertiaTensor = GetTriangleInertiaTensorWorld().Inverse();
+		break;
+	default:
+		inverseInertiaTensor = GetBoxInertiaTensorWorld().Inverse();
+	}
 }
 
 Matrix3f Rigidbody::GetTriangleInertiaTensorLocal()
@@ -308,4 +323,32 @@ Matrix3f Rigidbody::GetInertiaTensorWorld()
 		});
 
 	return iitWorld;
+}
+
+void Rigidbody::CalculateProductOfInertia()
+{
+	float Ixy = 0.0f;
+	float Ixz = 0.0f;
+	float Iyz = 0.0f;
+
+	for (std::size_t i = 0; i < massPoints.size(); i++) 
+	{
+		for (std::size_t j = i + 1; j < massPoints.size(); j++) 
+		{
+			float x1 = massPoints[i].x;
+			float y1 = massPoints[i].y;
+			float z1 = massPoints[i].z;
+
+			float x2 = massPoints[j].x;
+			float y2 = massPoints[j].y;
+			float z2 = massPoints[j].z;
+
+			float mass1 = 1.0f;
+			float mass2 = 1.0f;
+
+			Ixy += (y1 * y2 + z1 * z2) * mass1 * mass2;
+			Ixz += (x1 * x2 + z1 * z2) * mass1 * mass2;
+			Iyz += (x1 * x2 + y1 * y2) * mass1 * mass2;
+		}
+	}
 }
