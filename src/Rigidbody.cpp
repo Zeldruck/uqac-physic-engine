@@ -70,6 +70,11 @@ Vector3f Rigidbody::GetPointInWorldSpace(const Vector3f& point)
 	return transformMatrix * point;
 }
 
+Vector3f Rigidbody::GetPointInLocalSpace(const Vector3f& point)
+{
+	return transformMatrix.Inverse() * point;
+}
+
 void Rigidbody::AddForceAtPoint(const Vector3f& f, const Vector3f& point)
 {
 	Vector3f pt = point;
@@ -307,7 +312,7 @@ Matrix3f Rigidbody::GetInertiaTensorWorld()
 	return iitWorld;
 }
 
-void Rigidbody::CalculateInertiaMatrix()
+Matrix3f Rigidbody::CalculateInertiaMatrix()
 {
 	float Ixx = 0.0f;
 	float Iyy = 0.0f;
@@ -335,7 +340,11 @@ void Rigidbody::CalculateInertiaMatrix()
 	//	inertiaMatrix[2][2] += m * (x * x + y * y);
 	//}
 
-	//return inertiaMatrix;
+	return Matrix3f({
+		Ixx, Ixy, Ixz,
+		Ixy, Iyy, Iyz,
+		Ixz, Iyz, Izz
+		});
 }
 
 void Rigidbody::CalculateCenterOfMass()

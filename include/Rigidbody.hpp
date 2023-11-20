@@ -33,10 +33,6 @@ public:
 	float inverseMass;
 	float linearDamping;
 	float angularDamping;
-	
-	std::vector<Particle> massPoints;
-	void CalculateInertiaMatrix();
-	void CalculateCenterOfMass();
 
 	Matrix4f transformMatrix;
 	Matrix3f inertiaTensor;
@@ -48,7 +44,7 @@ public:
 	Matrix3f GetTriangleInertiaTensorLocal();
 	Matrix3f GetTriangleInertiaTensorWorld();
 	Matrix3f GetInertiaTensorWorld();
-	void SetInertiaTensor(const Matrix3f& inertiaTensor);
+	void SetInertiaTensor(const Matrix3f& inertiaTensor);	//	for testing purpose
 
 	void ClearForce();
 	void ClearTorque();
@@ -70,6 +66,12 @@ public:
 	void SetAngularAcceleration(const Vector3f& angularAcceleration); // for testing purpose
 
 	Vector3f GetPointInWorldSpace(const Vector3f& point);
+	Vector3f GetPointInLocalSpace(const Vector3f& point);
+
+	// WIP
+	std::vector<Particle> massPoints;
+	Matrix3f CalculateInertiaMatrix();
+	void CalculateCenterOfMass();
 
 private:
 	Vector3f m_acceleration;
