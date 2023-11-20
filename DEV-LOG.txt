@@ -13,14 +13,23 @@ Références utilisées:
 - https://xmake.io
 
 
-
 TP2:
 Tâches:
 - Générateurs de forces: Lan-Anh Virginie Nguyen
 - Générateurs de contacts: Félix Jouanneau
 - Graphiques: Lan-Anh Virginie Nguyen & Félix Jouanneau
 
+Références utilisées:
+- https://learnopengl.com
+- https://wikipedia.org
+
+TP3:
+Tâches:
+- Mathématique (Matrice 3, Matrice 4, Quaternion): Félix Jouanneau
+- Rigidbody: Lan-Anh Virginie Nguyen
+- Graphiques: Félix Jouanneau & Lan-Anh Virginie Nguyen
 
 Références utilisées:
 - https://learnopengl.com
 - https://wikipedia.org
+- Millington chapitre 9, 10, 11
