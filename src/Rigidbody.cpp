@@ -24,7 +24,7 @@ Rigidbody::Rigidbody()
 	CalculateCenterOfMass();
 }
 
-Rigidbody::Rigidbody(Transform transform, Vector3f velocity, Vector3f acceleration, float mass, Vector3f angularVelocity, Vector3f angularAcceleration, Vector3f momentOfInertia, std::string name, RigidbodyType type, std::vector<Particle> massPoints /*= std::vector<Particle>()*/)
+Rigidbody::Rigidbody(Transform transform, Vector3f velocity, Vector3f acceleration, float mass, Vector3f angularVelocity, Vector3f angularAcceleration, Vector3f momentOfInertia, std::string name, RigidbodyType type, std::vector<Particle> massPoints /*= std::vector<Particle>()*/, float linearDamping/* = 0.0f*/, float angularDamping/*= 0.5f*/)
 	:
 	transform(transform),
 	velocity(velocity),
@@ -36,7 +36,9 @@ Rigidbody::Rigidbody(Transform transform, Vector3f velocity, Vector3f accelerati
 	inertiaTensor(GetBoxInertiaTensorLocal()),
 	name(name),
 	type(type),
-	massPoints(std::vector<Particle>())
+	massPoints(std::vector<Particle>()),
+	linearDamping(linearDamping),
+	angularDamping(angularDamping)
 {
 	CalculateDerivedData();
 	CalculateCenterOfMass();
@@ -66,16 +68,6 @@ void Rigidbody::RemoveForce(const Vector3f& f)
 Vector3f Rigidbody::GetPointInWorldSpace(const Vector3f& point)
 {
 	return transformMatrix * point;
-}
-
-void Rigidbody::AddTorque(const Vector3f& t)
-{
-	torque += t;
-}
-
-void Rigidbody::RemoveTorque(const Vector3f& t)
-{
-	torque -= t;
 }
 
 void Rigidbody::AddForceAtPoint(const Vector3f& f, const Vector3f& point)

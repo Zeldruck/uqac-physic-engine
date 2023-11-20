@@ -27,7 +27,7 @@ void EulerIntegrator::Update(std::vector<std::shared_ptr<Particle>>& particles, 
 		//rigidbody->angularVelocity = Vector3f(10.0f, 0.0f, 10.f);
 		//----- 
 		
-		rigidbody->angularVelocity += rigidbody->GetAngularAcceleration() * deltaTime; 
+		rigidbody->angularVelocity += rigidbody->GetAngularAcceleration() * deltaTime * (1.f - rigidbody->angularDamping);
 		Quaternionf newRotation = Quaternionf(0.f, rigidbody->angularVelocity.x, rigidbody->angularVelocity.y, rigidbody->angularVelocity.z) * deltaTime;
 		rigidbody->transform.rotation = rigidbody->transform.rotation + newRotation * rigidbody->transform.rotation * 0.5f;
 		rigidbody->transform.rotation.Normalize();
