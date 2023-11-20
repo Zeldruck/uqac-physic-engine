@@ -21,7 +21,7 @@ Rigidbody::Rigidbody()
 	massPoints(std::vector<Particle>())
 {
 	inertiaTensor = GetBoxInertiaTensorLocal();
-	inertiaTensor = GetInertiaTensorWorld();
+	inverseInertiaTensor = inertiaTensor.Inverse();
 	CalculateDerivedData();
 	CalculateCenterOfMass();
 }
@@ -41,10 +41,6 @@ Rigidbody::Rigidbody(Transform transform, Vector3f velocity, Vector3f accelerati
 	linearDamping(linearDamping),
 	angularDamping(angularDamping)
 {
-	CalculateDerivedData();
-	CalculateCenterOfMass();
-	inverseMass = 1.0f / mass;
-
 	switch (type)
 	{
 	case BOX:
@@ -67,7 +63,10 @@ Rigidbody::Rigidbody(Transform transform, Vector3f velocity, Vector3f accelerati
 		break;
 	}
 
-	inertiaTensor = GetInertiaTensorWorld();
+	inverseInertiaTensor = inertiaTensor.Inverse();
+	CalculateDerivedData();
+	CalculateCenterOfMass();
+	inverseMass = 1.0f / mass;
 }
 
 void Rigidbody::ClearForce()
@@ -83,11 +82,6 @@ void Rigidbody::ClearTorque()
 void Rigidbody::AddForce(const Vector3f& f)
 {
 	force += f;
-}
-
-void Rigidbody::RemoveForce(const Vector3f& f)
-{
-	force -= f;
 }
 
 Vector3f Rigidbody::GetPointInWorldSpace(const Vector3f& point)
@@ -114,38 +108,16 @@ void Rigidbody::AddForceAtBodyPoint(const Vector3f& f, const Vector3f& point)
 	AddForceAtPoint(f, pt);
 }
 
-void Rigidbody::RemoveForceAtPoint(const Vector3f& f, const Vector3f& point)
-{
-	force -= f;
-	torque -= (point - transform.position).Cross(f);
-}
-
-void Rigidbody::RemoveForceAtBodyPoint(const Vector3f& f, const Vector3f& point)
-{
-	force -= f;
-	torque -= point.Cross(f);
-}
-
 Vector3f const Rigidbody::GetAcceleration()
 {
 	m_acceleration = force * inverseMass;
 	return m_acceleration;
 }
 
-void Rigidbody::SetAcceleration(const Vector3f& acceleration)
-{
-	m_acceleration = acceleration;
-}
-
 Vector3f const Rigidbody::GetAngularAcceleration()
 {
-	m_angularAcceleration = inverseInertiaTensor * torque;
+	m_angularAcceleration = inverseInertiaTensorWorld * torque;
 	return m_angularAcceleration;
-}
-
-void Rigidbody::SetAngularAcceleration(const Vector3f& acceleration)
-{
-	m_angularAcceleration = acceleration;
 }
 
 void Rigidbody::CalculateTransformMatrix()
@@ -170,7 +142,7 @@ void Rigidbody::CalculateTransformMatrix()
 void Rigidbody::CalculateDerivedData()
 {
 	CalculateTransformMatrix();
-	CalculateInverseInertiaTensor();
+	inverseInertiaTensorWorld = GetInverseInertiaTensorWorld();
 }
 
 Matrix3f Rigidbody::GetBoxInertiaTensorLocal()
@@ -200,16 +172,6 @@ Matrix3f Rigidbody::GetSphereInertiaTensorLocal()
 		0.0f, I, 0.0f,
 		0.0f, 0.0f, I
 		});
-}
-
-void Rigidbody::SetInertiaTensor(const Matrix3f& _inertiaTensor)
-{
-	inertiaTensor = _inertiaTensor;
-}
-
-void Rigidbody::CalculateInverseInertiaTensor()
-{
-	inverseInertiaTensor = inertiaTensor.Inverse();
 }
 
 Matrix3f Rigidbody::GetTriangleInertiaTensorLocal()
@@ -261,9 +223,8 @@ Matrix3f Rigidbody::GetCylinderInertiaTensorLocal()
 		});
 }
 
-Matrix3f Rigidbody::GetInertiaTensorWorld()
+Matrix3f Rigidbody::GetInverseInertiaTensorWorld()
 {
-	CalculateInverseInertiaTensor();
 	Matrix3f iitLocal = inverseInertiaTensor;
 	Quaternion q = transform.rotation;
 	Matrix4f rotM = transformMatrix;

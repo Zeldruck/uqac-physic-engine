@@ -40,32 +40,26 @@ public:
 	Matrix4f transformMatrix;
 	Matrix3f inertiaTensor;
 	Matrix3f inverseInertiaTensor;
+	Matrix3f inverseInertiaTensorWorld;
 	Matrix3f GetBoxInertiaTensorLocal();
 	Matrix3f GetSphereInertiaTensorLocal();
 	Matrix3f GetTriangleInertiaTensorLocal();
 	Matrix3f GetRodInertiaTensorLocal();
 	Matrix3f GetRodEndInertiaTensorLocal();
 	Matrix3f GetCylinderInertiaTensorLocal();
-	Matrix3f GetInertiaTensorWorld();
-	void SetInertiaTensor(const Matrix3f& inertiaTensor);	//	for testing purpose
+	Matrix3f GetInverseInertiaTensorWorld();
 
 	void ClearForce();
 	void ClearTorque();
 	void AddForce(const Vector3f& force);
-	void RemoveForce(const Vector3f& force);
 	void AddForceAtPoint(const Vector3f& force, const Vector3f& point);
 	void AddForceAtBodyPoint(const Vector3f& force, const Vector3f& point);
-	void RemoveForceAtPoint(const Vector3f& force, const Vector3f& point);
-	void RemoveForceAtBodyPoint(const Vector3f& force, const Vector3f& point);
 
 	void CalculateTransformMatrix();
-	void CalculateInverseInertiaTensor();
 	void CalculateDerivedData();
 
 	Vector3f const GetAcceleration();
-	void SetAcceleration(const Vector3f& acceleration);	// for testing purpose
 	Vector3f const GetAngularAcceleration();
-	void SetAngularAcceleration(const Vector3f& angularAcceleration); // for testing purpose
 
 	Vector3f GetPointInWorldSpace(const Vector3f& point);
 	Vector3f GetPointInLocalSpace(const Vector3f& point);
