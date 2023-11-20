@@ -321,24 +321,22 @@ Matrix3f Rigidbody::CalculateInertiaMatrix()
 	float Ixz = 0.0f;
 	float Iyz = 0.0f;
 
-	//// Calculate the product of inertia components
-	//for (const Particle& massPoint : massPoints) {
-	//	double x = massPoint.position.x;
-	//	double y = massPoint.position.y;
-	//	double z = massPoint.position.z;
-	//	double m = massPoint.mass;
+	// Calculate the product of inertia components
+	for (const Particle& massPoint : massPoints) 
+	{
+		float x = massPoint.position.x - centerOfMass.x;
+		float y = massPoint.position.y - centerOfMass.y;
+		float z = massPoint.position.z - centerOfMass.z;
+		float m = massPoint.mass;
 
-	//	// Update the matrix components
-	//	inertiaMatrix[0][0] += m * (y * y + z * z);
-	//	inertiaMatrix[0][1] -= m * (x * y);
-	//	inertiaMatrix[0][2] -= m * (x * z);
-	//	inertiaMatrix[1][0] -= m * (x * y);
-	//	inertiaMatrix[1][1] += m * (x * x + z * z);
-	//	inertiaMatrix[1][2] -= m * (y * z);
-	//	inertiaMatrix[2][0] -= m * (x * z);
-	//	inertiaMatrix[2][1] -= m * (y * z);
-	//	inertiaMatrix[2][2] += m * (x * x + y * y);
-	//}
+		// Update the matrix components
+		Ixx += m * (y * y + z * z);
+		Iyy += m * (x * x + z * z);
+		Izz += m * (x * x + y * y);
+		Ixy -= m * (x * y);
+		Ixz -= m * (x * z);
+		Iyz -= m * (y * z);
+	}
 
 	return Matrix3f({
 		Ixx, Ixy, Ixz,
