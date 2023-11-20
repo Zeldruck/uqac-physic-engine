@@ -53,6 +53,7 @@ void ImguiStatsPanel(float deltaTime);
 void Vector3ClassTest();
 double HiresTimeInSeconds();
 void ImguiSceneSelection();
+void ImguiRigidbodyData(std::shared_ptr<Rigidbody> rigidbody);
 
 enum class Scene
 {
@@ -99,20 +100,21 @@ int main(int argc, char** argv)
 #pragma endregion
 
 #pragma region Rigidbody
-    std::shared_ptr<Rigidbody> rigidbodyBox = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f, 0.f, 45.f * Deg2Rad, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Cube", RigidbodyType::BOX);
+    std::shared_ptr<Rigidbody> rigidbodyBox = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f, 0.f, 45.f * Deg2Rad, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Cube", RigidbodyType::BOX, std::vector<Particle>(), 0.0f, 0.9f);
     physics.AddRigidbody(rigidbodyBox);
 
-    std::shared_ptr<Rigidbody> rigidbodyTriangle = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f, 0.f, 45.f * Deg2Rad, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Triangle", RigidbodyType::TRIANGLE);
+    std::shared_ptr<Rigidbody> rigidbodyTriangle = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f, 0.f, 0.f, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Triangle", RigidbodyType::TRIANGLE);
     physics.AddRigidbody(rigidbodyTriangle);
 
     std::shared_ptr<ForceGravity> forceGravity = std::make_shared<ForceGravity>();
     std::shared_ptr<ForceDrag> weakForceDrag = std::make_shared<ForceDrag>(5.0f, 0.0f);
-    float anchoredSpringConstant = 100.0f;
-    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpringCube = std::make_shared<ForceAnchoredSpring>(anchoredSpringConstant, 5.0f, Vector3f::Zero, Vector3f(1.0f, 1.0f, 1.0f));
-    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpringTriangle = std::make_shared<ForceAnchoredSpring>(anchoredSpringConstant, 5.0f, Vector3f::Zero, Vector3f(1.0f, 1.0f, 1.0f));
+    std::shared_ptr<ForceDrag> strongForceDrag = std::make_shared<ForceDrag>(20.0f, 0.0f);
+
+    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpringCube = std::make_shared<ForceAnchoredSpring>(100.f, 5.0f, Vector3f::Zero, Vector3f(0.0f, 1.0f, 1.0f));
+    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpringTriangle = std::make_shared<ForceAnchoredSpring>(10.f, 5.0f, Vector3f::Zero, Vector3f(0.5f, 0.5f, 0.5f));
 
     forceRegistry->Add(rigidbodyBox, forceGravity);
-    forceRegistry->Add(rigidbodyBox, weakForceDrag);
+    forceRegistry->Add(rigidbodyBox, strongForceDrag);
     forceRegistry->Add(rigidbodyBox, forceAnchoredSpringCube);
 
     forceRegistry->Add(rigidbodyTriangle, forceGravity);
@@ -306,6 +308,8 @@ int main(int argc, char** argv)
             // rotation on Z Axis
             model = glm::rotate(model, cubeRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
             glDrawArrays(GL_TRIANGLES, 0, 36);
+
+            //ImguiRigidbodyData(rigidbodyBox);
             break;
 
         case Scene::SCENE_2:
@@ -318,6 +322,8 @@ int main(int argc, char** argv)
             // rotation on Z Axis
             model = glm::rotate(model, triangleRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
             glDrawArrays(GL_TRIANGLES, 0, 12);
+            
+            //ImguiRigidbodyData(rigidbodyTriangle);
             break;
         }
         ourShader.SetMat4("model", model);
@@ -326,24 +332,8 @@ int main(int argc, char** argv)
 
         ImguiStatsPanel(deltaTime);
         ImguiSceneSelection();
-
-        ImGui::Begin("Rigidbody Data");
-        ImGui::Text("%s", rigidbodyBox->name.c_str());
-        ImGui::Text("%s position: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->transform.position.x, rigidbodyBox->transform.position.y, rigidbodyBox->transform.position.z);
-        ImGui::Text("%s velocity: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->velocity.x, rigidbodyBox->velocity.y, rigidbodyBox->velocity.z);
-        ImGui::Text("%s acceleration: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->GetAcceleration().x, rigidbodyBox->GetAcceleration().y, rigidbodyBox->GetAcceleration().z);
-        ImGui::Text("%s mass: %f", rigidbodyBox->name.c_str(), rigidbodyBox->mass);
-        ImGui::Text("%s rotation (rad): (%f, %f, %f) %f", rigidbodyBox->name.c_str(), rigidbodyBox->transform.rotation.GetX(), rigidbodyBox->transform.rotation.GetY(), rigidbodyBox->transform.rotation.GetZ(), rigidbodyBox->transform.rotation.GetS());
-        ImGui::Text("%s angular velocity: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->angularVelocity.x, rigidbodyBox->angularVelocity.y, rigidbodyBox->angularVelocity.z);
-        ImGui::Text("%s angular acceleration: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->GetAngularAcceleration().x, rigidbodyBox->GetAngularAcceleration().y, rigidbodyBox->GetAngularAcceleration().z);
-        ImGui::Text("%s inverseMass: %f", rigidbodyBox->name.c_str(), rigidbodyBox->inverseMass);
-        ImGui::Text("%s transformMatrix:\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f",
-            rigidbodyBox->name.c_str(),
-            rigidbodyBox->transformMatrix.Value(0, 0), rigidbodyBox->transformMatrix.Value(0, 1), rigidbodyBox->transformMatrix.Value(0, 2), rigidbodyBox->transformMatrix.Value(0, 3),
-            rigidbodyBox->transformMatrix.Value(1, 0), rigidbodyBox->transformMatrix.Value(1, 1), rigidbodyBox->transformMatrix.Value(1, 2), rigidbodyBox->transformMatrix.Value(1, 3),
-            rigidbodyBox->transformMatrix.Value(2, 0), rigidbodyBox->transformMatrix.Value(2, 1), rigidbodyBox->transformMatrix.Value(2, 2), rigidbodyBox->transformMatrix.Value(2, 3),
-            rigidbodyBox->transformMatrix.Value(3, 0), rigidbodyBox->transformMatrix.Value(3, 1), rigidbodyBox->transformMatrix.Value(3, 2), rigidbodyBox->transformMatrix.Value(3, 3));
-        ImGui::End();
+        ImguiRigidbodyData(rigidbodyBox);
+        ImguiRigidbodyData(rigidbodyTriangle);
 
         imguiCpp.Render();
 
@@ -498,5 +488,26 @@ void ImguiSceneSelection() {
         currentScene = Scene::SCENE_1;
     if (ImGui::Button("Scene 2"))
         currentScene = Scene::SCENE_2;
+    ImGui::End();
+}
+
+void ImguiRigidbodyData(std::shared_ptr<Rigidbody> rigidbody)
+{
+    ImGui::Begin("Rigidbody Data");
+    ImGui::Text("%s", rigidbody->name.c_str());
+    ImGui::Text("%s position: (%f, %f, %f)", rigidbody->name.c_str(), rigidbody->transform.position.x, rigidbody->transform.position.y, rigidbody->transform.position.z);
+    ImGui::Text("%s velocity: (%f, %f, %f)", rigidbody->name.c_str(), rigidbody->velocity.x, rigidbody->velocity.y, rigidbody->velocity.z);
+    ImGui::Text("%s acceleration: (%f, %f, %f)", rigidbody->name.c_str(), rigidbody->GetAcceleration().x, rigidbody->GetAcceleration().y, rigidbody->GetAcceleration().z);
+    ImGui::Text("%s mass: %f", rigidbody->name.c_str(), rigidbody->mass);
+    ImGui::Text("%s rotation (rad): (%f, %f, %f) %f", rigidbody->name.c_str(), rigidbody->transform.rotation.GetX(), rigidbody->transform.rotation.GetY(), rigidbody->transform.rotation.GetZ(), rigidbody->transform.rotation.GetS());
+    ImGui::Text("%s angular velocity: (%f, %f, %f)", rigidbody->name.c_str(), rigidbody->angularVelocity.x, rigidbody->angularVelocity.y, rigidbody->angularVelocity.z);
+    ImGui::Text("%s angular acceleration: (%f, %f, %f)", rigidbody->name.c_str(), rigidbody->GetAngularAcceleration().x, rigidbody->GetAngularAcceleration().y, rigidbody->GetAngularAcceleration().z);
+    ImGui::Text("%s inverseMass: %f", rigidbody->name.c_str(), rigidbody->inverseMass);
+    ImGui::Text("%s transformMatrix:\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f",
+        rigidbody->name.c_str(),
+        rigidbody->transformMatrix.Value(0, 0), rigidbody->transformMatrix.Value(0, 1), rigidbody->transformMatrix.Value(0, 2), rigidbody->transformMatrix.Value(0, 3),
+        rigidbody->transformMatrix.Value(1, 0), rigidbody->transformMatrix.Value(1, 1), rigidbody->transformMatrix.Value(1, 2), rigidbody->transformMatrix.Value(1, 3),
+        rigidbody->transformMatrix.Value(2, 0), rigidbody->transformMatrix.Value(2, 1), rigidbody->transformMatrix.Value(2, 2), rigidbody->transformMatrix.Value(2, 3),
+        rigidbody->transformMatrix.Value(3, 0), rigidbody->transformMatrix.Value(3, 1), rigidbody->transformMatrix.Value(3, 2), rigidbody->transformMatrix.Value(3, 3));
     ImGui::End();
 }
