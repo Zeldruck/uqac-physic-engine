@@ -12,7 +12,10 @@ enum RigidbodyType
 {
 	BOX,
 	SPHERE,
-	TRIANGLE
+	TRIANGLE,
+	ROD,
+	RODEND,
+	CYLINDER
 };
 
 class Rigidbody
@@ -39,10 +42,10 @@ public:
 	Matrix3f inverseInertiaTensor;
 	Matrix3f GetBoxInertiaTensorLocal();
 	Matrix3f GetSphereInertiaTensorLocal();
-	Matrix3f GetBoxInertiaTensorWorld();
-	Matrix3f GetSphereInertiaTensorWorld();
 	Matrix3f GetTriangleInertiaTensorLocal();
-	Matrix3f GetTriangleInertiaTensorWorld();
+	Matrix3f GetRodInertiaTensorLocal();
+	Matrix3f GetRodEndInertiaTensorLocal();
+	Matrix3f GetCylinderInertiaTensorLocal();
 	Matrix3f GetInertiaTensorWorld();
 	void SetInertiaTensor(const Matrix3f& inertiaTensor);	//	for testing purpose
 
@@ -57,7 +60,6 @@ public:
 
 	void CalculateTransformMatrix();
 	void CalculateInverseInertiaTensor();
-	void CalculateInverseInertiaTensorWorld();
 	void CalculateDerivedData();
 
 	Vector3f const GetAcceleration();
@@ -68,7 +70,7 @@ public:
 	Vector3f GetPointInWorldSpace(const Vector3f& point);
 	Vector3f GetPointInLocalSpace(const Vector3f& point);
 
-	// WIP
+	// WIP OR TO DELETE
 	std::vector<Particle> massPoints;
 	Matrix3f CalculateInertiaMatrix();
 	void CalculateCenterOfMass();
