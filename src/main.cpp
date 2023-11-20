@@ -53,22 +53,12 @@ void ImguiStatsPanel(float deltaTime);
 void Vector3ClassTest();
 double HiresTimeInSeconds();
 void ImguiSceneSelection();
-
-void Scene1(cppGLFWwindow& window, cppGLFW& glfw, ImguiCpp& imgui);
-void Scene2(cppGLFWwindow& window, cppGLFW& glfw, ImguiCpp& imgui);
-//void Scene3(cppGLFWwindow& window, cppGLFW& glfw, ImguiCpp& imgui);
-//void Scene4(cppGLFWwindow& window, cppGLFW& glfw, ImguiCpp& imgui);
-//void Scene5(cppGLFWwindow& window, cppGLFW& glfw, ImguiCpp& imgui);
-//void Scene6(cppGLFWwindow& window, cppGLFW& glfw, ImguiCpp& imgui);
+void ImguiRigidbodyData(std::shared_ptr<Rigidbody> rigidbody);
 
 enum class Scene
 {
     SCENE_1,
-    SCENE_2,
-    SCENE_3,
-    SCENE_4,
-    SCENE_5,
-    SCENE_6
+    SCENE_2
 };
 
 // Current scene
@@ -102,162 +92,54 @@ int main(int argc, char** argv)
 
     glEnable(GL_DEPTH_TEST);
 
+    ImguiCpp imguiCpp(&window);
 
-    /*Vector3ClassTest();
-
-    #pragma region Physics
+#pragma region  Physics System
     std::shared_ptr<ForceRegistry> forceRegistry = std::make_shared<ForceRegistry>();
-    //std::shared_ptr<TorqueRegistry> torqueRegistry = std::make_shared<TorqueRegistry>();
     PhysicsSystem physics(forceRegistry);
-    std::shared_ptr<Particle> particle = std::make_shared<Particle>(Vector3f(5.f, 20.f, 0.0f), Vector3f::Zero, Vector3f::Zero, 1.f, "Particle");
-    std::shared_ptr<Particle> particle2 = std::make_shared<Particle>(Vector3f(-5.f, 20.0f, 0.0f), Vector3f::Zero, Vector3f::Zero, 1.f, "Particle2");
-    std::shared_ptr<Particle> particle3 = std::make_shared<Particle>(Vector3f(5.0f, 10.f, 0.0f), Vector3f::Zero, Vector3f::Zero, 1.f, "Particle3");
-    std::shared_ptr<Particle> particle4 = std::make_shared<Particle>(Vector3f(-5.0f, 10.0f, 0.0f), Vector3f::Zero, Vector3f::Zero, 1.f, "Particle4");
+#pragma endregion
 
-    std::shared_ptr<Rigidbody> rigidbody1Box = std::make_shared<Rigidbody>(Transform(Vector3f(5.f, 0.f, 0.f), Quaternionf(1.f, 0.f, 0.f, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody", RigidbodyType::BOX);
-    std::shared_ptr<Rigidbody> rigidbody2Box = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f,0.f,45.f * Deg2Rad,0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody2", RigidbodyType::BOX);
+#pragma region Rigidbody
+    std::shared_ptr<Rigidbody> rigidbodyBox = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f, 0.f, 45.f * Deg2Rad, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Cube", RigidbodyType::BOX, std::vector<Particle>(), 0.0f, 0.9f);
+    physics.AddRigidbody(rigidbodyBox);
 
-    std::shared_ptr<Rigidbody> rigidbody3Triangle = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f, 0.f, 45.f * Deg2Rad, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody3", RigidbodyType::TRIANGLE);
-
+    std::shared_ptr<Rigidbody> rigidbodyTriangle = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f, 0.f, 0.f, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Triangle", RigidbodyType::TRIANGLE);
+    physics.AddRigidbody(rigidbodyTriangle);
 
     std::shared_ptr<ForceGravity> forceGravity = std::make_shared<ForceGravity>();
-    
     std::shared_ptr<ForceDrag> weakForceDrag = std::make_shared<ForceDrag>(5.0f, 0.0f);
-    std::shared_ptr<ForceDrag> strongForceDrag = std::make_shared<ForceDrag>(1.0f, 0.0f);
+    std::shared_ptr<ForceDrag> strongForceDrag = std::make_shared<ForceDrag>(20.0f, 0.0f);
 
-    float springConstant = 10.f;
-    std::shared_ptr<ForceSpring> forceSpring12 = std::make_shared<ForceSpring>(
-        springConstant,
-        (particle->position - particle2->position).GetLength() - 5.f,
-        particle);
-    std::shared_ptr<ForceSpring> forceSpring23 = std::make_shared<ForceSpring>(
-        springConstant,
-        (particle2->position - particle3->position).GetLength(),
-        particle2);
-    std::shared_ptr<ForceSpring> forceSpring34 = std::make_shared<ForceSpring>(
-        springConstant,
-        (particle3->position - particle4->position).GetLength(),
-        particle3);
-    std::shared_ptr<ForceSpring> forceSpring41 = std::make_shared<ForceSpring>(
-        springConstant,
-        (particle4->position - particle->position).GetLength(),
-        particle4);
+    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpringCube = std::make_shared<ForceAnchoredSpring>(100.f, 5.0f, Vector3f::Zero, Vector3f(0.0f, 1.0f, 1.0f));
+    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpringTriangle = std::make_shared<ForceAnchoredSpring>(10.f, 5.0f, Vector3f::Zero, Vector3f(0.5f, 0.5f, 0.5f));
 
-    std::shared_ptr<ForceSpring> forceSpringr2r1 = std::make_shared<ForceSpring>(
-        springConstant,
-        (rigidbody2Box->transform.position - rigidbody1Box->transform.position).GetLength() - 1.0f,
-        rigidbody1Box,
-        Vector3f(1.0f, -1.0f, 0.0f),
-        Vector3f(-1.0f, 1.0f, 0.0f));
-    
-    float anchoredSpringConstant = 100.0f;
-    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpring = std::make_shared<ForceAnchoredSpring>(anchoredSpringConstant, 5.0f, Vector3f::Zero);
-    
-    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpringRigidbody = std::make_shared<ForceAnchoredSpring>(anchoredSpringConstant, 5.0f, Vector3f::Zero, Vector3f(1.0f, 1.0f, 1.0f));
-    std::shared_ptr<ForceBuoyancy> forceBuoyancy = std::make_shared<ForceBuoyancy>(1.f, 1.f, 1.f, 1.f);
+    forceRegistry->Add(rigidbodyBox, forceGravity);
+    forceRegistry->Add(rigidbodyBox, strongForceDrag);
+    forceRegistry->Add(rigidbodyBox, forceAnchoredSpringCube);
 
-    //physics.AddParticle(particle);
-    //physics.AddParticle(particle2);
-    //physics.AddParticle(particle3);
-    //physics.AddParticle(particle4);
-    
-    physics.AddRigidbody(rigidbody1Box);
-    physics.AddRigidbody(rigidbody2Box);
+    forceRegistry->Add(rigidbodyTriangle, forceGravity);
+    forceRegistry->Add(rigidbodyTriangle, weakForceDrag);
+    forceRegistry->Add(rigidbodyTriangle, forceAnchoredSpringTriangle);
+#pragma endregion
 
-    //forceRegistry->Add(particle, forceSpring41);
-    //forceRegistry->Add(particle2, forceSpring12);
-    //forceRegistry->Add(particle3, forceSpring23);
-    //forceRegistry->Add(particle4, forceSpring34);
-
-    //forceRegistry->Add(particle, forceAnchoredSpring);
-    //forceRegistry->Add(particle2, forceAnchoredSpring);
-    //forceRegistry->Add(particle3, forceAnchoredSpring);
-    //forceRegistry->Add(particle4, forceAnchoredSpring);
-    //
-    //forceRegistry->Add(particle, forceGravity);
-    //forceRegistry->Add(particle3, forceGravity);
-    //
-    //forceRegistry->Add(particle, weakForceDrag);
-    //forceRegistry->Add(particle2, strongForceDrag);
-    //forceRegistry->Add(particle3, strongForceDrag);
-    //forceRegistry->Add(particle4, strongForceDrag);
-
-    //forceRegistry->Add(rigidbody, forceGravity);
-    forceRegistry->Add(rigidbody2Box, forceGravity);
-    
-    //forceRegistry->Add(rigidbody, strongForceDrag);
-    forceRegistry->Add(rigidbody2Box, weakForceDrag);
-
-    forceRegistry->Add(rigidbody2Box, forceAnchoredSpringRigidbody);
-    //forceRegistry->Add(rigidbody2, forceSpringr2r1);
-
-    #pragma endregion
-
-    // Game variables
-    Vector3f direction(0.0f, 1.0f, 0.0f);
-    float power = 4.f;
-    bool isParticleLaunched = false;
-    bool isGravityEnabled = true;
-   
-    #pragma region Contacts
-    ParticleContactResolver contactResolver(50);
-
-    std::vector<std::shared_ptr<ParticleContact>> contactArray;
-    std::vector<std::shared_ptr<ParticleContactGenerator>> contacts;
-
-    std::vector<std::shared_ptr<Particle>> particles12 = {particle, particle2};
-    std::vector<std::shared_ptr<Particle>> particles23 = {particle2, particle3};
-    std::vector<std::shared_ptr<Particle>> particles34 = {particle3, particle4};
-    std::vector<std::shared_ptr<Particle>> particles41 = {particle4, particle};
-
-    std::shared_ptr<ParticleCable> particleCable = std::make_shared<ParticleCable>(particles12, 15.f, 1.f);
-    std::shared_ptr<ParticleCable> particleCable2 = std::make_shared<ParticleCable>(particles23, 15.f, 1.f);
-    std::shared_ptr<ParticleCable> particleCable3 = std::make_shared<ParticleCable>(particles34, 15.f, 1.f);
-    std::shared_ptr<ParticleCable> particleCable4 = std::make_shared<ParticleCable>(particles41, 15.f, 1.f);
-    
-    //contacts.push_back(particleCable);
-    //contacts.push_back(particleCable2);
-    //contacts.push_back(particleCable3);
-    //contacts.push_back(particleCable4);
-
-    //contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles12), 15.f, 1.f));
-    //contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles23), 15.f, 1.f));
-    //contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles34), 15.f, 1.f));
-    //contacts->push_back(std::make_shared<ParticleCable>(std::shared_ptr<std::vector<std::shared_ptr<Particle>>>(particles41), 15.f, 1.f));
-        
-    // Rigidbody contacts ???
-    //std::vector<std::shared_ptr<Rigidbody>> rigidbody12 = { rigidbody, rigidbody2 };
-    //std::shared_ptr<ParticleCable> rigidbodyCable = std::make_shared<ParticleCable>(rigidbody12, 15.f, 1.f);
-    //contacts.push_back(rigidbodyCable);
-    #pragma endregion
-
-
-    #pragma region Timestep
+#pragma region Timestep
     double t = 0.0;
     double deltaTime = 0.01;
 
     double currentTime = HiresTimeInSeconds();
     double accumulator = 0.0;
-    #pragma endregion
+#pragma endregion
 
-    #pragma region Shader
+#pragma region Shader
 
     Shader ourShader("assets/shaders/test.vert", "assets/shaders/test.frag"); // To fix, so we can use real files for vert and frag shaders
 
-    //GLuint vertexPosition_modelspaceID = glGetAttribLocation(ourShader.ID, "vertexPosition_modelspace");
+#pragma endregion
 
-    #pragma endregion
+#pragma region Model
 
-    #pragma region Model
-
-    //Sphere sphere(0.f, 0.f);
-    //sphere.Init(vertexPosition_modelspaceID);
-
-    //glm::vec3 spherePosition = glm::vec3(0.0f, 0.0f, 0.0f);
-    //glm::vec3 sphereRotation = glm::vec3(0.0f, 0.0f, 0.0f);
-
-    // Set up vertex data (and buffer(s)) and configure vertex attributes
-    float vertices[] = {
+    // Cube
+    float cubeVertices[] = {
     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
      0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
      0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
@@ -301,34 +183,17 @@ int main(int argc, char** argv)
     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
 
-    glm::vec3 cubePositions[] = {
-    glm::vec3(0.0f, 0.0f, 0.0f),
-    glm::vec3(2.0f, 5.0f, -15.0f),
-    glm::vec3(-1.5f, -2.2f, -2.5f),
-    glm::vec3(-3.8f, -2.0f, -12.3f),
-    glm::vec3(0.0f, -5.0f, 0.0f),
-    glm::vec3(0.0f, -10.0f, 0.0f)
-    };
+    glm::vec3 cubePosition = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 cubeRotation = glm::vec3(0.0f, 0.0f, 0.0f);
 
-    // Cube rotation in Radians
-    glm::vec3 cubeRotations[] =
-    {
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(0.0f, 45.0f * Deg2Rad, 0.0f),
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(0.0f, 0.0f, 0.0f),
-    };
+    GLuint VBO1, VAO1;
+    glGenVertexArrays(1, &VAO1);
+    glGenBuffers(1, &VBO1);
 
-    unsigned int VBO, VAO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    
-    glBindVertexArray(VAO);
+    glBindVertexArray(VAO1);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO1);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -343,46 +208,51 @@ int main(int argc, char** argv)
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
     glBindVertexArray(0);
 
-    #pragma endregion
-    */ 
+    // vertices for a triangle pyramidal from :
+    // https://stackoverflow.com/questions/22714866/to-draw-tetrahedron-using-opengl-in-android-with-different-color-faces-but-gray
+    float triangleVertices[] = {
 
-    // Imgui setup
-    ImguiCpp imguiCpp(&window);
+        // FRONT Face
+        -1.0f, -1.0f,  1.0f,
+        1.0f, -1.0f,  1.0f,
+        1.0f,  1.0f,  1.0f,
 
-    switch (currentScene)
-    {
-        case Scene::SCENE_1:
-			Scene1(window, glfw, imguiCpp);
-			break;
-        case Scene::SCENE_2:
-            Scene2(window, glfw, imguiCpp);
-            break;
-   //     case Scene::SCENE_3:
-   //         Scene3(window, glfw, imguiCpp);
-			//break;
-   //     case Scene::SCENE_4:
-   //         Scene4(window, glfw, imguiCpp);
-   //         break;
-   //     case Scene::SCENE_5:
-   //         Scene5(window, glfw, imguiCpp);
-   //         break;
-   //     case Scene::SCENE_6:
-   //         Scene6(window, glfw, imguiCpp);
-   //         break;
-    }
+        //Right face
+        -1.0f, -1.0f,  1.0f,
+        1.0f,  1.0f, 1.0f,
+        -1.0f, -1.0f, -1.0f,
 
-    // Sphere
-    //Scene2(window, glfw, imguiCpp);
-    // Triangle
-    //Scene3(window, glfw, imguiCpp);
-    // Rod
-    //Scene4(window, glfw, imguiCpp);
-    //ROD END
-    //Scene5(window, glfw, imguiCpp);
-    //CYLINDER
-    //Scene6(window, glfw, imguiCpp);
+        // Left Face
+        1.0, -1.0f, 1.0f,
+        -1.0f, -1.0f, -1.0f,
+        1.0f,  1.0f, 1.0f,
 
-    /*// Game & window loop
+        // BOTTOM
+        -1.0f, -1.0f, 1.0f,
+        -1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f,  1.0f
+    };
+
+    glm::vec3 trianglePosition = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 triangleRotation = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    // Create a VAO and VBO for Model 2
+    GLuint VAO2, VBO2;
+    glGenVertexArrays(1, &VAO2);
+    glGenBuffers(1, &VBO2);
+
+    glBindVertexArray(VAO2);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVertices), triangleVertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+#pragma endregion
+
+    bool isGravityEnabled = true;
     while (!window.ShouldClose())
     {
         double newTime = HiresTimeInSeconds();
@@ -408,107 +278,73 @@ int main(int argc, char** argv)
 
         ProcessInput(window.GetHandle(), deltaTime);
 
-        ContactsGenerator(contactArray, contacts);
-        contactResolver.ResolveContacts(contactArray, contactArray.size(), 0.01);
-       
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-       
+
         ourShader.Use();
-        // activate shader
-       
-        // pass projection matrix to shader (note that in this case it could change every frame)
+
         glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         ourShader.SetMat4("projection", projection);
 
-
-        // camera/view transformation
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.SetMat4("view", view);
 
-        cubePositions[4] = glm::vec3(particle->position.x, particle->position.y, particle->position.z);
-        cubePositions[5] = glm::vec3(particle2->position.x, particle2->position.y, particle2->position.z);
-        cubePositions[2] = glm::vec3(particle3->position.x, particle3->position.y, particle3->position.z);
-        cubePositions[3] = glm::vec3(particle4->position.x, particle4->position.y, particle4->position.z);
-        //cubePositions[0] = glm::vec3(rigidbody->transform.position.x, rigidbody->transform.position.y, rigidbody->transform.position.z);
-        cubePositions[1] = glm::vec3(rigidbody2Box->transform.position.x, rigidbody2Box->transform.position.y, rigidbody2Box->transform.position.z);
+        cubePosition = glm::vec3(rigidbodyBox->transform.position.x, rigidbodyBox->transform.position.y, rigidbodyBox->transform.position.z);
+        cubeRotation = glm::vec3(rigidbodyBox->transform.rotation.GetX(), rigidbodyBox->transform.rotation.GetY(), rigidbodyBox->transform.rotation.GetZ());
         
-        cubeRotations[1] = glm::vec3(rigidbody2Box->transform.rotation.GetX(), rigidbody2Box->transform.rotation.GetY(), rigidbody2Box->transform.rotation.GetZ());
+        trianglePosition = glm::vec3(rigidbodyTriangle->transform.position.x, rigidbodyTriangle->transform.position.y, rigidbodyTriangle->transform.position.z);
+        triangleRotation = glm::vec3(rigidbodyTriangle->transform.rotation.GetX(), rigidbodyTriangle->transform.rotation.GetY(), rigidbodyTriangle->transform.rotation.GetZ());
 
-
-        //spherePosition = glm::vec3(rigidbody2Box->transform.position.x, rigidbody2Box->transform.position.y, rigidbody2Box->transform.position.z);
-        //sphereRotation = glm::vec3(rigidbody2Box->transform.rotation.GetX(), rigidbody2Box->transform.rotation.GetY(), rigidbody2Box->transform.rotation.GetZ());
-        //sphere.Draw();
-
-
-        // render boxes
-        glBindVertexArray(VAO);
-        for (unsigned int i = 0; i <= cubePositions->length(); i++)
+        glm::mat4 model = glm::mat4(1.0f);
+        switch (currentScene)
         {
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-
+        case Scene::SCENE_1:
+            glBindVertexArray(VAO1);
+            model = glm::translate(model, cubePosition);
             // rotation on X Axis
-            model = glm::rotate(model, cubeRotations[i].x, glm::vec3(1.0f, 0.0f, 0.0f));
+            model = glm::rotate(model, cubeRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
             // rotation on Y Axis
-            model = glm::rotate(model, cubeRotations[i].y, glm::vec3(0.0f, 1.0f, 0.0f));
+            model = glm::rotate(model, cubeRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
             // rotation on Z Axis
-            model = glm::rotate(model, cubeRotations[i].z, glm::vec3(0.0f, 0.0f, 1.0f));
-
-            ourShader.SetMat4("model", model);
-
+            model = glm::rotate(model, cubeRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
             glDrawArrays(GL_TRIANGLES, 0, 36);
+
+            //ImguiRigidbodyData(rigidbodyBox);
+            break;
+
+        case Scene::SCENE_2:
+            glBindVertexArray(VAO2);
+            model = glm::translate(model, trianglePosition);
+            // rotation on X Axis
+            model = glm::rotate(model, triangleRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+            // rotation on Y Axis
+            model = glm::rotate(model, triangleRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+            // rotation on Z Axis
+            model = glm::rotate(model, triangleRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+            glDrawArrays(GL_TRIANGLES, 0, 12);
+            
+            //ImguiRigidbodyData(rigidbodyTriangle);
+            break;
         }
+        ourShader.SetMat4("model", model);
 
         imguiCpp.NewFrame();
 
         ImguiStatsPanel(deltaTime);
-        ImguiGamePanel(particle, physics, direction, power, isParticleLaunched, isGravityEnabled, alpha);
+        ImguiSceneSelection();
+        ImguiRigidbodyData(rigidbodyBox);
+        ImguiRigidbodyData(rigidbodyTriangle);
 
-        ImGui::Begin("Particle Data");
-        ImGui::Text("Particle name: %s", particle->name.c_str());
-        ImGui::Text("Particle position: (%f, %f, %f)", particle->position.x, particle->position.y, particle->position.z);
-        ImGui::Text("Particle velocity: (%f, %f, %f)", particle->velocity.x, particle->velocity.y, particle->velocity.z);
-        ImGui::Text("Particle acceleration: (%f, %f, %f)", particle->GetAcceleration().x, particle->GetAcceleration().y, particle->GetAcceleration().z);
-        ImGui::Text("Particle mass: %f", particle->mass);
-        ImGui::Text("Particle name: %s", particle2->name.c_str());
-        ImGui::Text("Particle position: (%f, %f, %f)", particle2->position.x, particle2->position.y, particle2->position.z);
-        ImGui::Text("Particle velocity: (%f, %f, %f)", particle2->velocity.x, particle2->velocity.y, particle2->velocity.z);
-        ImGui::Text("Particle acceleration: (%f, %f, %f)", particle2->GetAcceleration().x, particle2->GetAcceleration().y, particle2->GetAcceleration().z);
-        ImGui::Text("Particle mass: %f", particle2->mass);
-
-        //ImGui::Text("%s", rigidbody->name.c_str());
-        //ImGui::Text("Rigidbody position: (%f, %f, %f)", rigidbody->transform.position.x, rigidbody->transform.position.y, rigidbody->transform.position.z);
-        //ImGui::Text("Rigidbody velocity: (%f, %f, %f)", rigidbody->velocity.x, rigidbody->velocity.y, rigidbody->velocity.z);
-        //ImGui::Text("Rigidbody acceleration: (%f, %f, %f)", rigidbody->GetAcceleration().x, rigidbody->GetAcceleration().y, rigidbody->GetAcceleration().z);
-        //ImGui::Text("Rigidbody mass: %f", rigidbody->mass);
-
-        ImGui::Text("%s", rigidbody2Box->name.c_str());
-        ImGui::Text("%s position: (%f, %f, %f)", rigidbody2Box->name.c_str(), rigidbody2Box->transform.position.x, rigidbody2Box->transform.position.y, rigidbody2Box->transform.position.z);
-        ImGui::Text("%s velocity: (%f, %f, %f)", rigidbody2Box->name.c_str(), rigidbody2Box->velocity.x, rigidbody2Box->velocity.y, rigidbody2Box->velocity.z);
-        ImGui::Text("%s acceleration: (%f, %f, %f)", rigidbody2Box->name.c_str(), rigidbody2Box->GetAcceleration().x, rigidbody2Box->GetAcceleration().y, rigidbody2Box->GetAcceleration().z);
-        ImGui::Text("%s mass: %f", rigidbody2Box->name.c_str(), rigidbody2Box->mass);
-        ImGui::Text("%s rotation (rad): (%f, %f, %f) %f", rigidbody2Box->name.c_str(), rigidbody2Box->transform.rotation.GetX(), rigidbody2Box->transform.rotation.GetY(), rigidbody2Box->transform.rotation.GetZ(), rigidbody2Box->transform.rotation.GetS());
-        ImGui::Text("%s angular velocity: (%f, %f, %f)", rigidbody2Box->name.c_str(), rigidbody2Box->angularVelocity.x, rigidbody2Box->angularVelocity.y, rigidbody2Box->angularVelocity.z);
-        ImGui::Text("%s angular acceleration: (%f, %f, %f)", rigidbody2Box->name.c_str(), rigidbody2Box->GetAngularAcceleration().x, rigidbody2Box->GetAngularAcceleration().y, rigidbody2Box->GetAngularAcceleration().z);
-        ImGui::Text("%s inverseMass: %f", rigidbody2Box->name.c_str(), rigidbody2Box->inverseMass);
-        ImGui::Text("%s transformMatrix:\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f", 
-            rigidbody2Box->name.c_str(), 
-            rigidbody2Box->transformMatrix.Value(0, 0), rigidbody2Box->transformMatrix.Value(0, 1), rigidbody2Box->transformMatrix.Value(0, 2), rigidbody2Box->transformMatrix.Value(0, 3),
-            rigidbody2Box->transformMatrix.Value(1, 0), rigidbody2Box->transformMatrix.Value(1, 1), rigidbody2Box->transformMatrix.Value(1, 2), rigidbody2Box->transformMatrix.Value(1, 3),
-            rigidbody2Box->transformMatrix.Value(2, 0), rigidbody2Box->transformMatrix.Value(2, 1), rigidbody2Box->transformMatrix.Value(2, 2), rigidbody2Box->transformMatrix.Value(2, 3),
-            rigidbody2Box->transformMatrix.Value(3, 0), rigidbody2Box->transformMatrix.Value(3, 1), rigidbody2Box->transformMatrix.Value(3, 2), rigidbody2Box->transformMatrix.Value(3, 3));
-        ImGui::End();
-
-        imguiCpp.Render(); // Draw the imgui frame
+        imguiCpp.Render();
 
         glfwSwapBuffers(window.GetHandle());
         glfwPollEvents();
     }
 
-    // Deallocate all resources once they've outlived their purpose
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);*/
+    glDeleteVertexArrays(1, &VAO1);
+    glDeleteBuffers(1, &VBO1);
+    glDeleteVertexArrays(1, &VAO2);
+    glDeleteBuffers(1, &VBO2);
 
     return 0;
 }
@@ -561,20 +397,6 @@ void ImguiGamePanel(std::shared_ptr<Particle> particle, PhysicsSystem& physics, 
     }
     ImGui::EndGroup();
     ImGui::End();
-
-    /* Particle Panel Data*/
-    //ImGui::Begin("Particle Data");
-    //ImGui::Text("Particle name: %s", particle->name.c_str());
-    //ImGui::Text("Particle position: (%f, %f, %f)", particle->position.x, particle->position.y, particle->position.z);
-    //ImGui::Text("Particle velocity: (%f, %f, %f)", particle->velocity.x, particle->velocity.y, particle->velocity.z);
-    //ImGui::Text("Particle acceleration: (%f, %f, %f)", particle->acceleration.x, particle->acceleration.y, particle->acceleration.z);
-    //ImGui::Text("Particle mass: %f", particle->mass);
-    //ImGui::Text("Particle name: %s", particle2->name.c_str());
-    //ImGui::Text("Particle position: (%f, %f, %f)", particle2->position.x, particle->position.y, particle->position.z);
-    //ImGui::Text("Particle velocity: (%f, %f, %f)", particle2->velocity.x, particle->velocity.y, particle->velocity.z);
-    //ImGui::Text("Particle acceleration: (%f, %f, %f)", particle->acceleration.x, particle->acceleration.y, particle->acceleration.z);
-    //ImGui::Text("Particle mass: %f", particle->mass);
-    //ImGui::End();
 }
 
 void ImguiStatsPanel(float deltaTime)
@@ -666,1194 +488,26 @@ void ImguiSceneSelection() {
         currentScene = Scene::SCENE_1;
     if (ImGui::Button("Scene 2"))
         currentScene = Scene::SCENE_2;
-    //if (ImGui::Button("Scene 3"))
-    //    currentScene = Scene::SCENE_3;
-    //if (ImGui::Button("Scene 4"))
-    //    currentScene = Scene::SCENE_4;
-    //if (ImGui::Button("Scene 5"))
-    //    currentScene = Scene::SCENE_5;
-    //if (ImGui::Button("Scene 6"))
-    //    currentScene = Scene::SCENE_6;
     ImGui::End();
 }
 
-
-void Scene1(cppGLFWwindow& window, cppGLFW& glfw, ImguiCpp& imgui)
+void ImguiRigidbodyData(std::shared_ptr<Rigidbody> rigidbody)
 {
-    std::shared_ptr<ForceRegistry> forceRegistry = std::make_shared<ForceRegistry>();
-
-    PhysicsSystem physics(forceRegistry);
-
-    std::shared_ptr<Rigidbody> rigidbodyBox = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f, 0.f, 45.f * Deg2Rad, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody", RigidbodyType::BOX);
-    physics.AddRigidbody(rigidbodyBox);
-
-    
-    std::shared_ptr<ForceGravity> forceGravity = std::make_shared<ForceGravity>();
-    std::shared_ptr<ForceDrag> weakForceDrag = std::make_shared<ForceDrag>(5.0f, 0.0f);
-    float anchoredSpringConstant = 100.0f;
-    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpringRigidbody = std::make_shared<ForceAnchoredSpring>(anchoredSpringConstant, 5.0f, Vector3f::Zero, Vector3f(1.0f, 1.0f, 1.0f));
-
-
-    forceRegistry->Add(rigidbodyBox, forceGravity);
-    forceRegistry->Add(rigidbodyBox, weakForceDrag);
-    forceRegistry->Add(rigidbodyBox, forceAnchoredSpringRigidbody);
-
-
-#pragma region Timestep
-    double t = 0.0;
-    double deltaTime = 0.01;
-
-    double currentTime = HiresTimeInSeconds();
-    double accumulator = 0.0;
-#pragma endregion
-
-#pragma region Shader
-
-    Shader ourShader("assets/shaders/test.vert", "assets/shaders/test.frag"); // To fix, so we can use real files for vert and frag shaders
-
-#pragma endregion
-
-#pragma region Model
-
-    float vertices[] = {
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-    };
-
-    glm::vec3 cubePosition = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 cubeRotation = glm::vec3(0.0f, 0.0f, 0.0f);
-
-    unsigned int VBO, VAO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-    // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-    glBindVertexArray(0);
-
-#pragma endregion
-
-
-    bool isGravityEnabled = true;
-
-
-    while (!window.ShouldClose())
-    {
-        double newTime = HiresTimeInSeconds();
-        double frameTime = newTime - currentTime;
-
-        // Cap the frame time to avoid spiral of death
-        if (frameTime > 0.015)
-            frameTime = 0.015;
-
-        currentTime = newTime;
-        accumulator += frameTime;
-
-        while (accumulator >= deltaTime) {
-            // Integrates the physics
-            physics.Update(deltaTime, isGravityEnabled);
-            t += deltaTime;
-            accumulator -= deltaTime;
-        }
-
-        // Use alpha with rneder to interpolate between the previous and current physics state
-        const double alpha = accumulator / deltaTime;
-        // state = currentState * alpha + previousState * (1.0 - alpha);
-
-        ProcessInput(window.GetHandle(), deltaTime);
-
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        ourShader.Use();
-
-        glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        ourShader.SetMat4("projection", projection);
-
-        glm::mat4 view = camera.GetViewMatrix();
-        ourShader.SetMat4("view", view);
-
-        cubePosition = glm::vec3(rigidbodyBox->transform.position.x, rigidbodyBox->transform.position.y, rigidbodyBox->transform.position.z);
-        cubeRotation = glm::vec3(rigidbodyBox->transform.rotation.GetX(), rigidbodyBox->transform.rotation.GetY(), rigidbodyBox->transform.rotation.GetZ());
-
-
-        glBindVertexArray(VAO);
-        glm::mat4 model = glm::mat4(1.0f);
-
-        model = glm::translate(model, cubePosition);
-
-        // rotation on X Axis
-        model = glm::rotate(model, cubeRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-        // rotation on Y Axis
-        model = glm::rotate(model, cubeRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-        // rotation on Z Axis
-        model = glm::rotate(model, cubeRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-
-        ourShader.SetMat4("model", model);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        imgui.NewFrame();
-
-
-        ImguiStatsPanel(deltaTime);
-        ImguiSceneSelection();
-
-        ImGui::Begin("Rigidbody Data");
-        ImGui::Text("%s", rigidbodyBox->name.c_str());
-        ImGui::Text("%s position: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->transform.position.x, rigidbodyBox->transform.position.y, rigidbodyBox->transform.position.z);
-        ImGui::Text("%s velocity: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->velocity.x, rigidbodyBox->velocity.y, rigidbodyBox->velocity.z);
-        ImGui::Text("%s acceleration: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->GetAcceleration().x, rigidbodyBox->GetAcceleration().y, rigidbodyBox->GetAcceleration().z);
-        ImGui::Text("%s mass: %f", rigidbodyBox->name.c_str(), rigidbodyBox->mass);
-        ImGui::Text("%s rotation (rad): (%f, %f, %f) %f", rigidbodyBox->name.c_str(), rigidbodyBox->transform.rotation.GetX(), rigidbodyBox->transform.rotation.GetY(), rigidbodyBox->transform.rotation.GetZ(), rigidbodyBox->transform.rotation.GetS());
-        ImGui::Text("%s angular velocity: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->angularVelocity.x, rigidbodyBox->angularVelocity.y, rigidbodyBox->angularVelocity.z);
-        ImGui::Text("%s angular acceleration: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->GetAngularAcceleration().x, rigidbodyBox->GetAngularAcceleration().y, rigidbodyBox->GetAngularAcceleration().z);
-        ImGui::Text("%s inverseMass: %f", rigidbodyBox->name.c_str(), rigidbodyBox->inverseMass);
-        ImGui::Text("%s transformMatrix:\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f",
-            rigidbodyBox->name.c_str(),
-            rigidbodyBox->transformMatrix.Value(0, 0), rigidbodyBox->transformMatrix.Value(0, 1), rigidbodyBox->transformMatrix.Value(0, 2), rigidbodyBox->transformMatrix.Value(0, 3),
-            rigidbodyBox->transformMatrix.Value(1, 0), rigidbodyBox->transformMatrix.Value(1, 1), rigidbodyBox->transformMatrix.Value(1, 2), rigidbodyBox->transformMatrix.Value(1, 3),
-            rigidbodyBox->transformMatrix.Value(2, 0), rigidbodyBox->transformMatrix.Value(2, 1), rigidbodyBox->transformMatrix.Value(2, 2), rigidbodyBox->transformMatrix.Value(2, 3),
-            rigidbodyBox->transformMatrix.Value(3, 0), rigidbodyBox->transformMatrix.Value(3, 1), rigidbodyBox->transformMatrix.Value(3, 2), rigidbodyBox->transformMatrix.Value(3, 3));
-        ImGui::End();
-
-        imgui.Render();
-
-        glfwSwapBuffers(window.GetHandle());
-        glfwPollEvents();
-    }
-
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
+    ImGui::Begin("Rigidbody Data");
+    ImGui::Text("%s", rigidbody->name.c_str());
+    ImGui::Text("%s position: (%f, %f, %f)", rigidbody->name.c_str(), rigidbody->transform.position.x, rigidbody->transform.position.y, rigidbody->transform.position.z);
+    ImGui::Text("%s velocity: (%f, %f, %f)", rigidbody->name.c_str(), rigidbody->velocity.x, rigidbody->velocity.y, rigidbody->velocity.z);
+    ImGui::Text("%s acceleration: (%f, %f, %f)", rigidbody->name.c_str(), rigidbody->GetAcceleration().x, rigidbody->GetAcceleration().y, rigidbody->GetAcceleration().z);
+    ImGui::Text("%s mass: %f", rigidbody->name.c_str(), rigidbody->mass);
+    ImGui::Text("%s rotation (rad): (%f, %f, %f) %f", rigidbody->name.c_str(), rigidbody->transform.rotation.GetX(), rigidbody->transform.rotation.GetY(), rigidbody->transform.rotation.GetZ(), rigidbody->transform.rotation.GetS());
+    ImGui::Text("%s angular velocity: (%f, %f, %f)", rigidbody->name.c_str(), rigidbody->angularVelocity.x, rigidbody->angularVelocity.y, rigidbody->angularVelocity.z);
+    ImGui::Text("%s angular acceleration: (%f, %f, %f)", rigidbody->name.c_str(), rigidbody->GetAngularAcceleration().x, rigidbody->GetAngularAcceleration().y, rigidbody->GetAngularAcceleration().z);
+    ImGui::Text("%s inverseMass: %f", rigidbody->name.c_str(), rigidbody->inverseMass);
+    ImGui::Text("%s transformMatrix:\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f",
+        rigidbody->name.c_str(),
+        rigidbody->transformMatrix.Value(0, 0), rigidbody->transformMatrix.Value(0, 1), rigidbody->transformMatrix.Value(0, 2), rigidbody->transformMatrix.Value(0, 3),
+        rigidbody->transformMatrix.Value(1, 0), rigidbody->transformMatrix.Value(1, 1), rigidbody->transformMatrix.Value(1, 2), rigidbody->transformMatrix.Value(1, 3),
+        rigidbody->transformMatrix.Value(2, 0), rigidbody->transformMatrix.Value(2, 1), rigidbody->transformMatrix.Value(2, 2), rigidbody->transformMatrix.Value(2, 3),
+        rigidbody->transformMatrix.Value(3, 0), rigidbody->transformMatrix.Value(3, 1), rigidbody->transformMatrix.Value(3, 2), rigidbody->transformMatrix.Value(3, 3));
+    ImGui::End();
 }
-
-#pragma SCENE2
-void Scene2(cppGLFWwindow& window, cppGLFW& glfw, ImguiCpp& imgui)
-{
-    std::shared_ptr<ForceRegistry> forceRegistry = std::make_shared<ForceRegistry>();
-
-    PhysicsSystem physics(forceRegistry);
-
-    std::shared_ptr<Rigidbody> rigidbodySphere = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f, 0.f, 45.f * Deg2Rad, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody", RigidbodyType::TRIANGLE);
-    physics.AddRigidbody(rigidbodySphere);
-
-    std::shared_ptr<ForceGravity> forceGravity = std::make_shared<ForceGravity>();
-    std::shared_ptr<ForceDrag> weakForceDrag = std::make_shared<ForceDrag>(5.0f, 0.0f);
-    float anchoredSpringConstant = 100.0f;
-    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpringRigidbody = std::make_shared<ForceAnchoredSpring>(anchoredSpringConstant, 5.0f, Vector3f::Zero, Vector3f(1.0f, 1.0f, 1.0f));
-
-
-    forceRegistry->Add(rigidbodySphere, forceGravity);
-    forceRegistry->Add(rigidbodySphere, weakForceDrag);
-    forceRegistry->Add(rigidbodySphere, forceAnchoredSpringRigidbody);
-
-
-#pragma region Timestep
-    double t = 0.0;
-    double deltaTime = 0.01;
-
-    double currentTime = HiresTimeInSeconds();
-    double accumulator = 0.0;
-#pragma endregion
-
-#pragma region Shader
-
-    Shader ourShader("assets/shaders/test.vert", "assets/shaders/test.frag"); // To fix, so we can use real files for vert and frag shaders
-
-#pragma endregion
-
-#pragma region Model
-
-    // vertices for a triangle pyramidal from :
-    // https://stackoverflow.com/questions/22714866/to-draw-tetrahedron-using-opengl-in-android-with-different-color-faces-but-gray
-    float vertices[] = {
-
-        // FRONT Face
-        -1.0f, -1.0f,  1.0f,
-        1.0f, -1.0f,  1.0f,
-        1.0f,  1.0f,  1.0f,
-
-        //Right face
-        -1.0f, -1.0f,  1.0f,
-        1.0f,  1.0f, 1.0f,
-        -1.0f, -1.0f, -1.0f,
-
-        // Left Face
-        1.0, -1.0f, 1.0f,
-        -1.0f, -1.0f, -1.0f,
-        1.0f,  1.0f, 1.0f,
-
-        // BOTTOM
-        -1.0f, -1.0f, 1.0f,
-        -1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f,  1.0f
-    };
-
-    glm::vec3 trianglePosition = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 triangleRotation = glm::vec3(0.0f, 0.0f, 0.0f);
-
-    unsigned int VBO, VAO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-
-#pragma endregion
-
-
-    bool isGravityEnabled = true;
-
-
-    while (!window.ShouldClose())
-    {
-        double newTime = HiresTimeInSeconds();
-        double frameTime = newTime - currentTime;
-
-        // Cap the frame time to avoid spiral of death
-        if (frameTime > 0.015)
-            frameTime = 0.015;
-
-        currentTime = newTime;
-        accumulator += frameTime;
-
-        while (accumulator >= deltaTime) {
-            // Integrates the physics
-            physics.Update(deltaTime, isGravityEnabled);
-            t += deltaTime;
-            accumulator -= deltaTime;
-        }
-
-        // Use alpha with rneder to interpolate between the previous and current physics state
-        const double alpha = accumulator / deltaTime;
-        // state = currentState * alpha + previousState * (1.0 - alpha);
-
-        ProcessInput(window.GetHandle(), deltaTime);
-
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        ourShader.Use();
-
-        glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        ourShader.SetMat4("projection", projection);
-
-        glm::mat4 view = camera.GetViewMatrix();
-        ourShader.SetMat4("view", view);
-
-        trianglePosition = glm::vec3(rigidbodySphere->transform.position.x, rigidbodySphere->transform.position.y, rigidbodySphere->transform.position.z);
-        triangleRotation = glm::vec3(rigidbodySphere->transform.rotation.GetX(), rigidbodySphere->transform.rotation.GetY(), rigidbodySphere->transform.rotation.GetZ());
-
-
-        glBindVertexArray(VAO);
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, trianglePosition);
-        // rotation on X Axis
-        model = glm::rotate(model, triangleRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-        // rotation on Y Axis
-        model = glm::rotate(model, triangleRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-        // rotation on Z Axis
-        model = glm::rotate(model, triangleRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-
-        ourShader.SetMat4("model", model);
-        glDrawArrays(GL_TRIANGLES, 0, 12);
-
-        imgui.NewFrame();
-
-        ImguiStatsPanel(deltaTime);
-        ImguiSceneSelection();
-
-        ImGui::Begin("Rigidbody Data");
-
-        ImGui::Text("%s", rigidbodySphere->name.c_str());
-        ImGui::Text("%s position: (%f, %f, %f)", rigidbodySphere->name.c_str(), rigidbodySphere->transform.position.x, rigidbodySphere->transform.position.y, rigidbodySphere->transform.position.z);
-        ImGui::Text("%s velocity: (%f, %f, %f)", rigidbodySphere->name.c_str(), rigidbodySphere->velocity.x, rigidbodySphere->velocity.y, rigidbodySphere->velocity.z);
-        ImGui::Text("%s acceleration: (%f, %f, %f)", rigidbodySphere->name.c_str(), rigidbodySphere->GetAcceleration().x, rigidbodySphere->GetAcceleration().y, rigidbodySphere->GetAcceleration().z);
-        ImGui::Text("%s mass: %f", rigidbodySphere->name.c_str(), rigidbodySphere->mass);
-        ImGui::Text("%s rotation (rad): (%f, %f, %f) %f", rigidbodySphere->name.c_str(), rigidbodySphere->transform.rotation.GetX(), rigidbodySphere->transform.rotation.GetY(), rigidbodySphere->transform.rotation.GetZ(), rigidbodySphere->transform.rotation.GetS());
-        ImGui::Text("%s angular velocity: (%f, %f, %f)", rigidbodySphere->name.c_str(), rigidbodySphere->angularVelocity.x, rigidbodySphere->angularVelocity.y, rigidbodySphere->angularVelocity.z);
-        ImGui::Text("%s angular acceleration: (%f, %f, %f)", rigidbodySphere->name.c_str(), rigidbodySphere->GetAngularAcceleration().x, rigidbodySphere->GetAngularAcceleration().y, rigidbodySphere->GetAngularAcceleration().z);
-        ImGui::Text("%s inverseMass: %f", rigidbodySphere->name.c_str(), rigidbodySphere->inverseMass);
-        ImGui::Text("%s transformMatrix:\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f",
-            rigidbodySphere->name.c_str(),
-            rigidbodySphere->transformMatrix.Value(0, 0), rigidbodySphere->transformMatrix.Value(0, 1), rigidbodySphere->transformMatrix.Value(0, 2), rigidbodySphere->transformMatrix.Value(0, 3),
-            rigidbodySphere->transformMatrix.Value(1, 0), rigidbodySphere->transformMatrix.Value(1, 1), rigidbodySphere->transformMatrix.Value(1, 2), rigidbodySphere->transformMatrix.Value(1, 3),
-            rigidbodySphere->transformMatrix.Value(2, 0), rigidbodySphere->transformMatrix.Value(2, 1), rigidbodySphere->transformMatrix.Value(2, 2), rigidbodySphere->transformMatrix.Value(2, 3),
-            rigidbodySphere->transformMatrix.Value(3, 0), rigidbodySphere->transformMatrix.Value(3, 1), rigidbodySphere->transformMatrix.Value(3, 2), rigidbodySphere->transformMatrix.Value(3, 3));
-        ImGui::End();
-
-        imgui.Render();
-
-        glfwSwapBuffers(window.GetHandle());
-        glfwPollEvents();
-    }
-
-    //glDeleteVertexArrays(1, &VAO);
-    //glDeleteBuffers(1, &VBO);
-}
-#pragma endregion
-
-//void Scene3(cppGLFWwindow& window, cppGLFW& glfw, ImguiCpp& imgui)
-//{
-//    std::shared_ptr<ForceRegistry> forceRegistry = std::make_shared<ForceRegistry>();
-//
-//    PhysicsSystem physics(forceRegistry);
-//
-//    std::shared_ptr<Rigidbody> rigidbodyBox = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 20.f, 0.f), Quaternionf(1.f, 0.f, 45.f * Deg2Rad, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody", RigidbodyType::BOX);
-//    physics.AddRigidbody(rigidbodyBox);
-//
-//
-//    std::shared_ptr<ForceGravity> forceGravity = std::make_shared<ForceGravity>();
-//    std::shared_ptr<ForceDrag> weakForceDrag = std::make_shared<ForceDrag>(5.0f, 0.0f);
-//    float anchoredSpringConstant = 100.0f;
-//    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpringRigidbody = std::make_shared<ForceAnchoredSpring>(anchoredSpringConstant, 5.0f, Vector3f::Zero, Vector3f(1.0f, 1.0f, 1.0f));
-//
-//
-//    forceRegistry->Add(rigidbodyBox, forceGravity);
-//    forceRegistry->Add(rigidbodyBox, weakForceDrag);
-//    forceRegistry->Add(rigidbodyBox, forceAnchoredSpringRigidbody);
-//
-//
-//#pragma region Timestep
-//    double t = 0.0;
-//    double deltaTime = 0.01;
-//
-//    double currentTime = HiresTimeInSeconds();
-//    double accumulator = 0.0;
-//#pragma endregion
-//
-//#pragma region Shader
-//
-//    Shader ourShader("assets/shaders/test.vert", "assets/shaders/test.frag"); // To fix, so we can use real files for vert and frag shaders
-//
-//#pragma endregion
-//
-//#pragma region Model
-//
-//    float vertices[] = {
-//    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-//     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-//     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-//    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-//
-//    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-//    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-//    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//
-//    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//
-//     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//
-//    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-//     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-//     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-//    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//
-//    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-//     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-//    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-//    };
-//
-//    glm::vec3 cubePosition = glm::vec3(0.0f, 0.0f, 0.0f);
-//    glm::vec3 cubeRotation = glm::vec3(0.0f, 0.0f, 0.0f);
-//
-//    unsigned int VBO, VAO;
-//    glGenVertexArrays(1, &VAO);
-//    glGenBuffers(1, &VBO);
-//
-//    glBindVertexArray(VAO);
-//
-//    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-//    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-//
-//    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-//    glEnableVertexAttribArray(0);
-//
-//    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-//    glEnableVertexAttribArray(1);
-//
-//    // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-//    glBindBuffer(GL_ARRAY_BUFFER, 0);
-//
-//    // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-//    // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-//    glBindVertexArray(0);
-//
-//#pragma endregion
-//
-//
-//    bool isGravityEnabled = true;
-//
-//
-//    while (!window.ShouldClose())
-//    {
-//        double newTime = HiresTimeInSeconds();
-//        double frameTime = newTime - currentTime;
-//
-//        // Cap the frame time to avoid spiral of death
-//        if (frameTime > 0.015)
-//            frameTime = 0.015;
-//
-//        currentTime = newTime;
-//        accumulator += frameTime;
-//
-//        while (accumulator >= deltaTime) {
-//            // Integrates the physics
-//            physics.Update(deltaTime, isGravityEnabled);
-//            t += deltaTime;
-//            accumulator -= deltaTime;
-//        }
-//
-//        // Use alpha with rneder to interpolate between the previous and current physics state
-//        const double alpha = accumulator / deltaTime;
-//        // state = currentState * alpha + previousState * (1.0 - alpha);
-//
-//        ProcessInput(window.GetHandle(), deltaTime);
-//
-//        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//
-//        ourShader.Use();
-//
-//        glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-//        ourShader.SetMat4("projection", projection);
-//
-//        glm::mat4 view = camera.GetViewMatrix();
-//        ourShader.SetMat4("view", view);
-//
-//        cubePosition = glm::vec3(rigidbodyBox->transform.position.x, rigidbodyBox->transform.position.y, rigidbodyBox->transform.position.z);
-//        cubeRotation = glm::vec3(rigidbodyBox->transform.rotation.GetX(), rigidbodyBox->transform.rotation.GetY(), rigidbodyBox->transform.rotation.GetZ());
-//
-//
-//        glBindVertexArray(VAO);
-//        glm::mat4 model = glm::mat4(1.0f);
-//
-//        model = glm::translate(model, cubePosition);
-//
-//        // rotation on X Axis
-//        model = glm::rotate(model, cubeRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-//        // rotation on Y Axis
-//        model = glm::rotate(model, cubeRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-//        // rotation on Z Axis
-//        model = glm::rotate(model, cubeRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-//
-//        ourShader.SetMat4("model", model);
-//        glDrawArrays(GL_TRIANGLES, 0, 36);
-//
-//        imgui.NewFrame();
-//
-//        ImguiStatsPanel(deltaTime);
-//        ImguiSceneSelection();
-//
-//        ImGui::Begin("Rigidbody Data");
-//
-//        ImGui::Text("%s", rigidbodyBox->name.c_str());
-//        ImGui::Text("%s position: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->transform.position.x, rigidbodyBox->transform.position.y, rigidbodyBox->transform.position.z);
-//        ImGui::Text("%s velocity: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->velocity.x, rigidbodyBox->velocity.y, rigidbodyBox->velocity.z);
-//        ImGui::Text("%s acceleration: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->GetAcceleration().x, rigidbodyBox->GetAcceleration().y, rigidbodyBox->GetAcceleration().z);
-//        ImGui::Text("%s mass: %f", rigidbodyBox->name.c_str(), rigidbodyBox->mass);
-//        ImGui::Text("%s rotation (rad): (%f, %f, %f) %f", rigidbodyBox->name.c_str(), rigidbodyBox->transform.rotation.GetX(), rigidbodyBox->transform.rotation.GetY(), rigidbodyBox->transform.rotation.GetZ(), rigidbodyBox->transform.rotation.GetS());
-//        ImGui::Text("%s angular velocity: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->angularVelocity.x, rigidbodyBox->angularVelocity.y, rigidbodyBox->angularVelocity.z);
-//        ImGui::Text("%s angular acceleration: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->GetAngularAcceleration().x, rigidbodyBox->GetAngularAcceleration().y, rigidbodyBox->GetAngularAcceleration().z);
-//        ImGui::Text("%s inverseMass: %f", rigidbodyBox->name.c_str(), rigidbodyBox->inverseMass);
-//        ImGui::Text("%s transformMatrix:\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f",
-//            rigidbodyBox->name.c_str(),
-//            rigidbodyBox->transformMatrix.Value(0, 0), rigidbodyBox->transformMatrix.Value(0, 1), rigidbodyBox->transformMatrix.Value(0, 2), rigidbodyBox->transformMatrix.Value(0, 3),
-//            rigidbodyBox->transformMatrix.Value(1, 0), rigidbodyBox->transformMatrix.Value(1, 1), rigidbodyBox->transformMatrix.Value(1, 2), rigidbodyBox->transformMatrix.Value(1, 3),
-//            rigidbodyBox->transformMatrix.Value(2, 0), rigidbodyBox->transformMatrix.Value(2, 1), rigidbodyBox->transformMatrix.Value(2, 2), rigidbodyBox->transformMatrix.Value(2, 3),
-//            rigidbodyBox->transformMatrix.Value(3, 0), rigidbodyBox->transformMatrix.Value(3, 1), rigidbodyBox->transformMatrix.Value(3, 2), rigidbodyBox->transformMatrix.Value(3, 3));
-//        ImGui::End();
-//
-//        imgui.Render();
-//
-//        glfwSwapBuffers(window.GetHandle());
-//        glfwPollEvents();
-//    }
-//
-//    glDeleteVertexArrays(1, &VAO);
-//    glDeleteBuffers(1, &VBO);
-//}
-//
-//void Scene4(cppGLFWwindow& window, cppGLFW& glfw, ImguiCpp& imgui)
-//{
-//    std::shared_ptr<ForceRegistry> forceRegistry = std::make_shared<ForceRegistry>();
-//
-//    PhysicsSystem physics(forceRegistry);
-//
-//    std::shared_ptr<Rigidbody> rigidbodyBox = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f, 0.f, 45.f * Deg2Rad, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody", RigidbodyType::BOX);
-//    physics.AddRigidbody(rigidbodyBox);
-//
-//
-//    std::shared_ptr<ForceGravity> forceGravity = std::make_shared<ForceGravity>();
-//    std::shared_ptr<ForceDrag> weakForceDrag = std::make_shared<ForceDrag>(5.0f, 0.0f);
-//    float anchoredSpringConstant = 100.0f;
-//    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpringRigidbody = std::make_shared<ForceAnchoredSpring>(anchoredSpringConstant, 5.0f, Vector3f::Zero, Vector3f(1.0f, 1.0f, 1.0f));
-//
-//
-//    forceRegistry->Add(rigidbodyBox, forceGravity);
-//    forceRegistry->Add(rigidbodyBox, weakForceDrag);
-//    forceRegistry->Add(rigidbodyBox, forceAnchoredSpringRigidbody);
-//
-//
-//#pragma region Timestep
-//    double t = 0.0;
-//    double deltaTime = 0.01;
-//
-//    double currentTime = HiresTimeInSeconds();
-//    double accumulator = 0.0;
-//#pragma endregion
-//
-//#pragma region Shader
-//
-//    Shader ourShader("assets/shaders/test.vert", "assets/shaders/test.frag"); // To fix, so we can use real files for vert and frag shaders
-//
-//#pragma endregion
-//
-//#pragma region Model
-//
-//    float vertices[] = {
-//    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-//     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-//     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-//    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-//
-//    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-//    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-//    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//
-//    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//
-//     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//
-//    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-//     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-//     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-//    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//
-//    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-//     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-//    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-//    };
-//
-//    glm::vec3 cubePosition = glm::vec3(0.0f, 0.0f, 0.0f);
-//    glm::vec3 cubeRotation = glm::vec3(0.0f, 0.0f, 0.0f);
-//
-//    unsigned int VBO, VAO;
-//    glGenVertexArrays(1, &VAO);
-//    glGenBuffers(1, &VBO);
-//
-//    glBindVertexArray(VAO);
-//
-//    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-//    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-//
-//    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-//    glEnableVertexAttribArray(0);
-//
-//    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-//    glEnableVertexAttribArray(1);
-//
-//    // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-//    glBindBuffer(GL_ARRAY_BUFFER, 0);
-//
-//    // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-//    // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-//    glBindVertexArray(0);
-//
-//#pragma endregion
-//
-//
-//    bool isGravityEnabled = true;
-//
-//
-//    while (!window.ShouldClose())
-//    {
-//        double newTime = HiresTimeInSeconds();
-//        double frameTime = newTime - currentTime;
-//
-//        // Cap the frame time to avoid spiral of death
-//        if (frameTime > 0.015)
-//            frameTime = 0.015;
-//
-//        currentTime = newTime;
-//        accumulator += frameTime;
-//
-//        while (accumulator >= deltaTime) {
-//            // Integrates the physics
-//            physics.Update(deltaTime, isGravityEnabled);
-//            t += deltaTime;
-//            accumulator -= deltaTime;
-//        }
-//
-//        // Use alpha with rneder to interpolate between the previous and current physics state
-//        const double alpha = accumulator / deltaTime;
-//        // state = currentState * alpha + previousState * (1.0 - alpha);
-//
-//        ProcessInput(window.GetHandle(), deltaTime);
-//
-//        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//
-//        ourShader.Use();
-//
-//        glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-//        ourShader.SetMat4("projection", projection);
-//
-//        glm::mat4 view = camera.GetViewMatrix();
-//        ourShader.SetMat4("view", view);
-//
-//        cubePosition = glm::vec3(rigidbodyBox->transform.position.x, rigidbodyBox->transform.position.y, rigidbodyBox->transform.position.z);
-//        cubeRotation = glm::vec3(rigidbodyBox->transform.rotation.GetX(), rigidbodyBox->transform.rotation.GetY(), rigidbodyBox->transform.rotation.GetZ());
-//
-//
-//        glBindVertexArray(VAO);
-//        glm::mat4 model = glm::mat4(1.0f);
-//
-//        model = glm::translate(model, cubePosition);
-//
-//        // rotation on X Axis
-//        model = glm::rotate(model, cubeRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-//        // rotation on Y Axis
-//        model = glm::rotate(model, cubeRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-//        // rotation on Z Axis
-//        model = glm::rotate(model, cubeRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-//
-//        ourShader.SetMat4("model", model);
-//        glDrawArrays(GL_TRIANGLES, 0, 36);
-//
-//        imgui.NewFrame();
-//
-//        ImguiStatsPanel(deltaTime);
-//        ImguiSceneSelection();
-//
-//        ImGui::Begin("Rigidbody Data");
-//
-//        ImGui::Text("%s", rigidbodyBox->name.c_str());
-//        ImGui::Text("%s position: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->transform.position.x, rigidbodyBox->transform.position.y, rigidbodyBox->transform.position.z);
-//        ImGui::Text("%s velocity: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->velocity.x, rigidbodyBox->velocity.y, rigidbodyBox->velocity.z);
-//        ImGui::Text("%s acceleration: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->GetAcceleration().x, rigidbodyBox->GetAcceleration().y, rigidbodyBox->GetAcceleration().z);
-//        ImGui::Text("%s mass: %f", rigidbodyBox->name.c_str(), rigidbodyBox->mass);
-//        ImGui::Text("%s rotation (rad): (%f, %f, %f) %f", rigidbodyBox->name.c_str(), rigidbodyBox->transform.rotation.GetX(), rigidbodyBox->transform.rotation.GetY(), rigidbodyBox->transform.rotation.GetZ(), rigidbodyBox->transform.rotation.GetS());
-//        ImGui::Text("%s angular velocity: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->angularVelocity.x, rigidbodyBox->angularVelocity.y, rigidbodyBox->angularVelocity.z);
-//        ImGui::Text("%s angular acceleration: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->GetAngularAcceleration().x, rigidbodyBox->GetAngularAcceleration().y, rigidbodyBox->GetAngularAcceleration().z);
-//        ImGui::Text("%s inverseMass: %f", rigidbodyBox->name.c_str(), rigidbodyBox->inverseMass);
-//        ImGui::Text("%s transformMatrix:\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f",
-//            rigidbodyBox->name.c_str(),
-//            rigidbodyBox->transformMatrix.Value(0, 0), rigidbodyBox->transformMatrix.Value(0, 1), rigidbodyBox->transformMatrix.Value(0, 2), rigidbodyBox->transformMatrix.Value(0, 3),
-//            rigidbodyBox->transformMatrix.Value(1, 0), rigidbodyBox->transformMatrix.Value(1, 1), rigidbodyBox->transformMatrix.Value(1, 2), rigidbodyBox->transformMatrix.Value(1, 3),
-//            rigidbodyBox->transformMatrix.Value(2, 0), rigidbodyBox->transformMatrix.Value(2, 1), rigidbodyBox->transformMatrix.Value(2, 2), rigidbodyBox->transformMatrix.Value(2, 3),
-//            rigidbodyBox->transformMatrix.Value(3, 0), rigidbodyBox->transformMatrix.Value(3, 1), rigidbodyBox->transformMatrix.Value(3, 2), rigidbodyBox->transformMatrix.Value(3, 3));
-//        ImGui::End();
-//
-//        imgui.Render();
-//
-//        glfwSwapBuffers(window.GetHandle());
-//        glfwPollEvents();
-//    }
-//
-//    glDeleteVertexArrays(1, &VAO);
-//    glDeleteBuffers(1, &VBO);
-//}
-//
-//void Scene5(cppGLFWwindow& window, cppGLFW& glfw, ImguiCpp& imgui)
-//{
-//    std::shared_ptr<ForceRegistry> forceRegistry = std::make_shared<ForceRegistry>();
-//
-//    PhysicsSystem physics(forceRegistry);
-//
-//    std::shared_ptr<Rigidbody> rigidbodyBox = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f, 0.f, 45.f * Deg2Rad, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody", RigidbodyType::BOX);
-//    physics.AddRigidbody(rigidbodyBox);
-//
-//
-//    std::shared_ptr<ForceGravity> forceGravity = std::make_shared<ForceGravity>();
-//    std::shared_ptr<ForceDrag> weakForceDrag = std::make_shared<ForceDrag>(5.0f, 0.0f);
-//    float anchoredSpringConstant = 100.0f;
-//    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpringRigidbody = std::make_shared<ForceAnchoredSpring>(anchoredSpringConstant, 5.0f, Vector3f::Zero, Vector3f(1.0f, 1.0f, 1.0f));
-//
-//
-//    forceRegistry->Add(rigidbodyBox, forceGravity);
-//    forceRegistry->Add(rigidbodyBox, weakForceDrag);
-//    forceRegistry->Add(rigidbodyBox, forceAnchoredSpringRigidbody);
-//
-//
-//#pragma region Timestep
-//    double t = 0.0;
-//    double deltaTime = 0.01;
-//
-//    double currentTime = HiresTimeInSeconds();
-//    double accumulator = 0.0;
-//#pragma endregion
-//
-//#pragma region Shader
-//
-//    Shader ourShader("assets/shaders/test.vert", "assets/shaders/test.frag"); // To fix, so we can use real files for vert and frag shaders
-//
-//#pragma endregion
-//
-//#pragma region Model
-//
-//    float vertices[] = {
-//    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-//     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-//     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-//    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-//
-//    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-//    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-//    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//
-//    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//
-//     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//
-//    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-//     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-//     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-//    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//
-//    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-//     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-//    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-//    };
-//
-//    glm::vec3 cubePosition = glm::vec3(0.0f, 0.0f, 0.0f);
-//    glm::vec3 cubeRotation = glm::vec3(0.0f, 0.0f, 0.0f);
-//
-//    unsigned int VBO, VAO;
-//    glGenVertexArrays(1, &VAO);
-//    glGenBuffers(1, &VBO);
-//
-//    glBindVertexArray(VAO);
-//
-//    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-//    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-//
-//    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-//    glEnableVertexAttribArray(0);
-//
-//    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-//    glEnableVertexAttribArray(1);
-//
-//    // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-//    glBindBuffer(GL_ARRAY_BUFFER, 0);
-//
-//    // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-//    // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-//    glBindVertexArray(0);
-//
-//#pragma endregion
-//
-//
-//    bool isGravityEnabled = true;
-//
-//
-//    while (!window.ShouldClose())
-//    {
-//        double newTime = HiresTimeInSeconds();
-//        double frameTime = newTime - currentTime;
-//
-//        // Cap the frame time to avoid spiral of death
-//        if (frameTime > 0.015)
-//            frameTime = 0.015;
-//
-//        currentTime = newTime;
-//        accumulator += frameTime;
-//
-//        while (accumulator >= deltaTime) {
-//            // Integrates the physics
-//            physics.Update(deltaTime, isGravityEnabled);
-//            t += deltaTime;
-//            accumulator -= deltaTime;
-//        }
-//
-//        // Use alpha with rneder to interpolate between the previous and current physics state
-//        const double alpha = accumulator / deltaTime;
-//        // state = currentState * alpha + previousState * (1.0 - alpha);
-//
-//        ProcessInput(window.GetHandle(), deltaTime);
-//
-//        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//
-//        ourShader.Use();
-//
-//        glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-//        ourShader.SetMat4("projection", projection);
-//
-//        glm::mat4 view = camera.GetViewMatrix();
-//        ourShader.SetMat4("view", view);
-//
-//        cubePosition = glm::vec3(rigidbodyBox->transform.position.x, rigidbodyBox->transform.position.y, rigidbodyBox->transform.position.z);
-//        cubeRotation = glm::vec3(rigidbodyBox->transform.rotation.GetX(), rigidbodyBox->transform.rotation.GetY(), rigidbodyBox->transform.rotation.GetZ());
-//
-//
-//        glBindVertexArray(VAO);
-//        glm::mat4 model = glm::mat4(1.0f);
-//
-//        model = glm::translate(model, cubePosition);
-//
-//        // rotation on X Axis
-//        model = glm::rotate(model, cubeRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-//        // rotation on Y Axis
-//        model = glm::rotate(model, cubeRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-//        // rotation on Z Axis
-//        model = glm::rotate(model, cubeRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-//
-//        ourShader.SetMat4("model", model);
-//        glDrawArrays(GL_TRIANGLES, 0, 36);
-//
-//        imgui.NewFrame();
-//
-//        ImguiStatsPanel(deltaTime);
-//        ImguiSceneSelection();
-//
-//        ImGui::Begin("Rigidbody Data");
-//
-//        ImGui::Text("%s", rigidbodyBox->name.c_str());
-//        ImGui::Text("%s position: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->transform.position.x, rigidbodyBox->transform.position.y, rigidbodyBox->transform.position.z);
-//        ImGui::Text("%s velocity: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->velocity.x, rigidbodyBox->velocity.y, rigidbodyBox->velocity.z);
-//        ImGui::Text("%s acceleration: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->GetAcceleration().x, rigidbodyBox->GetAcceleration().y, rigidbodyBox->GetAcceleration().z);
-//        ImGui::Text("%s mass: %f", rigidbodyBox->name.c_str(), rigidbodyBox->mass);
-//        ImGui::Text("%s rotation (rad): (%f, %f, %f) %f", rigidbodyBox->name.c_str(), rigidbodyBox->transform.rotation.GetX(), rigidbodyBox->transform.rotation.GetY(), rigidbodyBox->transform.rotation.GetZ(), rigidbodyBox->transform.rotation.GetS());
-//        ImGui::Text("%s angular velocity: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->angularVelocity.x, rigidbodyBox->angularVelocity.y, rigidbodyBox->angularVelocity.z);
-//        ImGui::Text("%s angular acceleration: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->GetAngularAcceleration().x, rigidbodyBox->GetAngularAcceleration().y, rigidbodyBox->GetAngularAcceleration().z);
-//        ImGui::Text("%s inverseMass: %f", rigidbodyBox->name.c_str(), rigidbodyBox->inverseMass);
-//        ImGui::Text("%s transformMatrix:\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f",
-//            rigidbodyBox->name.c_str(),
-//            rigidbodyBox->transformMatrix.Value(0, 0), rigidbodyBox->transformMatrix.Value(0, 1), rigidbodyBox->transformMatrix.Value(0, 2), rigidbodyBox->transformMatrix.Value(0, 3),
-//            rigidbodyBox->transformMatrix.Value(1, 0), rigidbodyBox->transformMatrix.Value(1, 1), rigidbodyBox->transformMatrix.Value(1, 2), rigidbodyBox->transformMatrix.Value(1, 3),
-//            rigidbodyBox->transformMatrix.Value(2, 0), rigidbodyBox->transformMatrix.Value(2, 1), rigidbodyBox->transformMatrix.Value(2, 2), rigidbodyBox->transformMatrix.Value(2, 3),
-//            rigidbodyBox->transformMatrix.Value(3, 0), rigidbodyBox->transformMatrix.Value(3, 1), rigidbodyBox->transformMatrix.Value(3, 2), rigidbodyBox->transformMatrix.Value(3, 3));
-//        ImGui::End();
-//
-//        imgui.Render();
-//
-//        glfwSwapBuffers(window.GetHandle());
-//        glfwPollEvents();
-//    }
-//
-//    glDeleteVertexArrays(1, &VAO);
-//    glDeleteBuffers(1, &VBO);
-//}
-//
-//void Scene6(cppGLFWwindow& window, cppGLFW& glfw, ImguiCpp& imgui)
-//{
-//    std::shared_ptr<ForceRegistry> forceRegistry = std::make_shared<ForceRegistry>();
-//
-//    PhysicsSystem physics(forceRegistry);
-//
-//    std::shared_ptr<Rigidbody> rigidbodyBox = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f, 0.f, 45.f * Deg2Rad, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Rigidbody", RigidbodyType::BOX);
-//    physics.AddRigidbody(rigidbodyBox);
-//
-//
-//    std::shared_ptr<ForceGravity> forceGravity = std::make_shared<ForceGravity>();
-//    std::shared_ptr<ForceDrag> weakForceDrag = std::make_shared<ForceDrag>(5.0f, 0.0f);
-//    float anchoredSpringConstant = 100.0f;
-//    std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpringRigidbody = std::make_shared<ForceAnchoredSpring>(anchoredSpringConstant, 5.0f, Vector3f::Zero, Vector3f(1.0f, 1.0f, 1.0f));
-//
-//
-//    forceRegistry->Add(rigidbodyBox, forceGravity);
-//    forceRegistry->Add(rigidbodyBox, weakForceDrag);
-//    forceRegistry->Add(rigidbodyBox, forceAnchoredSpringRigidbody);
-//
-//
-//#pragma region Timestep
-//    double t = 0.0;
-//    double deltaTime = 0.01;
-//
-//    double currentTime = HiresTimeInSeconds();
-//    double accumulator = 0.0;
-//#pragma endregion
-//
-//#pragma region Shader
-//
-//    Shader ourShader("assets/shaders/test.vert", "assets/shaders/test.frag"); // To fix, so we can use real files for vert and frag shaders
-//
-//#pragma endregion
-//
-//#pragma region Model
-//
-//    float vertices[] = {
-//    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-//     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-//     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-//    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-//
-//    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-//    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-//    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//
-//    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//
-//     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//
-//    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-//     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-//     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-//    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-//    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-//
-//    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-//     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-//    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-//    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-//    };
-//
-//    glm::vec3 cubePosition = glm::vec3(0.0f, 0.0f, 0.0f);
-//    glm::vec3 cubeRotation = glm::vec3(0.0f, 0.0f, 0.0f);
-//
-//    unsigned int VBO, VAO;
-//    glGenVertexArrays(1, &VAO);
-//    glGenBuffers(1, &VBO);
-//
-//    glBindVertexArray(VAO);
-//
-//    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-//    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-//
-//    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-//    glEnableVertexAttribArray(0);
-//
-//    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-//    glEnableVertexAttribArray(1);
-//
-//    // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-//    glBindBuffer(GL_ARRAY_BUFFER, 0);
-//
-//    // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-//    // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-//    glBindVertexArray(0);
-//
-//#pragma endregion
-//
-//
-//    bool isGravityEnabled = true;
-//
-//
-//    while (!window.ShouldClose())
-//    {
-//        double newTime = HiresTimeInSeconds();
-//        double frameTime = newTime - currentTime;
-//
-//        // Cap the frame time to avoid spiral of death
-//        if (frameTime > 0.015)
-//            frameTime = 0.015;
-//
-//        currentTime = newTime;
-//        accumulator += frameTime;
-//
-//        while (accumulator >= deltaTime) {
-//            // Integrates the physics
-//            physics.Update(deltaTime, isGravityEnabled);
-//            t += deltaTime;
-//            accumulator -= deltaTime;
-//        }
-//
-//        // Use alpha with rneder to interpolate between the previous and current physics state
-//        const double alpha = accumulator / deltaTime;
-//        // state = currentState * alpha + previousState * (1.0 - alpha);
-//
-//        ProcessInput(window.GetHandle(), deltaTime);
-//
-//        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//
-//        ourShader.Use();
-//
-//        glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-//        ourShader.SetMat4("projection", projection);
-//
-//        glm::mat4 view = camera.GetViewMatrix();
-//        ourShader.SetMat4("view", view);
-//
-//        cubePosition = glm::vec3(rigidbodyBox->transform.position.x, rigidbodyBox->transform.position.y, rigidbodyBox->transform.position.z);
-//        cubeRotation = glm::vec3(rigidbodyBox->transform.rotation.GetX(), rigidbodyBox->transform.rotation.GetY(), rigidbodyBox->transform.rotation.GetZ());
-//
-//
-//        glBindVertexArray(VAO);
-//        glm::mat4 model = glm::mat4(1.0f);
-//
-//        model = glm::translate(model, cubePosition);
-//
-//        // rotation on X Axis
-//        model = glm::rotate(model, cubeRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-//        // rotation on Y Axis
-//        model = glm::rotate(model, cubeRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-//        // rotation on Z Axis
-//        model = glm::rotate(model, cubeRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-//
-//        ourShader.SetMat4("model", model);
-//        glDrawArrays(GL_TRIANGLES, 0, 36);
-//
-//        imgui.NewFrame();
-//
-//        ImguiStatsPanel(deltaTime);
-//        ImguiSceneSelection();
-//
-//        ImGui::Begin("Rigidbody Data");
-//
-//        ImGui::Text("%s", rigidbodyBox->name.c_str());
-//        ImGui::Text("%s position: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->transform.position.x, rigidbodyBox->transform.position.y, rigidbodyBox->transform.position.z);
-//        ImGui::Text("%s velocity: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->velocity.x, rigidbodyBox->velocity.y, rigidbodyBox->velocity.z);
-//        ImGui::Text("%s acceleration: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->GetAcceleration().x, rigidbodyBox->GetAcceleration().y, rigidbodyBox->GetAcceleration().z);
-//        ImGui::Text("%s mass: %f", rigidbodyBox->name.c_str(), rigidbodyBox->mass);
-//        ImGui::Text("%s rotation (rad): (%f, %f, %f) %f", rigidbodyBox->name.c_str(), rigidbodyBox->transform.rotation.GetX(), rigidbodyBox->transform.rotation.GetY(), rigidbodyBox->transform.rotation.GetZ(), rigidbodyBox->transform.rotation.GetS());
-//        ImGui::Text("%s angular velocity: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->angularVelocity.x, rigidbodyBox->angularVelocity.y, rigidbodyBox->angularVelocity.z);
-//        ImGui::Text("%s angular acceleration: (%f, %f, %f)", rigidbodyBox->name.c_str(), rigidbodyBox->GetAngularAcceleration().x, rigidbodyBox->GetAngularAcceleration().y, rigidbodyBox->GetAngularAcceleration().z);
-//        ImGui::Text("%s inverseMass: %f", rigidbodyBox->name.c_str(), rigidbodyBox->inverseMass);
-//        ImGui::Text("%s transformMatrix:\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f",
-//            rigidbodyBox->name.c_str(),
-//            rigidbodyBox->transformMatrix.Value(0, 0), rigidbodyBox->transformMatrix.Value(0, 1), rigidbodyBox->transformMatrix.Value(0, 2), rigidbodyBox->transformMatrix.Value(0, 3),
-//            rigidbodyBox->transformMatrix.Value(1, 0), rigidbodyBox->transformMatrix.Value(1, 1), rigidbodyBox->transformMatrix.Value(1, 2), rigidbodyBox->transformMatrix.Value(1, 3),
-//            rigidbodyBox->transformMatrix.Value(2, 0), rigidbodyBox->transformMatrix.Value(2, 1), rigidbodyBox->transformMatrix.Value(2, 2), rigidbodyBox->transformMatrix.Value(2, 3),
-//            rigidbodyBox->transformMatrix.Value(3, 0), rigidbodyBox->transformMatrix.Value(3, 1), rigidbodyBox->transformMatrix.Value(3, 2), rigidbodyBox->transformMatrix.Value(3, 3));
-//        ImGui::End();
-//
-//        imgui.Render();
-//
-//        glfwSwapBuffers(window.GetHandle());
-//        glfwPollEvents();
-//    }
-//
-//    glDeleteVertexArrays(1, &VAO);
-//    glDeleteBuffers(1, &VBO);
-//}

@@ -20,11 +20,13 @@ Rigidbody::Rigidbody()
 	type(RigidbodyType::BOX),
 	massPoints(std::vector<Particle>())
 {
+	inertiaTensor = GetBoxInertiaTensorLocal();
+	inertiaTensor = GetInertiaTensorWorld();
 	CalculateDerivedData();
 	CalculateCenterOfMass();
 }
 
-Rigidbody::Rigidbody(Transform transform, Vector3f velocity, Vector3f acceleration, float mass, Vector3f angularVelocity, Vector3f angularAcceleration, Vector3f momentOfInertia, std::string name, RigidbodyType type, std::vector<Particle> massPoints /*= std::vector<Particle>()*/)
+Rigidbody::Rigidbody(Transform transform, Vector3f velocity, Vector3f acceleration, float mass, Vector3f angularVelocity, Vector3f angularAcceleration, Vector3f momentOfInertia, std::string name, RigidbodyType type, std::vector<Particle> massPoints /*= std::vector<Particle>()*/, float linearDamping/* = 0.0f*/, float angularDamping/*= 0.5f*/)
 	:
 	transform(transform),
 	velocity(velocity),
@@ -33,14 +35,39 @@ Rigidbody::Rigidbody(Transform transform, Vector3f velocity, Vector3f accelerati
 	mass(mass > MIN_MASS ? mass : MIN_MASS),
 	angularVelocity(angularVelocity),
 	m_angularAcceleration(angularAcceleration),
-	inertiaTensor(GetBoxInertiaTensorLocal()),
 	name(name),
 	type(type),
-	massPoints(std::vector<Particle>())
+	massPoints(std::vector<Particle>()),
+	linearDamping(linearDamping),
+	angularDamping(angularDamping)
 {
 	CalculateDerivedData();
 	CalculateCenterOfMass();
 	inverseMass = 1.0f / mass;
+
+	switch (type)
+	{
+	case BOX:
+		inertiaTensor = GetBoxInertiaTensorLocal();
+		break;
+	case SPHERE:
+		inertiaTensor = GetSphereInertiaTensorLocal();
+		break;
+	case TRIANGLE:
+		inertiaTensor = GetTriangleInertiaTensorLocal();
+		break;
+	case ROD:
+		inertiaTensor = GetRodInertiaTensorLocal();
+		break;
+	case RODEND:
+		inertiaTensor = GetRodEndInertiaTensorLocal();
+		break;
+	case CYLINDER:
+		inertiaTensor = GetCylinderInertiaTensorLocal();
+		break;
+	}
+
+	inertiaTensor = GetInertiaTensorWorld();
 }
 
 void Rigidbody::ClearForce()
@@ -68,14 +95,9 @@ Vector3f Rigidbody::GetPointInWorldSpace(const Vector3f& point)
 	return transformMatrix * point;
 }
 
-void Rigidbody::AddTorque(const Vector3f& t)
+Vector3f Rigidbody::GetPointInLocalSpace(const Vector3f& point)
 {
-	torque += t;
-}
-
-void Rigidbody::RemoveTorque(const Vector3f& t)
-{
-	torque -= t;
+	return transformMatrix.Inverse() * point;
 }
 
 void Rigidbody::AddForceAtPoint(const Vector3f& f, const Vector3f& point)
@@ -148,7 +170,7 @@ void Rigidbody::CalculateTransformMatrix()
 void Rigidbody::CalculateDerivedData()
 {
 	CalculateTransformMatrix();
-	CalculateInverseInertiaTensorWorld();
+	CalculateInverseInertiaTensor();
 }
 
 Matrix3f Rigidbody::GetBoxInertiaTensorLocal()
@@ -167,14 +189,6 @@ Matrix3f Rigidbody::GetBoxInertiaTensorLocal()
 		});
 }
 
-Matrix3f Rigidbody::GetBoxInertiaTensorWorld()
-{
-	inertiaTensor = GetBoxInertiaTensorLocal();
-	CalculateInverseInertiaTensor();
-	return GetInertiaTensorWorld();
-}
-
-
 Matrix3f Rigidbody::GetSphereInertiaTensorLocal()
 {
 	float radius = transform.scale.x;
@@ -188,13 +202,6 @@ Matrix3f Rigidbody::GetSphereInertiaTensorLocal()
 		});
 }
 
-Matrix3f Rigidbody::GetSphereInertiaTensorWorld()
-{
-	inertiaTensor = GetSphereInertiaTensorLocal();
-	CalculateInverseInertiaTensor();
-	return GetInertiaTensorWorld();
-}
-
 void Rigidbody::SetInertiaTensor(const Matrix3f& _inertiaTensor)
 {
 	inertiaTensor = _inertiaTensor;
@@ -205,69 +212,58 @@ void Rigidbody::CalculateInverseInertiaTensor()
 	inverseInertiaTensor = inertiaTensor.Inverse();
 }
 
-void Rigidbody::CalculateInverseInertiaTensorWorld()
-{
-	switch (type) 
-	{
-	case RigidbodyType::BOX:
-		inverseInertiaTensor = GetBoxInertiaTensorWorld().Inverse();
-		break;
-	case RigidbodyType::SPHERE:
-		inverseInertiaTensor = GetSphereInertiaTensorWorld().Inverse();
-		break;
-	case RigidbodyType::TRIANGLE:
-		inverseInertiaTensor = GetTriangleInertiaTensorWorld().Inverse();
-		break;
-	default:
-		inverseInertiaTensor = GetBoxInertiaTensorWorld().Inverse();
-	}
-}
-
 Matrix3f Rigidbody::GetTriangleInertiaTensorLocal()
 {
-	// Calculate the center of mass
-	Vector3f v0 = Vector3f::One;
-	Vector3f v1 = Vector3f::One;
-	Vector3f v2 = Vector3f::One;
+	float s = transform.scale.x;
+	float I = (1.0f / 20.0f) * mass * s * s;
 
-	Vector3f centerOfMass = (v0 + v1 + v2) / 3.0f;
-
-	// Calculate the mass of the triangle
-	float area = 0.5f * Vector3f::CrossProduct(v1 - v0, v2 - v0).GetLength();  // Area of the triangle
-
-	// Calculate the moment arm for each vertex
-	Vector3f r0 = v0 - centerOfMass;
-	Vector3f r1 = v1 - centerOfMass;
-	Vector3f r2 = v2 - centerOfMass;
-
-	// Calculate the moment of inertia components
-	float Ixx = mass * (r0.y * r0.y + r0.z * r0.z + r1.y * r1.y + r1.z * r1.z + r2.y * r2.y + r2.z * r2.z);
-	float Iyy = mass * (r0.x * r0.x + r0.z * r0.z + r1.x * r1.x + r1.z * r1.z + r2.x * r2.x + r2.z * r2.z);
-	float Izz = mass * (r0.x * r0.x + r0.y * r0.y + r1.x * r1.x + r1.y * r1.y + r2.x * r2.x + r2.y * r2.y);
-	float Ixy = -mass * (r0.x * r0.y + r1.x * r1.y + r2.x * r2.y);
-	float Ixz = -mass * (r0.x * r0.z + r1.x * r1.z + r2.x * r2.z);
-	float Iyz = -mass * (r0.y * r0.z + r1.y * r1.z + r2.y * r2.z);
-
-	// Populate the inertia tensor matrix
-	inertiaTensor = Matrix3f(
-		{
-			Ixx, Ixy, Ixz, 
-			Ixy, Iyy, Iyz, 
-			Ixz, Iyz, Izz
+	return Matrix3f({
+		I, 0.0f, 0.0f,
+		0.0f, I, 0.0f,
+		0.0f, 0.0f, I
 		});
-
-	return inertiaTensor;
 }
 
-Matrix3f Rigidbody::GetTriangleInertiaTensorWorld()
+Matrix3f Rigidbody::GetRodInertiaTensorLocal()
 {
-	inertiaTensor = GetTriangleInertiaTensorLocal();
-	CalculateInverseInertiaTensor();
-	return GetInertiaTensorWorld();
+	float length = transform.scale.x;
+	float I = (1.0f / 12.0f) * mass * length * length;
+
+	return Matrix3f({
+		I, 0.0f, 0.0f,
+		0.0f, I, 0.0f,
+		0.0f, 0.0f, I
+		});
+}
+
+Matrix3f Rigidbody::GetRodEndInertiaTensorLocal()
+{
+	float length = transform.scale.x;
+	float I = (1.0f / 3.0f) * mass * length * length;
+
+	return Matrix3f({
+		I, 0.0f, 0.0f,
+		0.0f, I, 0.0f,
+		0.0f, 0.0f, I
+		}); ;
+}
+
+Matrix3f Rigidbody::GetCylinderInertiaTensorLocal()
+{
+	float radius = transform.scale.x;
+	float height = transform.scale.y;
+	float I = (1.0f / 12.0f) * mass * (3 * radius * radius + height * height);
+
+	return Matrix3f({
+		I, 0.0f, 0.0f,
+		0.0f, I, 0.0f,
+		0.0f, 0.0f, I
+		});
 }
 
 Matrix3f Rigidbody::GetInertiaTensorWorld()
 {
+	CalculateInverseInertiaTensor();
 	Matrix3f iitLocal = inverseInertiaTensor;
 	Quaternion q = transform.rotation;
 	Matrix4f rotM = transformMatrix;
@@ -315,7 +311,7 @@ Matrix3f Rigidbody::GetInertiaTensorWorld()
 	return iitWorld;
 }
 
-void Rigidbody::CalculateInertiaMatrix()
+Matrix3f Rigidbody::CalculateInertiaMatrix()
 {
 	float Ixx = 0.0f;
 	float Iyy = 0.0f;
@@ -324,26 +320,28 @@ void Rigidbody::CalculateInertiaMatrix()
 	float Ixz = 0.0f;
 	float Iyz = 0.0f;
 
-	//// Calculate the product of inertia components
-	//for (const Particle& massPoint : massPoints) {
-	//	double x = massPoint.position.x;
-	//	double y = massPoint.position.y;
-	//	double z = massPoint.position.z;
-	//	double m = massPoint.mass;
+	// Calculate the product of inertia components
+	for (const Particle& massPoint : massPoints) 
+	{
+		float x = massPoint.position.x - centerOfMass.x;
+		float y = massPoint.position.y - centerOfMass.y;
+		float z = massPoint.position.z - centerOfMass.z;
+		float m = massPoint.mass;
 
-	//	// Update the matrix components
-	//	inertiaMatrix[0][0] += m * (y * y + z * z);
-	//	inertiaMatrix[0][1] -= m * (x * y);
-	//	inertiaMatrix[0][2] -= m * (x * z);
-	//	inertiaMatrix[1][0] -= m * (x * y);
-	//	inertiaMatrix[1][1] += m * (x * x + z * z);
-	//	inertiaMatrix[1][2] -= m * (y * z);
-	//	inertiaMatrix[2][0] -= m * (x * z);
-	//	inertiaMatrix[2][1] -= m * (y * z);
-	//	inertiaMatrix[2][2] += m * (x * x + y * y);
-	//}
+		// Update the matrix components
+		Ixx += m * (y * y + z * z);
+		Iyy += m * (x * x + z * z);
+		Izz += m * (x * x + y * y);
+		Ixy -= m * (x * y);
+		Ixz -= m * (x * z);
+		Iyz -= m * (y * z);
+	}
 
-	//return inertiaMatrix;
+	return Matrix3f({
+		Ixx, Ixy, Ixz,
+		Ixy, Iyy, Iyz,
+		Ixz, Iyz, Izz
+		});
 }
 
 void Rigidbody::CalculateCenterOfMass()
