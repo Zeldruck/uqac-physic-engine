@@ -32,4 +32,5 @@ Tâches:
 Références utilisées:
 - https://learnopengl.com
 - https://wikipedia.org
+- https://en.wikipedia.org/wiki/List_of_moments_of_inertia
 - Millington chapitre 9, 10, 11
