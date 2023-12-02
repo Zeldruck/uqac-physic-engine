@@ -14,8 +14,8 @@ public:
 	float CalculateSeparatingVelocity();
 
 private:
-	void ResolveVelocity();
-	void ResolveInterpenetration();
+	void ResolveVelocity(float duration);
+	void ResolveInterpenetration(float duration);
 
 
 public:
@@ -24,7 +24,4 @@ public:
 	float restitution;
 	float penetration;
 	Vector3f contactNormal;
-
-private:
-	float duration;
 };

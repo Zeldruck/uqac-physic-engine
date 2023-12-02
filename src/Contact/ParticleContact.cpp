@@ -3,44 +3,72 @@
 ParticleContact::ParticleContact(std::vector<std::shared_ptr<Particle>>& particles, float restitution, float penetration, Vector3f contactNormal)
 {
 	this->particles = particles;
-
-	this->restitution = restitution;
 	this->penetration = penetration;
+	this->restitution = restitution;
 	this->contactNormal = contactNormal;
 }
 
 void ParticleContact::Resolve(float duration)
 {
-	this->duration = duration;
-
-	ResolveVelocity();
-	//ResolveInterpenetration();
+	ResolveVelocity(duration);
+	ResolveInterpenetration(duration);
 }
 
 float ParticleContact::CalculateSeparatingVelocity()
 {
-	return 0.f;
+	Vector3f velocity = particles.at(0)->velocity;
+
+	if (particles.at(1))
+		velocity -= particles.at(1)->velocity;
+
+	return velocity * contactNormal;
 }
 
-void ParticleContact::ResolveVelocity()
+void ParticleContact::ResolveVelocity(float duration)
 {
-	float k = Vector3f::DotProduct((restitution + 1) * (particles.at(0)->velocity - particles.at(1)->velocity), contactNormal) /
-		(1 / particles.at(0)->mass + 1 / particles.at(1)->mass);
-	
-	Vector3f v0 = particles.at(0)->velocity - k * duration * contactNormal / particles.at(0)->mass;
-	Vector3f v1 = particles.at(1)->velocity + k * duration * contactNormal / particles.at(1)->mass;
+	float sVelocity = CalculateSeparatingVelocity();
 
-	particles.at(0)->velocity = v0;
-	particles.at(1)->velocity = v1;
+	if (sVelocity > 0)
+		return;
+
+	float newSeparatingVelocity = -sVelocity * restitution;
+
+
+	Vector3f accel = particles.at(0)->GetAcceleration();
+	if (particles.at(1))
+		accel -= particles.at(1)->GetAcceleration();
+
+	float accelSeparating = accel * contactNormal * duration;
+
+	if (accelSeparating < 0)
+	{
+		newSeparatingVelocity += restitution * accelSeparating;
+		if (newSeparatingVelocity < 0.f) newSeparatingVelocity = 0.f;
+	}
+
+
+	float inverseMass = 1.f / particles.at(0)->mass;
+
+	if (particles.at(1))
+		inverseMass += 1.f / particles.at(1)->mass;
+
+	particles.at(0)->velocity += (contactNormal * (newSeparatingVelocity - sVelocity) / inverseMass) * (1.f / particles.at(0)->mass);
+	
+	if (particles.at(1))
+		particles.at(1)->velocity += (contactNormal * (newSeparatingVelocity - sVelocity) / inverseMass) * -(1.f / particles.at(1)->mass);
 }
 
-void ParticleContact::ResolveInterpenetration()
+void ParticleContact::ResolveInterpenetration(float duration)
 {
 	if (penetration <= 0.f) return;
 
-	Vector3f Pa = (particles.at(1)->mass / particles.at(0)->mass + particles.at(1)->mass) * penetration * contactNormal;
-	Vector3f Pb = -(particles.at(0)->mass / particles.at(0)->mass + particles.at(1)->mass) * penetration * contactNormal;
+	float inverseMass = 1.f / particles.at(0)->mass;
 
-	particles.at(0)->position += Pa;
-	particles.at(1)->position += Pb;
+	if (particles.at(1))
+		inverseMass += 1.f / particles.at(1)->mass;
+
+	particles.at(0)->position += (contactNormal * (-penetration / inverseMass)) * (1.f / particles.at(0)->mass);
+
+	if(particles.at(1))
+		particles.at(1)->position += (contactNormal * (-penetration / inverseMass)) * (1.f / particles.at(1)->mass);
 }

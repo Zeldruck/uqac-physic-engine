@@ -30,9 +30,9 @@ Vector3<T> Vector3<T>::operator-(const Vector3& vec) const
 }
 
 template<typename T>
-Vector3<T> Vector3<T>::operator*(const Vector3& vec) const
+T Vector3<T>::operator*(const Vector3& vec) const
 {
-	return Vector3{ x * vec.x, y * vec.y, z * vec.z };
+	return x * vec.x + y * vec.y + z * vec.z;
 }
 
 template<typename T>
@@ -73,7 +73,7 @@ Vector3<T>& Vector3<T>::operator-=(const Vector3& vec)
 	return *this;
 }
 
-template<typename T>
+/*template<typename T>
 Vector3<T>& Vector3<T>::operator*=(const Vector3& vec)
 {
 	x *= vec.x;
@@ -81,7 +81,7 @@ Vector3<T>& Vector3<T>::operator*=(const Vector3& vec)
 	z *= vec.z;
 
 	return *this;
-}
+}*/
 
 template<typename T>
 Vector3<T>& Vector3<T>::operator*=(T value)

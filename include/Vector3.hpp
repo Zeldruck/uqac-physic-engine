@@ -11,14 +11,14 @@ struct Vector3
 
 	Vector3 operator+(const Vector3& vec) const;
 	Vector3 operator-(const Vector3& vec) const;
-	Vector3 operator*(const Vector3& vec) const;
+	T operator*(const Vector3& vec) const;
 	Vector3 operator*(T value) const;
 	Vector3 operator/(const Vector3& vec) const;
 	Vector3 operator/(T value) const;
 
 	Vector3& operator+=(const Vector3& vec);
 	Vector3& operator-=(const Vector3& vec);
-	Vector3& operator*=(const Vector3& vec);
+	//Vector3& operator*=(const Vector3& vec);
 	Vector3& operator*=(T value);
 	Vector3& operator/=(const Vector3& vec);
 	Vector3& operator/=(T value);

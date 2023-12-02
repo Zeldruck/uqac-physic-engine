@@ -10,16 +10,24 @@ ParticleRod::ParticleRod(std::vector<std::shared_ptr<Particle>>& particles, floa
 
 void ParticleRod::AddContact(std::vector<std::shared_ptr<ParticleContact>>& contact, unsigned int limit)
 {
-	Vector3f d = particles.at(1)->position - particles.at(0)->position;
+	float currLength = CurrentLength();
 
-	float penetration = length - d.GetLength();
+	if (currLength == length) return;
 
-	if (penetration < 0.05f && penetration > -0.05f) return;
+	Vector3f normal = (particles.at(1)->position - particles.at(0)->position).GetNormalized();
+	float penetration = 0.f;
 
+	if (currLength > length)
+	{
+		penetration = currLength - length;
+	}
+	else
+	{
+		normal = normal * -1.f;
+		penetration = length - currLength;
+	}
 
-	Vector3f normal = (particles.at(0)->position - particles.at(1)->position).GetNormalized();
-
-	std::shared_ptr<ParticleContact> newContact = std::make_shared<ParticleContact>(particles, 0.5f, penetration, normal);
+	std::shared_ptr<ParticleContact> newContact = std::make_shared<ParticleContact>(particles, 0, penetration, normal);
 
 	contact.push_back(newContact);
 }
