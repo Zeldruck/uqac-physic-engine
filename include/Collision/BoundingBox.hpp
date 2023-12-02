@@ -3,14 +3,20 @@
 #include <Vector3.hpp>
 #include "BoundingVolume.hpp"
 
-template <class TBoundingVolume>
 class BoundingBox : public BoundingVolume
 {
 public:
-	Vector3f center;
-	Vector3f halfSize;
+	BoundingBox();
+	BoundingBox(const Vector3f& center, const Vector3f& halfSize);
+	BoundingBox(const BoundingBox& one, const BoundingBox& two);
 
-	std::shared_ptr<TBoundingVolume> volume;
+	Vector3f GetCenter() const;
+	Vector3f GetHalfSize() const;
+	bool Overlaps(std::shared_ptr<BoundingBox> other) const;
 
-	bool Overlaps(std::shared_ptr<TBoundingVolume> other) const override;
+	float GetSize() const override;
+	float GetGrowth(const std::shared_ptr<BoundingVolume>& other) const override;
+private:
+	Vector3f m_center;
+	Vector3f m_halfSize;
 };

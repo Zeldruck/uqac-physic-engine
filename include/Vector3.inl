@@ -120,6 +120,12 @@ float Vector3<T>::GetLength() const
 }
 
 template<typename T>
+float Vector3<T>::GetLengthSquared() const
+{
+	return x*x + y*y + z*z;
+}
+
+template<typename T>
 Vector3<T>& Vector3<T>::Normalize()
 {
 	*this = GetNormalized();
@@ -158,6 +164,18 @@ Vector3<T> Vector3<T>::CrossProduct(const Vector3& vecA, const Vector3& vecB)
 	return Vector3(vecA.y*vecB.z - vecA.z*vecB.y,
 				vecA.z*vecB.x - vecA.x*vecB.z,
 				vecA.x*vecB.y - vecA.y*vecB.x);
+}
+
+template<typename T>
+Vector3<T> Vector3<T>::Min(const Vector3& vecA, const Vector3& vecB)
+{
+	return Vector3{ std::min(vecA.x, vecB.x), std::min(vecA.y, vecB.y), std::min(vecA.z, vecB.z) };
+}
+
+template<typename T>
+Vector3<T> Vector3<T>::Max(const Vector3& vecA, const Vector3& vecB)
+{
+	return Vector3{ std::max(vecA.x, vecB.x), std::max(vecA.y, vecB.y), std::max(vecA.z, vecB.z) };
 }
 
 template<typename T>

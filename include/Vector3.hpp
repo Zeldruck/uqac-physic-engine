@@ -24,6 +24,7 @@ struct Vector3
 	Vector3& operator/=(T value);
 
 	float GetLength() const;
+	float GetLengthSquared() const;
 	Vector3& Normalize();
 	Vector3& UnitNormalize();
 	Vector3 GetNormalized() const;
@@ -31,7 +32,9 @@ struct Vector3
 
 	static float DotProduct(const Vector3& vecA, const Vector3& vecB);
 	static Vector3 CrossProduct(const Vector3& vecA, const Vector3& vecB);
-	
+	static Vector3 Min(const Vector3& vecA, const Vector3& vecB);
+	static Vector3 Max(const Vector3& vecA, const Vector3& vecB);
+
 	Vector3 Cross(const Vector3<T>& vecB) const;
 
 	static const Vector3 Zero;

@@ -1,16 +1,23 @@
 #pragma once
 
 #include <Vector3.hpp>
-#include "BoundingVolume.hpp"
+#include <Collision/BoundingVolume.hpp>
 
-template<class TBoundingVolume>
 class BoundingSphere : public BoundingVolume
 {
 public:
-	Vector3f center;
-	float radius;
+	BoundingSphere();
+	BoundingSphere(const Vector3f& center, float radius);
+	BoundingSphere(const BoundingSphere& one, const BoundingSphere& two);
 
-	std::shared_ptr<TBoundingVolume> volume;
+	Vector3f GetCenter() const;
+	float GetRadius() const;
+	bool Overlaps(std::shared_ptr<BoundingSphere> other) const;
 
-	bool Overlaps(std::shared_ptr<TBoundingVolume> other) const override;
+	float GetSize() const override;
+	float GetGrowth(const std::shared_ptr<BoundingVolume>& other) const override;
+
+private:
+	Vector3f m_center;
+	float m_radius;
 };
