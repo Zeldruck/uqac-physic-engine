@@ -43,8 +43,6 @@
 #include "Transform.hpp"
 #include "Quaternion.hpp"
 
-#include "Primitives/Sphere.hpp"
-
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 void MouseCallback(GLFWwindow* window, double xpos, double ypos);
 void ProcessInput(GLFWwindow* window, float deltaTime);
