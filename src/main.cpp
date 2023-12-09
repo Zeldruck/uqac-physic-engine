@@ -60,7 +60,8 @@ void CreateSphere(std::vector<glm::vec3>& vertices, float radius, int slices, in
 enum class Scene
 {
     SCENE_1,
-    SCENE_2
+    SCENE_2,
+    SCENE_3
 };
 
 // Current scene
@@ -72,6 +73,7 @@ const unsigned int SCR_HEIGHT = 1080;
 
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 20.0f));
+
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -134,7 +136,7 @@ int main(int argc, char** argv)
 
 #pragma region Shader
 
-    Shader ourShader("assets/shaders/test.vert", "assets/shaders/test.frag"); // To fix, so we can use real files for vert and frag shaders
+    Shader ourShader("assets/shaders/test.vert", "assets/shaders/test.frag");
 
 #pragma endregion
 
@@ -284,6 +286,24 @@ int main(int argc, char** argv)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
+    // Create a UV Sphere
+    std::vector<glm::vec3> sphereVertices;
+    CreateSphere(sphereVertices, 1.0f, 30, 30);
+    glm::vec3 spherePosition = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 sphereRotation = glm::vec3(0.0f, 0.0f, 0.0f);
+    GLuint VAO3, VBO3;
+    glGenVertexArrays(1, &VAO3);
+    glGenBuffers(1, &VBO3);
+
+    glBindVertexArray(VAO3);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO3);
+    glBufferData(GL_ARRAY_BUFFER, sphereVertices.size() * sizeof(glm::vec3), sphereVertices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 
     ourShader.Use();
     ourShader.SetInt("ourTexture", 0);
@@ -321,22 +341,22 @@ int main(int argc, char** argv)
 
         ourShader.Use();
 
+        glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         ourShader.SetMat4("projection", projection);
 
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.SetMat4("view", view);
 
-        cubePosition = glm::vec3(rigidbodyBox->transform.position.x, rigidbodyBox->transform.position.y, rigidbodyBox->transform.position.z);
-        cubeRotation = glm::vec3(rigidbodyBox->transform.rotation.GetX(), rigidbodyBox->transform.rotation.GetY(), rigidbodyBox->transform.rotation.GetZ());
-        
-        trianglePosition = glm::vec3(rigidbodyTriangle->transform.position.x, rigidbodyTriangle->transform.position.y, rigidbodyTriangle->transform.position.z);
-        triangleRotation = glm::vec3(rigidbodyTriangle->transform.rotation.GetX(), rigidbodyTriangle->transform.rotation.GetY(), rigidbodyTriangle->transform.rotation.GetZ());
-
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
 
-        glm::mat4 model = glm::mat4(1.0f);
+        cubePosition = glm::vec3(rigidbodyBox->transform.position.x, rigidbodyBox->transform.position.y, rigidbodyBox->transform.position.z);
+        cubeRotation = glm::vec3(rigidbodyBox->transform.rotation.GetX(), rigidbodyBox->transform.rotation.GetY(), rigidbodyBox->transform.rotation.GetZ());
+
+        trianglePosition = glm::vec3(rigidbodyTriangle->transform.position.x, rigidbodyTriangle->transform.position.y, rigidbodyTriangle->transform.position.z);
+        triangleRotation = glm::vec3(rigidbodyTriangle->transform.rotation.GetX(), rigidbodyTriangle->transform.rotation.GetY(), rigidbodyTriangle->transform.rotation.GetZ());
+
         switch (currentScene)
         {
         case Scene::SCENE_1:
@@ -365,6 +385,18 @@ int main(int argc, char** argv)
             glDrawArrays(GL_TRIANGLES, 0, 12);
             
             //ImguiRigidbodyData(rigidbodyTriangle);
+            break;
+
+        case Scene::SCENE_3:
+            glBindVertexArray(VAO3);
+            model = glm::translate(model, spherePosition);
+            // rotation on X Axis
+            model = glm::rotate(model, sphereRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+            // rotation on Y Axis
+            model = glm::rotate(model, sphereRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+            // rotation on Z Axis
+            model = glm::rotate(model, sphereRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+            glDrawArrays(GL_TRIANGLES, 0, sphereVertices.size());
             break;
         }
         ourShader.SetMat4("model", model);
@@ -523,12 +555,18 @@ void ContactsGenerator(std::vector<std::shared_ptr<ParticleContact>>& contactArr
 
 void ImguiSceneSelection() {
     // ImGui code for scene selection
+    ImGui::Begin("Camera");
+    ImGui::Text("Camera position: (%f, %f, %f)", camera.Position.x, camera.Position.y, camera.Position.z);
+    ImGui::Text("Camera rotation: (%f, %f)", camera.Yaw, camera.Pitch);
+    ImGui::End();
     ImGui::Begin("Scene Selection");
     ImGui::Text("Current Scene: %d", (int)currentScene + 1);
     if (ImGui::Button("Scene 1"))
         currentScene = Scene::SCENE_1;
     if (ImGui::Button("Scene 2"))
         currentScene = Scene::SCENE_2;
+    if (ImGui::Button("Scene 3"))
+        currentScene = Scene::SCENE_3;
     ImGui::End();
 }
 
