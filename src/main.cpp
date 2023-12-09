@@ -55,6 +55,7 @@ void Vector3ClassTest();
 double HiresTimeInSeconds();
 void ImguiSceneSelection();
 void ImguiRigidbodyData(std::shared_ptr<Rigidbody> rigidbody);
+void CreateSphere(std::vector<glm::vec3>& vertices, float radius, int slices, int stacks);
 
 enum class Scene
 {
@@ -550,4 +551,55 @@ void ImguiRigidbodyData(std::shared_ptr<Rigidbody> rigidbody)
         rigidbody->transformMatrix.Value(2, 0), rigidbody->transformMatrix.Value(2, 1), rigidbody->transformMatrix.Value(2, 2), rigidbody->transformMatrix.Value(2, 3),
         rigidbody->transformMatrix.Value(3, 0), rigidbody->transformMatrix.Value(3, 1), rigidbody->transformMatrix.Value(3, 2), rigidbody->transformMatrix.Value(3, 3));
     ImGui::End();
+}
+
+// Function to create a UV Sphere
+void CreateSphere(std::vector<glm::vec3>& vertices, float radius, int slices, int stacks) 
+{
+
+    // Uncomment for full sphere
+    // Temp vectors
+    //std::vector<glm::vec3> tempVertices;
+
+    // Create vertices
+    for (int i = 0; i <= stacks; ++i)
+    {
+        float stackAngle = glm::pi<float>() * static_cast<float>(i) / static_cast<float>(stacks);
+        float stackRadius = glm::sin(stackAngle);
+        float stackHeight = glm::cos(stackAngle);
+
+        for (int j = 0; j <= slices; ++j)
+        {
+            float sliceAngle = 2.0f * glm::pi<float>() * static_cast<float>(j) / static_cast<float>(slices);
+            float x = stackRadius * glm::cos(sliceAngle);
+            float y = stackRadius * glm::sin(sliceAngle);
+            float z = stackHeight;
+
+            // Comment for full sphere
+            vertices.emplace_back(x * radius, y * radius, z * radius);
+
+            // Uncomment for full sphere
+            // tempVertices.emplace_back(x * radius, y * radius, z * radius);
+        }
+    }
+
+    // Uncomment for full sphere
+    //for (int i = 0; i < stacks; ++i) 
+    //{
+    //    for (int j = 0; j <= slices; ++j) 
+    //    {
+    //        // Indices for the vertices of two adjacent stacks
+    //        int index1 = i * (slices + 1) + j;
+    //        int index2 = (i + 1) * (slices + 1) + j;
+
+    //        // Form two triangles for each quad
+    //        vertices.push_back(tempVertices[index1]);
+    //        vertices.push_back(tempVertices[index2]);
+    //        vertices.push_back(tempVertices[index1 + 1]);
+
+    //        vertices.push_back(tempVertices[index1 + 1]);
+    //        vertices.push_back(tempVertices[index2]);
+    //        vertices.push_back(tempVertices[index2 + 1]);
+    //    }
+    //}
 }
