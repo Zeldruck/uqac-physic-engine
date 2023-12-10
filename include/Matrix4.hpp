@@ -15,6 +15,7 @@ public:
 	Matrix4(std::array<T, 4 * 4> values);
 
 	Matrix4 Inverse() const;
+	Vector3<T> TransformInverse(const Vector3<T>& vec) const;
 
 	Matrix4 Transpose() const;
 

@@ -18,7 +18,4 @@ public:
 	Vector3f contactNormal;
 
 	float penetration;
-	float restitution;
-
-	Vector3f friction;
 };

@@ -60,6 +60,16 @@ Matrix4<T> Matrix4<T>::Inverse() const
 }
 
 template<typename T>
+inline Vector3<T> Matrix4<T>::TransformInverse(const Vector3<T>& vec) const
+{
+	return Vector3<T>(
+		vec.x * m_values[0] + vec.y * data[4] + vec.z * data[8],
+		vec.x * data[1] + vec.y * data[5] + vec.z * data[9],
+		v.x * data[2] + vec.y * data[6] + vec.z * data[10]
+	);
+}
+
+template<typename T>
 Matrix4<T> Matrix4<T>::Transpose() const
 {
 	Matrix4<T> mat;

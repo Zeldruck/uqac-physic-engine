@@ -13,5 +13,5 @@ public:
 
 public:
 	Vector3f normal;
-	float fOffset;
+	float offset;
 };
