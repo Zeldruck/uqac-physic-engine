@@ -356,6 +356,9 @@ int main(int argc, char** argv)
 
         trianglePosition = glm::vec3(rigidbodyTriangle->transform.position.x, rigidbodyTriangle->transform.position.y, rigidbodyTriangle->transform.position.z);
         triangleRotation = glm::vec3(rigidbodyTriangle->transform.rotation.GetX(), rigidbodyTriangle->transform.rotation.GetY(), rigidbodyTriangle->transform.rotation.GetZ());
+        
+        // Rotate sphere on Y axis
+        sphereRotation = glm::vec3(sphereRotation.x, sphereRotation.y + 0.01f, sphereRotation.z);
 
         switch (currentScene)
         {
@@ -396,7 +399,11 @@ int main(int argc, char** argv)
             model = glm::rotate(model, sphereRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
             // rotation on Z Axis
             model = glm::rotate(model, sphereRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-            glDrawArrays(GL_TRIANGLES, 0, sphereVertices.size());
+            
+            // for wireframe
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, sphereVertices.size());
+            // for full sphere
+            /*glDrawArrays(GL_TRIANGLE_FAN, 0, sphereVertices.size());*/
             break;
         }
         ourShader.SetMat4("model", model);
