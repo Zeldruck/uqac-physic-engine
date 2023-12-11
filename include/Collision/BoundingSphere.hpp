@@ -15,9 +15,11 @@ public:
 	bool Overlaps(std::shared_ptr<BoundingSphere> other) const;
 
 	float GetSize() const override;
-	float GetGrowth(const std::shared_ptr<BoundingVolume>& other) const override;
+	float GetGrowth(std::shared_ptr<BoundingVolume> other) const override;
 
 private:
 	Vector3f m_center;
 	float m_radius;
+
+	std::shared_ptr<BoundingVolume> m_other;
 };

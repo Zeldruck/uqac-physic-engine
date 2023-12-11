@@ -37,6 +37,11 @@
 #include "Force/ForceAnchoredSpring.hpp"
 #include "Force/ForceBuoyancy.hpp"
 
+#include "Collision/BoundingVolume.hpp"
+#include "Collision/BoundingBox.hpp"
+#include "Collision/BoundingSphere.hpp"
+#include "Collision/BVHNode.hpp"
+
 #include "Camera.hpp"
 
 #include "Vector3.hpp"
@@ -126,6 +131,13 @@ int main(int argc, char** argv)
     forceRegistry->Add(rigidbodyTriangle, forceAnchoredSpringTriangle);
 #pragma endregion
 
+#pragma region BVH
+    // TO FIX
+    BVHNode<BoundingBox> node = BVHNode<BoundingBox>(rigidbodyBox, std::make_shared<BoundingBox>(rigidbodyBox->transform.position, Vector3f(1.f, 1.f, 1.f)));
+    
+    //BVHNodeBox nodeBox = BVHNodeBox(rigidbodyBox, std::make_shared<BoundingBox>(rigidbodyBox->transform.position, Vector3f(1.f, 1.f, 1.f)));
+#pragma endregion
+
 #pragma region Timestep
     double t = 0.0;
     double deltaTime = 0.01;
@@ -189,6 +201,13 @@ int main(int argc, char** argv)
 
     glm::vec3 cubePosition = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::vec3 cubeRotation = glm::vec3(0.0f, 0.0f, 0.0f);
+    std::vector<glm::vec3> cubePositions;
+    cubePositions.push_back(glm::vec3(0.0f, 0.0f, 0.0f));
+    cubePositions.push_back(glm::vec3(2.0f, 5.0f, -15.0f));
+    std::vector<glm::vec3> cubeRotations;
+    cubeRotations.push_back(glm::vec3(0.0f, 0.0f, 0.0f));
+    cubeRotations.push_back(glm::vec3(0.0f, 45.0f, 0.0f));
+
 
     GLuint VBO1, VAO1;
     glGenVertexArrays(1, &VAO1);
@@ -376,7 +395,7 @@ int main(int argc, char** argv)
             //ImguiRigidbodyData(rigidbodyBox);
             break;
 
-        case Scene::SCENE_2:
+        case Scene::SCENE_2: 
             glBindVertexArray(VAO2);
             model = glm::translate(model, trianglePosition);
             // rotation on X Axis

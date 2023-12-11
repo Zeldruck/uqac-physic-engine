@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Vector3.hpp>
-#include "BoundingVolume.hpp"
+#include <Collision/BoundingVolume.hpp>
 
 class BoundingBox : public BoundingVolume
 {
@@ -15,8 +15,9 @@ public:
 	bool Overlaps(std::shared_ptr<BoundingBox> other) const;
 
 	float GetSize() const override;
-	float GetGrowth(const std::shared_ptr<BoundingVolume>& other) const override;
+	float GetGrowth(std::shared_ptr<BoundingVolume> other) const override;
 private:
 	Vector3f m_center;
 	Vector3f m_halfSize;
+	std::shared_ptr<BoundingVolume> m_other;
 };

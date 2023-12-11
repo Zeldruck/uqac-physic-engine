@@ -69,7 +69,7 @@ float BoundingSphere::GetSize() const
 	return (4.0f / 3.0f) * PI * m_radius * m_radius * m_radius;
 }
 
-float BoundingSphere::GetGrowth(const std::shared_ptr<BoundingVolume>& other) const
+float BoundingSphere::GetGrowth(std::shared_ptr<BoundingVolume> other) const
 {
 	auto sphere = std::dynamic_pointer_cast<BoundingSphere>(other);
 	Vector3f centerOffset = m_center - sphere->m_center;

@@ -58,7 +58,7 @@ float BoundingBox::GetSize() const
 	return m_halfSize.x * 2.0f;
 }
 
-float BoundingBox::GetGrowth(const std::shared_ptr<BoundingVolume>& other) const
+float BoundingBox::GetGrowth(std::shared_ptr<BoundingVolume> other) const
 {
 	auto box = std::dynamic_pointer_cast<BoundingBox>(other);
 	Vector3f newHalf = Vector3f::Max(m_halfSize, box->m_halfSize);
