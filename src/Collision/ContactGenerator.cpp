@@ -188,7 +188,7 @@ void ContactGenerator::DetectBandB(const Box& boxA, const Box& boxB)
 {
 	if (!SATBandB(boxA, boxB)) return;
 
-
+	// TODO
 }
 
 bool ContactGenerator::SAT(const Box& boxA, const Box& boxB, const Vector3f& axis)
