@@ -83,6 +83,12 @@ Matrix4<T> Matrix4<T>::Transpose() const
 }
 
 template<typename T>
+inline Vector3<T> Matrix4<T>::GetAxis(int i) const
+{
+	return Vector3<T>(m_values[i], m_values[i+4], m_values[i+8]);
+}
+
+template<typename T>
 T& Matrix4<T>::Value(std::size_t i, std::size_t j)
 {
 	return m_values[i * 4 + j];
