@@ -5,5 +5,4 @@ Plane::Plane(const std::shared_ptr<Rigidbody>& rigidbody, const Matrix4f& offset
 	Primitive(rigidbody, offset)
 {
 	this->normal = normal;
-	this->fOffset = fOffset;
 }

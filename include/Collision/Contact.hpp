@@ -9,7 +9,7 @@ class Contact
 {
 public:
 	Contact() = default;
-	Contact(std::vector<std::shared_ptr<Rigidbody>>& particles, Vector3f contactPoint, Vector3f contactNormal, float penetration, float restitution, Vector3f friction);
+	Contact(std::vector<std::shared_ptr<Rigidbody>>& particles, Vector3f contactPoint, Vector3f contactNormal, float penetration);
 
 public:
 	std::vector<std::shared_ptr<Rigidbody>> particles;
