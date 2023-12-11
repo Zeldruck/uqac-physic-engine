@@ -2,6 +2,8 @@
 #include <vector>
 #include <memory>
 
+#include "Vector3.hpp"
+
 class Contact;
 class Primitive;
 class Sphere;
@@ -22,6 +24,10 @@ private:
 	void DetectSandB(const Sphere& sphere, const Box& box);
 
 	void DetectBandP(const Box& box, const Plane& plane);
+	void DetectBandB(const Box& boxA, const Box& boxB);
+
+	bool SAT(const Box& boxA, const Box& boxB, const Vector3f& axis);
+	bool SATBandB(const Box& boxA, const Box& boxB);
 
 private:
 	std::vector<std::shared_ptr<Contact>> contacts;

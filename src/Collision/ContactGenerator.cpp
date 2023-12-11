@@ -183,3 +183,52 @@ void ContactGenerator::DetectBandP(const Box& box, const Plane& plane)
 		if (currentContacts >= maxContacts) break;
 	}
 }
+
+void ContactGenerator::DetectBandB(const Box& boxA, const Box& boxB)
+{
+	if (!SATBandB(boxA, boxB)) return;
+
+
+}
+
+bool ContactGenerator::SAT(const Box& boxA, const Box& boxB, const Vector3f& axis)
+{
+	float boxAProjection = boxA.halfSize.x + std::abs(Vector3f::DotProduct(axis, boxA.rigidbody->transformMatrix.GetAxis(0))) +
+		boxA.halfSize.y + std::abs(Vector3f::DotProduct(axis, boxA.rigidbody->transformMatrix.GetAxis(1))) +
+		boxA.halfSize.z + std::abs(Vector3f::DotProduct(axis, boxA.rigidbody->transformMatrix.GetAxis(2)));
+
+	float boxBProjection = boxB.halfSize.x + std::abs(Vector3f::DotProduct(axis, boxB.rigidbody->transformMatrix.GetAxis(0))) +
+		boxB.halfSize.y + std::abs(Vector3f::DotProduct(axis, boxB.rigidbody->transformMatrix.GetAxis(0))) +
+		boxB.halfSize.z + std::abs(Vector3f::DotProduct(axis, boxB.rigidbody->transformMatrix.GetAxis(0)));
+
+	Vector3f center = boxB.rigidbody->transform.position - boxA.rigidbody->transform.position;
+
+	float distance = std::abs(Vector3f::DotProduct(center, axis));
+
+	return (distance < boxAProjection + boxBProjection);
+}
+
+bool ContactGenerator::SATBandB(const Box& boxA, const Box& boxB)
+{
+	Vector3f center = boxB.rigidbody->transform.position - boxB.rigidbody->transform.position;
+
+	return (
+		SAT(boxA, boxB, boxA.rigidbody->transformMatrix.GetAxis(0)) &&
+		SAT(boxA, boxB, boxA.rigidbody->transformMatrix.GetAxis(1)) &&
+		SAT(boxA, boxB, boxA.rigidbody->transformMatrix.GetAxis(2)) &&
+
+		SAT(boxA, boxB, boxB.rigidbody->transformMatrix.GetAxis(0)) &&
+		SAT(boxA, boxB, boxB.rigidbody->transformMatrix.GetAxis(1)) &&
+		SAT(boxA, boxB, boxB.rigidbody->transformMatrix.GetAxis(2)) &&
+
+		SAT(boxA, boxB, Vector3f::CrossProduct(boxA.rigidbody->transformMatrix.GetAxis(0), boxB.rigidbody->transformMatrix.GetAxis(0))) &&
+		SAT(boxA, boxB, Vector3f::CrossProduct(boxA.rigidbody->transformMatrix.GetAxis(0), boxB.rigidbody->transformMatrix.GetAxis(1))) &&
+		SAT(boxA, boxB, Vector3f::CrossProduct(boxA.rigidbody->transformMatrix.GetAxis(0), boxB.rigidbody->transformMatrix.GetAxis(2))) &&
+		SAT(boxA, boxB, Vector3f::CrossProduct(boxA.rigidbody->transformMatrix.GetAxis(1), boxB.rigidbody->transformMatrix.GetAxis(0))) &&
+		SAT(boxA, boxB, Vector3f::CrossProduct(boxA.rigidbody->transformMatrix.GetAxis(1), boxB.rigidbody->transformMatrix.GetAxis(1))) &&
+		SAT(boxA, boxB, Vector3f::CrossProduct(boxA.rigidbody->transformMatrix.GetAxis(1), boxB.rigidbody->transformMatrix.GetAxis(2))) &&
+		SAT(boxA, boxB, Vector3f::CrossProduct(boxA.rigidbody->transformMatrix.GetAxis(2), boxB.rigidbody->transformMatrix.GetAxis(0))) &&
+		SAT(boxA, boxB, Vector3f::CrossProduct(boxA.rigidbody->transformMatrix.GetAxis(2), boxB.rigidbody->transformMatrix.GetAxis(1))) &&
+		SAT(boxA, boxB, Vector3f::CrossProduct(boxA.rigidbody->transformMatrix.GetAxis(2), boxB.rigidbody->transformMatrix.GetAxis(2)))
+		);
+}

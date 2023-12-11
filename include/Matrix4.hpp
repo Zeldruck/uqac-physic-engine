@@ -19,6 +19,8 @@ public:
 
 	Matrix4 Transpose() const;
 
+	Vector3<T> GetAxis(int i) const;
+
 	T& Value(std::size_t i, std::size_t j);
 	const T& Value(std::size_t i, std::size_t j) const;
 
