@@ -19,7 +19,6 @@ public:
 	BVHNode(std::shared_ptr<Rigidbody> rigidbody, std::shared_ptr<T> volume);
 	BVHNode(std::shared_ptr<BVHNode<T>> node);
 	BVHNode(std::shared_ptr<BVHNode<T>> node, std::shared_ptr<Rigidbody> body, const T& volume);
-	//~BVHNode();
 
 	bool IsLeaf() const;
 	bool Overlaps(const std::shared_ptr<BVHNode<T>> other) const;

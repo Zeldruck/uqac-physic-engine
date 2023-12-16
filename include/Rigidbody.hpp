@@ -6,6 +6,8 @@
 #include <vector>
 
 class Particle;
+class BoundingSphere;
+class BoundingBox;
 
 // TO REMOVE LATER
 enum RigidbodyType
@@ -41,6 +43,7 @@ public:
 	Matrix3f inertiaTensor;
 	Matrix3f inverseInertiaTensor;
 	Matrix3f inverseInertiaTensorWorld;
+
 	Matrix3f GetBoxInertiaTensorLocal();
 	Matrix3f GetSphereInertiaTensorLocal();
 	Matrix3f GetTriangleInertiaTensorLocal();
@@ -63,6 +66,9 @@ public:
 
 	Vector3f GetPointInWorldSpace(const Vector3f& point);
 	Vector3f GetPointInLocalSpace(const Vector3f& point);
+
+	BoundingSphere GetBoundingSphere();
+	BoundingBox GetBoundingBox();
 
 	// WIP OR TO DELETE
 	std::vector<Particle> massPoints;
