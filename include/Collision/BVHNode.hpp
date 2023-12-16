@@ -23,9 +23,9 @@ public:
 
 	bool IsLeaf() const;
 	bool Overlaps(const std::shared_ptr<BVHNode<T>> other) const;
-	//unsigned int GetPotentialContact(std::shared_ptr<PotentialContact> contacts, unsigned int limit) const;
-	//unsigned int GetPotentialContactsWith(std::shared_ptr<BVHNode<T>> other, std::shared_ptr<PotentialContact> contacts, unsigned int limit) const;
-	//void Insert(std::shared_ptr<Rigidbody> newRigidbody, const T& newVolume);
+	unsigned int GetPotentialContact(std::shared_ptr<PotentialContact> contacts, unsigned int limit) const;
+	unsigned int GetPotentialContactsWith(std::shared_ptr<BVHNode<T>> other, std::shared_ptr<PotentialContact> contacts, unsigned int limit) const;
+	void Insert(std::shared_ptr<Rigidbody> newRigidbody, const T& newVolume);
 	void RecalculateBoundingVolume(bool recurse = true);
 
 	std::array<std::shared_ptr<BVHNode>, 2> children;
@@ -36,14 +36,5 @@ public:
 		Stock the rigidbody of this current node*/
 	std::shared_ptr<Rigidbody> m_rigidbody;
 };
-
-//class BVHNodeBox
-//{
-//public:
-//	BVHNodeBox(std::shared_ptr<Rigidbody> rigidbody, std::shared_ptr<BoundingBox> box);
-//
-//	std::shared_ptr<Rigidbody> m_rigidbody;
-//	std::shared_ptr<BoundingBox> m_volume;
-//};
 
 #include "BVHNode.inl"

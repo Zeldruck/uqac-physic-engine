@@ -91,101 +91,101 @@ bool BVHNode<T>::Overlaps(const std::shared_ptr<BVHNode<T>> other) const
 	return m_volume->Overlaps(other->volume);
 }
 
-//template<typename T>
-//unsigned int BVHNode<T>::GetPotentialContact(std::shared_ptr<PotentialContact> contacts, unsigned int limit) const
-//{
-//	if (isLeaf() || limit == 0)
-//		return 0;
-//
-//	return children[0]->GetPotentialContactsWith(children[1], contacts, limit);
-//}
+template<typename T>
+unsigned int BVHNode<T>::GetPotentialContact(std::shared_ptr<PotentialContact> contacts, unsigned int limit) const
+{
+	if (isLeaf() || limit == 0)
+		return 0;
 
-//template<typename T>
-//unsigned int BVHNode<T>::GetPotentialContactsWith(std::shared_ptr<BVHNode<T>> other, std::shared_ptr<PotentialContact> contacts, unsigned int limit) const;
-//{
-//	if (!Overlaps(other) || limit == 0)
-//		return 0;
-//
-//	if (IsLeaf() && other->IsLeaf())
-//	{
-//		contacts->rigidbodies[0] = m_rigidbody;
-//		contacts->rigidbodies[1] = other->body;
-//		return 1;
-//	}
-//
-//	// Determines which node to descend into first.
-//	// If either is a leaf, then we descend the other.
-//	// If both are branches, then we use the size to descend.
-//	if (other->IsLeaf() || (!IsLeaf() && m_volume->GetSize() >= other->volume->GetSize()))
-//	{
-//		// Recurse into ourself
-//		unsigned int count = children[0]->GetPotentialContactsWith(other, contacts, limit);
-//
-//		// Check we have enough slots to do the other side too
-//		if (limit > count)
-//		{
-//			return count + children[1]->GetPotentialContactsWith(other, contacts + count, limit - count);
-//		}
-//		else
-//		{
-//			// Not enough slots. Store the parent and stop
-//			return count;
-//		}
-//	}
-//	else
-//	{
-//		// Recurse into the other node
-//		unsigned int count = GetPotentialContactsWith(other->children[0], contacts, limit);
-//
-//		// Check we have enough slots to do the other side too
-//		if (limit > count)
-//		{
-//			return count + GetPotentialContactsWith(other->children[1], contacts + count, limit - count);
-//		}
-//		else
-//		{
-//			// Not enough slots. Store the parent and stop
-//			return count;
-//		}
-//	}
-//}
-//
-//template <typename T>
-//void BVHNode<T>::Insert(std::shared_ptr<Rigidbody> newRigidbody, const T& newVolume)
-//{
-//	// If we are a leaf, then the only option is to spawn two new children and place the new body in one.
-//	if (IsLeaf())
-//	{
-//		// Child one is a copy of us.
-//		children[0] = std::make_shared<BVHNode<T>>(*this);
-//
-//		// Child two holds the new body
-//		children[1] = std::make_shared<BVHNode<T>>(*this, newRigidbody, newVolume);
-//
-//		// And we now loose the body (we're no longer a leaf)
-//		this->m_rigidbody = nullptr;
-//
-//		// We need to recalculate our bounding volume
-//		RecalculateBoundingVolume();
-//	}
-//	// Otherwise we need to work out which child gets to keep the inserted body.
-//	// We give it to whoever would grow the least to incorporate it.
-//	else
-//	{
-//		// Work out which child would grow least
-//		float growth0 = children[0]->volume->GetGrowth(newVolume);
-//		float growth1 = children[1]->volume->GetGrowth(newVolume);
-//
-//		if (growth0 < growth1)
-//		{
-//			children[0]->Insert(newRigidbody, newVolume);
-//		}
-//		else
-//		{
-//			children[1]->Insert(newRigidbody, newVolume);
-//		}
-//	}
-//}
+	return children[0]->GetPotentialContactsWith(children[1], contacts, limit);
+}
+
+template<typename T>
+unsigned int BVHNode<T>::GetPotentialContactsWith(std::shared_ptr<BVHNode<T>> other, std::shared_ptr<PotentialContact> contacts, unsigned int limit) const
+{
+	if (!Overlaps(other) || limit == 0)
+		return 0;
+
+	if (IsLeaf() && other->IsLeaf())
+	{
+		contacts->rigidbodies[0] = m_rigidbody;
+		contacts->rigidbodies[1] = other->body;
+		return 1;
+	}
+
+	// Determines which node to descend into first.
+	// If either is a leaf, then we descend the other.
+	// If both are branches, then we use the size to descend.
+	if (other->IsLeaf() || (!IsLeaf() && m_volume->GetSize() >= other->volume->GetSize()))
+	{
+		// Recurse into ourself
+		unsigned int count = children[0]->GetPotentialContactsWith(other, contacts, limit);
+
+		// Check we have enough slots to do the other side too
+		if (limit > count)
+		{
+			return count + children[1]->GetPotentialContactsWith(other, contacts + count, limit - count);
+		}
+		else
+		{
+			// Not enough slots. Store the parent and stop
+			return count;
+		}
+	}
+	else
+	{
+		// Recurse into the other node
+		unsigned int count = GetPotentialContactsWith(other->children[0], contacts, limit);
+
+		// Check we have enough slots to do the other side too
+		if (limit > count)
+		{
+			return count + GetPotentialContactsWith(other->children[1], contacts + count, limit - count);
+		}
+		else
+		{
+			// Not enough slots. Store the parent and stop
+			return count;
+		}
+	}
+}
+
+template <typename T>
+void BVHNode<T>::Insert(std::shared_ptr<Rigidbody> newRigidbody, const T& newVolume)
+{
+	// If we are a leaf, then the only option is to spawn two new children and place the new body in one.
+	if (IsLeaf())
+	{
+		// Child one is a copy of us.
+		children[0] = std::make_shared<BVHNode<T>>(*this);
+
+		// Child two holds the new body
+		children[1] = std::make_shared<BVHNode<T>>(*this, newRigidbody, newVolume);
+
+		// And we now loose the body (we're no longer a leaf)
+		this->m_rigidbody = nullptr;
+
+		// We need to recalculate our bounding volume
+		RecalculateBoundingVolume();
+	}
+	// Otherwise we need to work out which child gets to keep the inserted body.
+	// We give it to whoever would grow the least to incorporate it.
+	else
+	{
+		// Work out which child would grow least
+		float growth0 = children[0]->volume->GetGrowth(newVolume);
+		float growth1 = children[1]->volume->GetGrowth(newVolume);
+
+		if (growth0 < growth1)
+		{
+			children[0]->Insert(newRigidbody, newVolume);
+		}
+		else
+		{
+			children[1]->Insert(newRigidbody, newVolume);
+		}
+	}
+}
 
 template <typename T>
 void BVHNode<T>::RecalculateBoundingVolume(bool recurse /* = true */)
