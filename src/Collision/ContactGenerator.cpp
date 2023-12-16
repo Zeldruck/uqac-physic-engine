@@ -14,10 +14,6 @@ ContactGenerator::ContactGenerator(float maxContacts)
 	currentContacts = 0;
 }
 
-void ContactGenerator::DetectContacts(const Primitive& primitiveA, const Primitive& primitiveB)
-{
-}
-
 void ContactGenerator::DetectSandS(const Sphere& sphereA, const Sphere& sphereB)
 {
 	if (currentContacts >= maxContacts) return;
@@ -231,4 +227,9 @@ bool ContactGenerator::SATBandB(const Box& boxA, const Box& boxB)
 		SAT(boxA, boxB, Vector3f::CrossProduct(boxA.rigidbody->transformMatrix.GetAxis(2), boxB.rigidbody->transformMatrix.GetAxis(1))) &&
 		SAT(boxA, boxB, Vector3f::CrossProduct(boxA.rigidbody->transformMatrix.GetAxis(2), boxB.rigidbody->transformMatrix.GetAxis(2)))
 		);
+}
+
+float ContactGenerator::AxisPenetrationBandB(float boxAProjection, float boxBProjection, const Vector3f& center, const Vector3f& axis)
+{
+	return boxAProjection + boxBProjection - (std::abs(center * axis));
 }
