@@ -5,7 +5,9 @@
 #include "Matrix3.hpp"
 #include "Quaternion.hpp"
 #include "Particle.hpp"
-
+#include "Collision/BoundingVolume.hpp"
+#include "Collision/BoundingSphere.hpp"
+#include "Collision/BoundingBox.hpp"
 Rigidbody::Rigidbody()
 	:
 	transform(Transform()),
@@ -324,4 +326,14 @@ void Rigidbody::CalculateCenterOfMass()
 	{
 		centerOfMass = Vector3f::Zero;
 	}
+}
+
+BoundingSphere Rigidbody::GetBoundingSphere()
+{
+	return BoundingSphere(transform.position, transform.scale.x);
+}
+
+BoundingBox Rigidbody::GetBoundingBox()
+{
+	return BoundingBox(transform.position, transform.scale);
 }

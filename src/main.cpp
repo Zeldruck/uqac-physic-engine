@@ -70,7 +70,7 @@ enum class Scene
 };
 
 // Current scene
-Scene currentScene = Scene::SCENE_1;
+Scene currentScene = Scene::SCENE_3;
 
 // settings
 const unsigned int SCR_WIDTH = 1920;
@@ -115,6 +115,7 @@ int main(int argc, char** argv)
     std::shared_ptr<Rigidbody> rigidbodyTriangle = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f, 0.f, 0.f, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Triangle", RigidbodyType::TRIANGLE);
     physics.AddRigidbody(rigidbodyTriangle);
 
+
     std::shared_ptr<ForceGravity> forceGravity = std::make_shared<ForceGravity>();
     std::shared_ptr<ForceDrag> weakForceDrag = std::make_shared<ForceDrag>(5.0f, 0.0f);
     std::shared_ptr<ForceDrag> strongForceDrag = std::make_shared<ForceDrag>(20.0f, 0.0f);
@@ -132,10 +133,10 @@ int main(int argc, char** argv)
 #pragma endregion
 
 #pragma region BVH
-    // TO FIX
-    BVHNode<BoundingBox> node = BVHNode<BoundingBox>(rigidbodyBox, std::make_shared<BoundingBox>(rigidbodyBox->transform.position, Vector3f(1.f, 1.f, 1.f)));
-    
-    //BVHNodeBox nodeBox = BVHNodeBox(rigidbodyBox, std::make_shared<BoundingBox>(rigidbodyBox->transform.position, Vector3f(1.f, 1.f, 1.f)));
+    //BVHNode<BoundingBox> node = BVHNode<BoundingBox>(rigidbodyBox, std::make_shared<BoundingBox>(rigidbodyBox->transform.position, Vector3f(1.f, 1.f, 1.f)));
+  
+    BVHNode<BoundingSphere> nodeSphere = BVHNode<BoundingSphere>(rigidbodyBox, std::make_shared<BoundingSphere>(rigidbodyBox->transform.position, 1.f));
+
 #pragma endregion
 
 #pragma region Timestep
@@ -308,7 +309,9 @@ int main(int argc, char** argv)
     // Create a UV Sphere
     std::vector<glm::vec3> sphereVertices;
     CreateSphere(sphereVertices, 1.0f, 30, 30);
-    glm::vec3 spherePosition = glm::vec3(0.0f, 0.0f, 0.0f);
+    std::vector<glm::vec3> spherePositions;
+    spherePositions.push_back(glm::vec3(0.0f, 0.0f, 0.0f));
+    spherePositions.push_back(glm::vec3(2.0f, 2.0f, 0.0f));
     glm::vec3 sphereRotation = glm::vec3(0.0f, 0.0f, 0.0f);
     GLuint VAO3, VBO3;
     glGenVertexArrays(1, &VAO3);
@@ -361,6 +364,7 @@ int main(int argc, char** argv)
         ourShader.Use();
 
         glm::mat4 model = glm::mat4(1.0f);
+        glm::mat4 model2 = glm::mat4(1.0f);
         glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         ourShader.SetMat4("projection", projection);
 
@@ -411,21 +415,51 @@ int main(int argc, char** argv)
 
         case Scene::SCENE_3:
             glBindVertexArray(VAO3);
-            model = glm::translate(model, spherePosition);
+            for (unsigned int i = 0; i < spherePositions.size(); i++)
+            {
+                // calculate the model matrix for each object and pass it to shader before drawing
+                glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+                model = glm::translate(model, spherePositions[i]);
+                float angle = 20.0f * i;
+                model = glm::rotate(model, sphereRotation.y, glm::vec3(0.0f, 1.f, 0.0f));
+                ourShader.SetMat4("model", model);
+
+                glDrawArrays(GL_LINE_STRIP, 0, sphereVertices.size());
+            }
+
+            glBindVertexArray(VAO1);
+            model = glm::translate(model, cubePosition);
             // rotation on X Axis
-            model = glm::rotate(model, sphereRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+            model = glm::rotate(model, cubeRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
             // rotation on Y Axis
-            model = glm::rotate(model, sphereRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+            model = glm::rotate(model, cubeRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
             // rotation on Z Axis
-            model = glm::rotate(model, sphereRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-            
-            // for wireframe
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, sphereVertices.size());
+            model = glm::rotate(model, cubeRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+
+            //model = glm::translate(model, spherePositions[0]);
+            //// rotation on X Axis
+            //model = glm::rotate(model, sphereRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+            //// rotation on Y Axis
+            //model = glm::rotate(model, sphereRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+            //// rotation on Z Axis
+            //model = glm::rotate(model, sphereRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+            //
+            //model2 = glm::translate(model2, spherePositions[1]);
+            //// rotation on X Axis
+            //model2 = glm::rotate(model2, sphereRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+            //// rotation on Y Axis
+            //model2 = glm::rotate(model2, sphereRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+            //// rotation on Z Axis
+            //model2 = glm::rotate(model2, sphereRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+            //// for wireframe
+            //glDrawArrays(GL_TRIANGLE_STRIP, 0, sphereVertices.size());
             // for full sphere
             /*glDrawArrays(GL_TRIANGLE_FAN, 0, sphereVertices.size());*/
             break;
         }
         ourShader.SetMat4("model", model);
+        ourShader.SetMat4("model2", model2);
 
         imguiCpp.NewFrame();
 
@@ -620,11 +654,6 @@ void ImguiRigidbodyData(std::shared_ptr<Rigidbody> rigidbody)
 // Function to create a UV Sphere
 void CreateSphere(std::vector<glm::vec3>& vertices, float radius, int slices, int stacks) 
 {
-
-    // Uncomment for full sphere
-    // Temp vectors
-    //std::vector<glm::vec3> tempVertices;
-
     // Create vertices
     for (int i = 0; i <= stacks; ++i)
     {
@@ -639,31 +668,7 @@ void CreateSphere(std::vector<glm::vec3>& vertices, float radius, int slices, in
             float y = stackRadius * glm::sin(sliceAngle);
             float z = stackHeight;
 
-            // Comment for full sphere
             vertices.emplace_back(x * radius, y * radius, z * radius);
-
-            // Uncomment for full sphere
-            // tempVertices.emplace_back(x * radius, y * radius, z * radius);
         }
     }
-
-    // Uncomment for full sphere
-    //for (int i = 0; i < stacks; ++i) 
-    //{
-    //    for (int j = 0; j <= slices; ++j) 
-    //    {
-    //        // Indices for the vertices of two adjacent stacks
-    //        int index1 = i * (slices + 1) + j;
-    //        int index2 = (i + 1) * (slices + 1) + j;
-
-    //        // Form two triangles for each quad
-    //        vertices.push_back(tempVertices[index1]);
-    //        vertices.push_back(tempVertices[index2]);
-    //        vertices.push_back(tempVertices[index1 + 1]);
-
-    //        vertices.push_back(tempVertices[index1 + 1]);
-    //        vertices.push_back(tempVertices[index2]);
-    //        vertices.push_back(tempVertices[index2 + 1]);
-    //    }
-    //}
 }

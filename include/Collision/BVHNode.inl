@@ -30,55 +30,6 @@ BVHNode<T>::BVHNode(std::shared_ptr<BVHNode<T>> node, std::shared_ptr<Rigidbody>
 {
 }
 
-/* Delete this node, removing this first from the hierarchy, along with its associated rigidbody and child nodes. 
-  This method deletes the node and all its children (but obviously not the rigidbodies).
-  This also has the effect of deleting the siblings of this node and changing the parent node,
-  so that it contains the data currently in one of the siblings.
-  Finally, it forces the hierarchy above the current node to reconsider its bounding volume.
- */
-//template<typename T>
-//BVHNode<T>::~BVHNode()
-//{
-//	// If we don't have a parent, then we ignore the sibling processing
-//	if (!m_parent)
-//		return;
-//
-//	// Find our sibling
-//	std::shared_ptr<BVHNode<T>> sibling;
-//	if (m_parent->children[0] == this)
-//		sibling = m_parent->children[1];
-//	else
-//		sibling = m_parent->children[0];
-//
-//	// Write its data to our parent
-//	m_parent->m_volume = sibling->m_volume;
-//	m_parent->m_rigidbody = sibling->m_rigidbody;
-//	m_parent->children = sibling->children;
-//
-//	// Delete the sibling (we blank its parent and children to avoid processing/deleting them)
-//	sibling->m_parent = nullptr;
-//	sibling->m_rigidbody = nullptr;
-//	sibling->children[0] = nullptr;
-//	sibling->children[1] = nullptr;
-//	sibling.reset();
-//
-//	// Recalculate the parent's bounding volume
-//	m_parent->RecalculateBoundingVolume();
-//
-//	// Delete our children (again, we remove their parent data so they are ignored by the destructor)
-//	if (children[0])
-//	{
-//		children[0]->m_parent = nullptr;
-//		children[0].reset();
-//	}
-//
-//	if (children[1])
-//	{
-//		children[1]->m_parent = nullptr;
-//		children[1].reset();
-//	}
-//}
-
 template<typename T>
 bool BVHNode<T>::IsLeaf() const
 {
@@ -193,9 +144,11 @@ void BVHNode<T>::RecalculateBoundingVolume(bool recurse /* = true */)
 	// If we're a leaf, then our volume is just that of our object.
 	if (IsLeaf())
 	{
-		m_volume = T(m_rigidbody->GeT());
+		if(std::is_class_v<BoundingSphere>)
+			m_volume = T(m_rigidbody->GetBoundingSphere());
+		else if(std::is_class_v<BoundingBox>)
+			m_volume = T(m_rigidbody->GetBoundingBox());
 	}
-
 	// Otherwise we combine the volumes of our children.
 	else
 	{
