@@ -14,6 +14,16 @@ ContactGenerator::ContactGenerator(float maxContacts)
 	currentContacts = 0;
 }
 
+std::vector<std::shared_ptr<Contact>>& ContactGenerator::GetContacts()
+{
+	return contacts;
+}
+
+void ContactGenerator::SetCurrentContacts(const int newContacts)
+{
+	currentContacts = newContacts
+}
+
 void ContactGenerator::DetectSandS(const Sphere& sphereA, const Sphere& sphereB)
 {
 	if (currentContacts >= maxContacts) return;

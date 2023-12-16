@@ -15,6 +15,10 @@ class ContactGenerator
 public:
 	ContactGenerator(float maxContacts);
 
+	std::vector<std::shared_ptr<Contact>>& GetContacts();
+
+	void SetCurrentContacts(const int newContacts);
+
 private:
 	void DetectSandS(const Sphere& sphereA, const Sphere& sphereB);
 	void DetectSandHS(const Sphere& sphere, const Plane& plane);
