@@ -132,6 +132,12 @@ int main(int argc, char** argv)
     forceRegistry->Add(rigidbodyTriangle, forceAnchoredSpringTriangle);
 #pragma endregion
 
+#pragma region Narrow Phase
+
+
+
+#pragma endregion
+
 #pragma region BVH
     //BVHNode<BoundingBox> node = BVHNode<BoundingBox>(rigidbodyBox, std::make_shared<BoundingBox>(rigidbodyBox->transform.position, Vector3f(1.f, 1.f, 1.f)));
   
