@@ -50,7 +50,8 @@ public:
 	void QuaternionToMatrix(Matrix3f& R);
 	void QuaternionToMatrix4(Matrix4<T>& R);
 
-	void GetRotation(T& angle, Vector3<T> unitAxis);
+	void GetRotation(T& angle, Vector3<T>& unitAxis);
+	Vector3<T> GetRotation();
 
 	void GetSinExponential(T& x, T& y, T& z);
 

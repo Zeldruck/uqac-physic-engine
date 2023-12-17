@@ -44,7 +44,7 @@ void ContactGenerator::DetectSandS(const Sphere& sphereA, const Sphere& sphereB)
 	rbs.push_back(sphereA.rigidbody);
 	rbs.push_back(sphereB.rigidbody);
 
-	contact->particles = rbs;
+	contact->rigidbodies = rbs;
 
 	contacts.push_back(contact);
 
@@ -70,7 +70,7 @@ void ContactGenerator::DetectSandHS(const Sphere& sphere, const Plane& plane)
 	rbs.push_back(sphere.rigidbody);
 	rbs.push_back(plane.rigidbody);
 
-	contact->particles = rbs;
+	contact->rigidbodies = rbs;
 
 	contacts.push_back(contact);
 
@@ -96,7 +96,7 @@ void ContactGenerator::DetectSandP(const Sphere& sphere, const Plane& plane)
 	rbs.push_back(sphere.rigidbody);
 	rbs.push_back(plane.rigidbody);
 
-	contact->particles = rbs;
+	contact->rigidbodies = rbs;
 
 	contacts.push_back(contact);
 
@@ -140,7 +140,7 @@ void ContactGenerator::DetectSandB(const Sphere& sphere, const Box& box)
 	rbs.push_back(box.rigidbody);
 	rbs.push_back(sphere.rigidbody);
 
-	contact->particles = rbs;
+	contact->rigidbodies = rbs;
 
 	contacts.push_back(contact);
 
@@ -180,7 +180,7 @@ void ContactGenerator::DetectBandP(const Box& box, const Plane& plane)
 		rbs.push_back(plane.rigidbody);
 		rbs.push_back(nullptr);
 
-		contact->particles = rbs;
+		contact->rigidbodies = rbs;
 
 		contacts.push_back(contact);
 
@@ -194,7 +194,7 @@ void ContactGenerator::DetectBandB(const Box& boxA, const Box& boxB)
 {
 	if (!SATBandB(boxA, boxB)) return;
 
-	// TODO
+
 }
 
 bool ContactGenerator::SAT(const Box& boxA, const Box& boxB, const Vector3f& axis)

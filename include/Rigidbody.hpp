@@ -39,6 +39,8 @@ public:
 	float linearDamping;
 	float angularDamping;
 
+	bool isAwake;
+
 	Matrix4f transformMatrix;
 	Matrix3f inertiaTensor;
 	Matrix3f inverseInertiaTensor;
