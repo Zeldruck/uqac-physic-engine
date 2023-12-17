@@ -109,10 +109,13 @@ int main(int argc, char** argv)
 #pragma endregion
 
 #pragma region Rigidbody
-    std::shared_ptr<Rigidbody> rigidbodyBox = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f, 0.f, 45.f * Deg2Rad, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Cube", RigidbodyType::BOX);
+    std::shared_ptr<Rigidbody> rigidbodyBox = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 0.f, 0.f), Quaternionf(1.f, 0.f, 45.f * Deg2Rad, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Cube", RigidbodyType::BOX);
     physics.AddRigidbody(rigidbodyBox);
 
-    std::shared_ptr<Rigidbody> rigidbodyTriangle = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f, 0.f, 0.f, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Triangle", RigidbodyType::TRIANGLE);
+    std::shared_ptr<Rigidbody> rigidbodyBox2 = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f, 0.f, 45.f * Deg2Rad, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Cube2", RigidbodyType::BOX);
+    physics.AddRigidbody(rigidbodyBox2);
+
+    std::shared_ptr<Rigidbody> rigidbodyTriangle = std::make_shared<Rigidbody>(Transform(Vector3f(5.f, 5.f, 0.f), Quaternionf(1.f, 0.f, 0.f, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Triangle", RigidbodyType::TRIANGLE);
     physics.AddRigidbody(rigidbodyTriangle);
 
 
@@ -123,13 +126,14 @@ int main(int argc, char** argv)
     std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpringCube = std::make_shared<ForceAnchoredSpring>(10.f, 5.0f, Vector3f::Zero, Vector3f(1.0f, 1.0f, 0.0f));
     std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpringTriangle = std::make_shared<ForceAnchoredSpring>(10.f, 5.0f, Vector3f::Zero, Vector3f(0.0f, 0.5f, 0.0f));
 
+    forceRegistry->Add(rigidbodyBox2, forceGravity);
     //forceRegistry->Add(rigidbodyBox, forceGravity);
     //forceRegistry->Add(rigidbodyBox, strongForceDrag);
-    forceRegistry->Add(rigidbodyBox, forceAnchoredSpringCube);
-
-    forceRegistry->Add(rigidbodyTriangle, forceGravity);
-    forceRegistry->Add(rigidbodyTriangle, weakForceDrag);
-    forceRegistry->Add(rigidbodyTriangle, forceAnchoredSpringTriangle);
+    //forceRegistry->Add(rigidbodyBox, forceAnchoredSpringCube);
+    //
+    //forceRegistry->Add(rigidbodyTriangle, forceGravity);
+    //forceRegistry->Add(rigidbodyTriangle, weakForceDrag);
+    //forceRegistry->Add(rigidbodyTriangle, forceAnchoredSpringTriangle);
 #pragma endregion
 
 #pragma region Narrow Phase
@@ -141,8 +145,10 @@ int main(int argc, char** argv)
 #pragma region BVH
     //BVHNode<BoundingBox> node = BVHNode<BoundingBox>(rigidbodyBox, std::make_shared<BoundingBox>(rigidbodyBox->transform.position, Vector3f(1.f, 1.f, 1.f)));
   
-    BVHNode<BoundingSphere> nodeSphere = BVHNode<BoundingSphere>(rigidbodyBox, std::make_shared<BoundingSphere>(rigidbodyBox->transform.position, 1.f));
-
+    BVHNode<BoundingSphere> nodeSphere = BVHNode<BoundingSphere>(rigidbodyBox, std::make_shared<BoundingSphere>(rigidbodyBox->transform.position, rigidbodyBox->transform.scale.x));
+    Vector3f nodePosition = nodeSphere.m_volume->GetCenter();
+    BVHNode<BoundingSphere> nodeSphere2 = BVHNode<BoundingSphere>(rigidbodyBox2, std::make_shared<BoundingSphere>(rigidbodyBox2->transform.position, rigidbodyBox2->transform.scale.x));
+    Vector3f nodePosition2 = nodeSphere2.m_volume->GetCenter();
 #pragma endregion
 
 #pragma region Timestep
@@ -209,8 +215,8 @@ int main(int argc, char** argv)
     glm::vec3 cubePosition = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::vec3 cubeRotation = glm::vec3(0.0f, 0.0f, 0.0f);
     std::vector<glm::vec3> cubePositions;
-    cubePositions.push_back(glm::vec3(0.0f, 0.0f, 0.0f));
-    cubePositions.push_back(glm::vec3(2.0f, 5.0f, -15.0f));
+    cubePositions.push_back(glm::vec3(rigidbodyBox->transform.position.x, rigidbodyBox->transform.position.y, rigidbodyBox->transform.position.z));
+    cubePositions.push_back(glm::vec3(rigidbodyBox2->transform.position.x, rigidbodyBox2->transform.position.y, rigidbodyBox2->transform.position.z));
     std::vector<glm::vec3> cubeRotations;
     cubeRotations.push_back(glm::vec3(0.0f, 0.0f, 0.0f));
     cubeRotations.push_back(glm::vec3(0.0f, 45.0f, 0.0f));
@@ -295,7 +301,7 @@ int main(int argc, char** argv)
         1.0f, -1.0f,  1.0f
     };
 
-    glm::vec3 trianglePosition = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 trianglePosition = glm::vec3(rigidbodyTriangle->transform.position.x, rigidbodyTriangle->transform.position.y, rigidbodyTriangle->transform.position.z);
     glm::vec3 triangleRotation = glm::vec3(0.0f, 0.0f, 0.0f);
 
     // Create a VAO and VBO for Model 2
@@ -316,8 +322,8 @@ int main(int argc, char** argv)
     std::vector<glm::vec3> sphereVertices;
     CreateSphere(sphereVertices, 1.0f, 30, 30);
     std::vector<glm::vec3> spherePositions;
-    spherePositions.push_back(glm::vec3(0.0f, 0.0f, 0.0f));
-    spherePositions.push_back(glm::vec3(2.0f, 2.0f, 0.0f));
+    spherePositions.push_back(glm::vec3(nodePosition.x, nodePosition.y, nodePosition.z));
+    spherePositions.push_back(glm::vec3(nodePosition2.x, nodePosition2.y, nodePosition2.z));
     glm::vec3 sphereRotation = glm::vec3(0.0f, 0.0f, 0.0f);
     GLuint VAO3, VBO3;
     glGenVertexArrays(1, &VAO3);
@@ -380,15 +386,18 @@ int main(int argc, char** argv)
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
 
-        cubePosition = glm::vec3(rigidbodyBox->transform.position.x, rigidbodyBox->transform.position.y, rigidbodyBox->transform.position.z);
+        cubePositions[0] = glm::vec3(rigidbodyBox->transform.position.x, rigidbodyBox->transform.position.y, rigidbodyBox->transform.position.z);
+        cubePositions[1] = glm::vec3(rigidbodyBox2->transform.position.x, rigidbodyBox2->transform.position.y, rigidbodyBox2->transform.position.z);
         cubeRotation = glm::vec3(rigidbodyBox->transform.rotation.GetX(), rigidbodyBox->transform.rotation.GetY(), rigidbodyBox->transform.rotation.GetZ());
 
         trianglePosition = glm::vec3(rigidbodyTriangle->transform.position.x, rigidbodyTriangle->transform.position.y, rigidbodyTriangle->transform.position.z);
         triangleRotation = glm::vec3(rigidbodyTriangle->transform.rotation.GetX(), rigidbodyTriangle->transform.rotation.GetY(), rigidbodyTriangle->transform.rotation.GetZ());
         
         // Rotate sphere on Y axis
+        spherePositions[0] = glm::vec3(nodePosition.x, nodePosition.y, nodePosition.z);
+        spherePositions[1] = glm::vec3(rigidbodyBox2->transform.position.x, rigidbodyBox2->transform.position.y, rigidbodyBox2->transform.position.z);
         sphereRotation = glm::vec3(sphereRotation.x, sphereRotation.y + 0.01f, sphereRotation.z);
-
+        
         switch (currentScene)
         {
         case Scene::SCENE_1:
@@ -424,48 +433,32 @@ int main(int argc, char** argv)
             for (unsigned int i = 0; i < spherePositions.size(); i++)
             {
                 // calculate the model matrix for each object and pass it to shader before drawing
-                glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+                glm::mat4 model= glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
                 model = glm::translate(model, spherePositions[i]);
-                float angle = 20.0f * i;
                 model = glm::rotate(model, sphereRotation.y, glm::vec3(0.0f, 1.f, 0.0f));
                 ourShader.SetMat4("model", model);
 
                 glDrawArrays(GL_LINE_STRIP, 0, sphereVertices.size());
             }
 
-            glBindVertexArray(VAO1);
-            model = glm::translate(model, cubePosition);
-            // rotation on X Axis
-            model = glm::rotate(model, cubeRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-            // rotation on Y Axis
-            model = glm::rotate(model, cubeRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-            // rotation on Z Axis
-            model = glm::rotate(model, cubeRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+            for (unsigned int i = 0; i < cubePositions.size(); i++)
+            {
+                glBindVertexArray(VAO1);
+                model = glm::translate(model, cubePositions[i]);
+                // rotation on X Axis
+                model = glm::rotate(model, cubeRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+                // rotation on Y Axis
+                model = glm::rotate(model, cubeRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+                // rotation on Z Axis
+                model = glm::rotate(model, cubeRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+                ourShader.SetMat4("model", model);
+                glDrawArrays(GL_TRIANGLES, 0, 36);
+            }
 
-            //model = glm::translate(model, spherePositions[0]);
-            //// rotation on X Axis
-            //model = glm::rotate(model, sphereRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-            //// rotation on Y Axis
-            //model = glm::rotate(model, sphereRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-            //// rotation on Z Axis
-            //model = glm::rotate(model, sphereRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-            //
-            //model2 = glm::translate(model2, spherePositions[1]);
-            //// rotation on X Axis
-            //model2 = glm::rotate(model2, sphereRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-            //// rotation on Y Axis
-            //model2 = glm::rotate(model2, sphereRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-            //// rotation on Z Axis
-            //model2 = glm::rotate(model2, sphereRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-            //// for wireframe
-            //glDrawArrays(GL_TRIANGLE_STRIP, 0, sphereVertices.size());
-            // for full sphere
-            /*glDrawArrays(GL_TRIANGLE_FAN, 0, sphereVertices.size());*/
             break;
         }
-        ourShader.SetMat4("model", model);
-        ourShader.SetMat4("model2", model2);
+        //ourShader.SetMat4("model", model);
+        //ourShader.SetMat4("model2", model2);
 
         imguiCpp.NewFrame();
 

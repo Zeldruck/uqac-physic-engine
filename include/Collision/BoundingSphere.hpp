@@ -10,10 +10,10 @@ public:
 	BoundingSphere(const Vector3f& center, float radius);
 	BoundingSphere(const BoundingSphere& one, const BoundingSphere& two);
 
-	Vector3f GetCenter() const;
 	float GetRadius() const;
 	bool Overlaps(std::shared_ptr<BoundingSphere> other) const;
 
+	Vector3f GetCenter() const override;
 	float GetSize() const override;
 	float GetGrowth(std::shared_ptr<BoundingVolume> other) const override;
 
