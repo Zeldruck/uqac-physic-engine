@@ -10,10 +10,10 @@ public:
 	BoundingBox(const Vector3f& center, const Vector3f& halfSize);
 	BoundingBox(const BoundingBox& one, const BoundingBox& two);
 
-	Vector3f GetCenter() const;
 	Vector3f GetHalfSize() const;
 	bool Overlaps(std::shared_ptr<BoundingBox> other) const;
 
+	Vector3f GetCenter() const override;
 	float GetSize() const override;
 	float GetGrowth(std::shared_ptr<BoundingVolume> other) const override;
 private:
