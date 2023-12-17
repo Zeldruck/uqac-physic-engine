@@ -237,14 +237,12 @@ void Quaternion<T>::GetSinExponential(T& seX, T& seY, T& seZ)
 }
 
 template <typename T>
-void Quaternion<T>::GetRotation(T& angle, Vector3<T> unitAxis)
+void Quaternion<T>::GetRotation(T& angle, Vector3<T>& unitAxis)
 {
 	if ((s >= ((T)1)) || (s <= (T)(-1)))
 	{
 		angle = 0;
-		unitAxis[0] = 1;
-		unitAxis[0] = 0;
-		unitAxis[0] = 0;
+		unitAxis = Vector3<T>(1, 0, 0);
 		return;
 	}
 
@@ -253,17 +251,24 @@ void Quaternion<T>::GetRotation(T& angle, Vector3<T> unitAxis)
 
 	if (sin2 == 0)
 	{
-		unitAxis[0] = 1;
-		unitAxis[0] = 0;
-		unitAxis[0] = 0;
+		unitAxis = Vector3<T>(1, 0, 0);
 	}
 	else
 	{
 		T inv = 1.0 / sqrt(sin2);
-		unitAxis[0] = x * inv;
-		unitAxis[1] = y * inv;
-		unitAxis[2] = z * inv;
+		unitAxis = Vector3<T>(x, y, z) * inv;
 	}
+}
+
+template<typename T>
+Vector3<T> Quaternion<T>::GetRotation()
+{
+	Vector3<T> axis;
+	T angle;
+
+	this->GetRotation(angle, axis);
+
+	return axis * angle;
 }
 
 template <typename T>

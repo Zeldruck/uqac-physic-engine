@@ -69,6 +69,8 @@ Rigidbody::Rigidbody(Transform transform, Vector3f velocity, Vector3f accelerati
 	CalculateDerivedData();
 	CalculateCenterOfMass();
 	inverseMass = 1.0f / mass;
+
+	isAwake = true;
 }
 
 void Rigidbody::ClearForce()

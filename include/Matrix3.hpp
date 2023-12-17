@@ -18,6 +18,7 @@ public:
 	Matrix3 Inverse() const;
 
 	Matrix3 Transpose() const;
+	Vector3f TransformTranspose(const Vector3f& vector) const;
 
 	T& Value(std::size_t i, std::size_t j);
 	const T& Value(std::size_t i, std::size_t j) const;

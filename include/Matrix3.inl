@@ -52,6 +52,16 @@ Matrix3<T> Matrix3<T>::Transpose() const
 }
 
 template<typename T>
+inline Vector3f Matrix3<T>::TransformTranspose(const Vector3f& vector) const
+{
+	return Vector3(
+		vector.x * m_values[0] + vector.y * m_values[3] + vector.z * m_values[6],
+		vector.x * m_values[1] + vector.y * m_values[4] + vector.z * m_values[7],
+		vector.x * m_values[2] + vector.y * m_values[5] + vector.z * m_values[8]
+	);
+}
+
+template<typename T>
 T& Matrix3<T>::Value(std::size_t i, std::size_t j)
 {
 	return m_values[i * 3 + j];
