@@ -21,7 +21,7 @@ std::vector<std::shared_ptr<Contact>>& ContactGenerator::GetContacts()
 
 void ContactGenerator::SetCurrentContacts(const int newContacts)
 {
-	currentContacts = newContacts
+	currentContacts = newContacts;
 }
 
 void ContactGenerator::DetectSandS(const Sphere& sphereA, const Sphere& sphereB)
