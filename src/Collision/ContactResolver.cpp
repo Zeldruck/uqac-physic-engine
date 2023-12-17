@@ -106,6 +106,126 @@ void ContactResolver::ResolveVelocity(std::vector<std::shared_ptr<Contact>>& con
 
 void ContactResolver::ResolveInterpenetration(std::vector<std::shared_ptr<Contact>>& contacts, float duration)
 {
+    int i, index;
+    Vector3f linearChange[2], angularChange[2];
+    float max;
+    Vector3f deltaPosition;
+
+    iterationsUsed = 0;
+
+    while (iterationsUsed < iterations)
+    {
+        max = 0.01f;
+        index = contacts.size();
+
+        for (i = 0; i < contacts.size(); i++)
+        {
+            if (contacts[i]->penetration > max)
+            {
+                max = contacts[i]->penetration;
+                index = i;
+            }
+        }
+
+        if (index == contacts.size()) break;
+
+        float angularLimit = 0.2f;
+        float angularMove[2];
+        float linearMove[2];
+
+        float totalInertia = 0;
+        float linearInertia[2];
+        float angularInertia[2];
+
+        for (int j = 0; j < 2; j++) 
+        {
+            if (contacts[index]->rigidbodies[j])
+            {
+                Matrix3f inverseInertiaTensor = Matrix3f();
+                contacts[index]->rigidbodies[j]->inverseInertiaTensorWorld;
+
+                Vector3f angularInertiaWorld = Vector3f::CrossProduct(contacts[index]->relativeContactPosition[j], contacts[index]->contactNormal);
+                angularInertiaWorld = inverseInertiaTensor.TransformTranspose(angularInertiaWorld);
+                angularInertiaWorld = Vector3f::CrossProduct(angularInertiaWorld, contacts[index]->relativeContactPosition[j]);
+                angularInertia[j] = angularInertiaWorld * contacts[index]->contactNormal;
+
+                linearInertia[j] = contacts[index]->rigidbodies[j]->inverseMass;
+
+                totalInertia += linearInertia[j] + angularInertia[j];
+            }
+        }
+
+        for (int j = 0; j < 2; j++)
+        {
+            if (contacts[index]->rigidbodies[j])
+            {
+                float sign = (j == 0) ? 1 : -1;
+                angularMove[j] = sign * contacts[index]->penetration * (angularInertia[j] / totalInertia);
+                linearMove[j] = sign * contacts[index]->penetration * (linearInertia[j] / totalInertia);
+
+                Vector3f projection = contacts[index]->relativeContactPosition[j];
+                projection += contacts[index]->contactNormal * -Vector3f::DotProduct(contacts[index]->relativeContactPosition[j], contacts[index]->contactNormal);
+
+                float maxLength = angularLimit * projection.GetLength();
+
+                if (angularMove[j] < -maxLength)
+                {
+                    float totalMove = angularMove[j] + linearMove[j];
+                    angularMove[j] = -maxLength;
+                    linearMove[j] = totalMove - angularMove[j];
+                }
+                else if (angularMove[j] > maxLength)
+                {
+                    float totalMove = angularMove[j] + linearMove[j];
+                    angularMove[j] = maxLength;
+                    linearMove[j] = totalMove - angularMove[j];
+                }
+
+                if (angularMove[j] == 0)
+                {
+                    angularChange[j] = Vector3f(0, 0, 0);
+                }
+                else
+                {
+                    Vector3 targetAngularDirection = Vector3f::CrossProduct(contacts[index]->relativeContactPosition[j], contacts[index]->contactNormal);
+                    Matrix3f inverseInertiaTensor = contacts[index]->rigidbodies[j]->inverseInertiaTensorWorld;
+
+                    angularChange[j] = inverseInertiaTensor.TransformTranspose(targetAngularDirection) * (angularMove[j] / angularInertia[j]);
+                }
+
+                linearChange[j] = contacts[index]->contactNormal * linearMove[j];
+
+
+                contacts[index]->rigidbodies[j]->transform.position = contacts[index]->contactNormal * linearMove[j];
+                contacts[index]->rigidbodies[j]->transform.rotation.AddScaleVector(angularChange[j], 1.0f);
+
+
+                if (!contacts[index]->rigidbodies[j]->isAwake) 
+                    contacts[index]->rigidbodies[j]->CalculateDerivedData();
+            }
+        }
+
+        for (i = 0; i < contacts.size(); i++)
+        {
+            for (int j = 0; j < 2; j++)
+            {
+                if (contacts[i]->rigidbodies[j])
+                {
+                    for (int x = 0; x < 2; x++)
+                    {
+                        if (contacts[i]->rigidbodies[j] == contacts[index]->rigidbodies[x])
+                        {
+                            deltaPosition = linearChange[x] + angularChange[x].Cross(contacts[i]->relativeContactPosition[j]);
+
+                            contacts[i]->penetration += Vector3f::DotProduct(deltaPosition, contacts[i]->contactNormal) * (j ? 1 : -1);
+                        }
+                    }
+                }
+            }
+        }
+
+        iterationsUsed++;
+    }
 }
 
 Vector3f ContactResolver::CalculateImpulse(std::shared_ptr<Contact>& contact, Matrix3f* inverseTensor, bool hasFriction)
