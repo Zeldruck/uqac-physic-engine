@@ -29,6 +29,9 @@ public:
 	void RemoveRigidbody(std::shared_ptr<Rigidbody> rigidbody);
 	void PrintRigidbodies();
 
+	void BroadPhaseCollisionDetection();
+	void NarrowPhaseCollisionDetection();
+
 private:
 	std::vector<std::shared_ptr<Particle>> m_particles;
 	std::vector<std::shared_ptr<Rigidbody>> m_rigidbodies;

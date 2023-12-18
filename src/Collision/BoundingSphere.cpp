@@ -12,24 +12,24 @@ BoundingSphere::BoundingSphere(const Vector3f& center, float radius) :
 {
 }
 
-BoundingSphere::BoundingSphere(const BoundingSphere& one, const BoundingSphere& two)
+BoundingSphere::BoundingSphere(std::shared_ptr<BoundingSphere> one, std::shared_ptr<BoundingSphere> two)
 {
-	Vector3f centerOffset = two.m_center - one.m_center;
+	Vector3f centerOffset = two->m_center - one->m_center;
 	float distance = centerOffset.GetLength();
-	float radiusDiff = two.m_radius - one.m_radius;
+	float radiusDiff = two->m_radius - one->m_radius;
 
 	// Check if the larger sphere encloses the small one
 	if (radiusDiff * radiusDiff >= distance)
 	{
-		if (one.m_radius > two.m_radius)
+		if (one->m_radius > two->m_radius)
 		{
-			m_center = one.m_center;
-			m_radius = one.m_radius;
+			m_center = one->m_center;
+			m_radius = one->m_radius;
 		}
 		else
 		{
-			m_center = two.m_center;
-			m_radius = two.m_radius;
+			m_center = two->m_center;
+			m_radius = two->m_radius;
 		}
 	}
 	// Otherwise we need to work with partially overlapping spheres
@@ -37,13 +37,13 @@ BoundingSphere::BoundingSphere(const BoundingSphere& one, const BoundingSphere& 
 	{
 		distance = sqrt(distance);
 		// The new radius is a combination of both
-		m_radius = (distance + one.m_radius + two.m_radius) * 0.5f;
+		m_radius = (distance + one->m_radius + two->m_radius) * 0.5f;
 
 		// The new center is an interpolation of both
-		m_center = one.m_center;
+		m_center = one->m_center;
 		if (distance > 0.0f)
 		{
-			m_center += centerOffset * ((m_radius - one.m_radius) / distance);
+			m_center += centerOffset * ((m_radius - one->m_radius) / distance);
 		}
 	}
 }

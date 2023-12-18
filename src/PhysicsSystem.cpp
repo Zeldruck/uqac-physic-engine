@@ -1,9 +1,13 @@
 #include <iostream>
-
+#include <map>
+#include <vector>
 #include <memory>
 #include "PhysicsSystem.hpp"
 #include "Particle.hpp"
 #include "Rigidbody.hpp"
+#include "Collision/BVHNode.hpp"
+#include "Collision/BoundingSphere.hpp"
+#include "Collision/BoundingBox.hpp"
 
 PhysicsSystem::PhysicsSystem(std::shared_ptr<ForceRegistry> forceRegistry) :
 	m_forceRegistry(forceRegistry),
@@ -26,6 +30,9 @@ void PhysicsSystem::Update(float deltaTime, bool isGravityEnabled)
 	// Mise à jour des forces
 	m_forceRegistry->UpdateForces(deltaTime);
 
+	// Mise à jour des particules
+	m_integrator->Update(m_particles, m_rigidbodies, deltaTime, isGravityEnabled);	
+
 	// Génération des contacts
 	//std::vector<ParticleContact> contacts;
 	//for (auto generator : contactGenerators) {
@@ -35,9 +42,20 @@ void PhysicsSystem::Update(float deltaTime, bool isGravityEnabled)
 	// Résolution des contacts
 	//contactResolver.ResolveContacts(contacts, deltaTime);
 
-	// Mise à jour des particules
-	m_integrator->Update(m_particles, m_rigidbodies, deltaTime, isGravityEnabled);	
+	// Résolution des collisions
+	BroadPhaseCollisionDetection();
+	NarrowPhaseCollisionDetection();
 
+
+}
+
+void PhysicsSystem::BroadPhaseCollisionDetection()
+{
+}
+
+void PhysicsSystem::NarrowPhaseCollisionDetection()
+{
+	
 }
 
 void PhysicsSystem::AddParticle(std::shared_ptr<Particle> particle)

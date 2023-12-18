@@ -8,7 +8,7 @@ class BoundingSphere : public BoundingVolume
 public:
 	BoundingSphere();
 	BoundingSphere(const Vector3f& center, float radius);
-	BoundingSphere(const BoundingSphere& one, const BoundingSphere& two);
+	BoundingSphere(std::shared_ptr<BoundingSphere> one, std::shared_ptr<BoundingSphere> two);
 
 	float GetRadius() const;
 	bool Overlaps(std::shared_ptr<BoundingSphere> other) const;
@@ -21,5 +21,5 @@ private:
 	Vector3f m_center;
 	float m_radius;
 
-	std::shared_ptr<BoundingVolume> m_other;
+	std::shared_ptr<BoundingSphere> m_other;
 };

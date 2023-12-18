@@ -8,6 +8,7 @@
 #include "Collision/BoundingVolume.hpp"
 #include "Collision/BoundingSphere.hpp"
 #include "Collision/BoundingBox.hpp"
+
 Rigidbody::Rigidbody()
 	:
 	transform(Transform()),
