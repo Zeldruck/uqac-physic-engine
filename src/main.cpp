@@ -48,6 +48,13 @@
 #include "Transform.hpp"
 #include "Quaternion.hpp"
 
+#include "Collision/Primitives/Sphere.hpp"
+#include "Collision/Primitives/Plane.hpp"
+#include "Collision/Primitives/Box.hpp"
+#include "Collision/Contact.hpp"
+#include "Collision/ContactGenerator.hpp"
+#include "Collision/ContactResolver.hpp"
+
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 void MouseCallback(GLFWwindow* window, double xpos, double ypos);
 void ProcessInput(GLFWwindow* window, float deltaTime);
@@ -70,14 +77,14 @@ enum class Scene
 };
 
 // Current scene
-Scene currentScene = Scene::SCENE_3;
+Scene currentScene = Scene::SCENE_1;
 
 // settings
 const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 20.0f));
+Camera camera(glm::vec3(0.0f, 5.0f, 20.0f));
 
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -138,7 +145,15 @@ int main(int argc, char** argv)
 
 #pragma region Narrow Phase
 
+    ContactGenerator contactGenerator = ContactGenerator(50);
+    ContactResolver contactResolver = ContactResolver(50);
 
+    Plane plane = Plane(nullptr, Matrix4f(), Vector3f(0, 1, 0), 0.f);
+
+    Sphere sphere = Sphere(rigidbodyBox2, Matrix4f(), 1.f);
+    Sphere sphere2 = Sphere(rigidbodyBox, Matrix4f(), 1.f);
+
+    Box box = Box(rigidbodyBox, Matrix4f(), Vector3f(0.5f, 0.5f, 0.5f));
 
 #pragma endregion
 
@@ -344,6 +359,8 @@ int main(int argc, char** argv)
 
 #pragma endregion
 
+
+
     bool isGravityEnabled = true;
     while (!window.ShouldClose())
     {
@@ -398,34 +415,67 @@ int main(int argc, char** argv)
         spherePositions[1] = glm::vec3(rigidbodyBox2->transform.position.x, rigidbodyBox2->transform.position.y, rigidbodyBox2->transform.position.z);
         sphereRotation = glm::vec3(sphereRotation.x, sphereRotation.y + 0.01f, sphereRotation.z);
         
+        glm::mat4 sModel = glm::mat4(1.0f);
+        glm::vec3 spherePos;
+        glm::vec3 sphereRot;
+
         switch (currentScene)
         {
         case Scene::SCENE_1:
+            //contactGenerator.DetectSandHS(sphere, plane);
+            //contactGenerator.DetectBandP(box, plane);
+            //contactGenerator.DetectSandB(sphere, box);
+            contactGenerator.DetectSandHS(sphere, plane);
+            contactResolver.ResolveContacts(contactGenerator.GetContacts(), deltaTime);
+
             glBindVertexArray(VAO1);
-            model = glm::translate(model, cubePosition);
-            // rotation on X Axis
-            model = glm::rotate(model, cubeRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-            // rotation on Y Axis
-            model = glm::rotate(model, cubeRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-            // rotation on Z Axis
-            model = glm::rotate(model, cubeRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+            glm::vec3 boxPos = glm::vec3(0.f, 0.f, 0.f);
+            model = glm::scale(model, glm::vec3(10, 0.5f, 10));
+            model = glm::translate(model, boxPos);
+            ourShader.SetMat4("model", model);
+
             glDrawArrays(GL_TRIANGLES, 0, 36);
 
-            //ImguiRigidbodyData(rigidbodyBox);
+
+            glBindVertexArray(VAO3);
+
+            sModel = glm::mat4(1.0f);
+            spherePos = glm::vec3(sphere.rigidbody->transform.position.x, sphere.rigidbody->transform.position.y, sphere.rigidbody->transform.position.z);
+            sphereRot = glm::vec3(sphere.rigidbody->transform.rotation.GetX(), sphere.rigidbody->transform.rotation.GetY(), sphere.rigidbody->transform.rotation.GetZ());
+            sModel = glm::translate(sModel, spherePos);
+            sModel = glm::rotate(sModel, sphereRot.y, glm::vec3(0.0f, 1.0f, 0.0f));
+            ourShader.SetMat4("model", sModel);
+
+            glDrawArrays(GL_LINE_STRIP, 0, sphereVertices.size());
             break;
 
-        case Scene::SCENE_2: 
-            glBindVertexArray(VAO2);
-            model = glm::translate(model, trianglePosition);
-            // rotation on X Axis
-            model = glm::rotate(model, triangleRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-            // rotation on Y Axis
-            model = glm::rotate(model, triangleRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-            // rotation on Z Axis
-            model = glm::rotate(model, triangleRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-            glDrawArrays(GL_TRIANGLES, 0, 12);
-            
-            //ImguiRigidbodyData(rigidbodyTriangle);
+        case Scene::SCENE_2:
+            //contactGenerator.DetectSandHS(sphere, plane);
+            //contactGenerator.DetectBandP(box, plane);
+            //contactGenerator.DetectSandB(sphere, box);
+            contactGenerator.DetectSandS(sphere, sphere2);
+            contactResolver.ResolveContacts(contactGenerator.GetContacts(), deltaTime);
+
+            glBindVertexArray(VAO3);
+
+            sModel = glm::mat4(1.0f);
+            spherePos = glm::vec3(sphere.rigidbody->transform.position.x, sphere.rigidbody->transform.position.y, sphere.rigidbody->transform.position.z);
+            sphereRot = glm::vec3(sphere.rigidbody->transform.rotation.GetX(), sphere.rigidbody->transform.rotation.GetY(), sphere.rigidbody->transform.rotation.GetZ());
+            sModel = glm::translate(sModel, spherePos);
+            sModel = glm::rotate(sModel, sphereRot.y, glm::vec3(0.0f, 1.0f, 0.0f));
+            ourShader.SetMat4("model", sModel);
+
+            glDrawArrays(GL_LINE_STRIP, 0, sphereVertices.size());
+
+            sModel = glm::mat4(1.0f);
+            spherePos = glm::vec3(sphere2.rigidbody->transform.position.x, sphere2.rigidbody->transform.position.y, sphere2.rigidbody->transform.position.z);
+            sphereRot = glm::vec3(sphere2.rigidbody->transform.rotation.GetX(), sphere2.rigidbody->transform.rotation.GetY(), sphere2.rigidbody->transform.rotation.GetZ());
+            sModel = glm::translate(sModel, spherePos);
+            sModel = glm::rotate(sModel, sphereRot.y, glm::vec3(0.0f, 1.0f, 0.0f));
+            ourShader.SetMat4("model", sModel);
+
+            glDrawArrays(GL_LINE_STRIP, 0, sphereVertices.size());
             break;
 
         case Scene::SCENE_3:
@@ -464,8 +514,8 @@ int main(int argc, char** argv)
 
         ImguiStatsPanel(deltaTime);
         ImguiSceneSelection();
-        ImguiRigidbodyData(rigidbodyBox);
         ImguiRigidbodyData(rigidbodyTriangle);
+        ImguiRigidbodyData(sphere.rigidbody);
 
         imguiCpp.Render();
 
