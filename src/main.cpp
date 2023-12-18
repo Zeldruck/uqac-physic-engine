@@ -158,12 +158,31 @@ int main(int argc, char** argv)
 #pragma endregion
 
 #pragma region BVH
-    //BVHNode<BoundingBox> node = BVHNode<BoundingBox>(rigidbodyBox, std::make_shared<BoundingBox>(rigidbodyBox->transform.position, Vector3f(1.f, 1.f, 1.f)));
-  
-    BVHNode<BoundingSphere> nodeSphere = BVHNode<BoundingSphere>(rigidbodyBox, std::make_shared<BoundingSphere>(rigidbodyBox->transform.position, rigidbodyBox->transform.scale.x));
-    Vector3f nodePosition = nodeSphere.m_volume->GetCenter();
-    BVHNode<BoundingSphere> nodeSphere2 = BVHNode<BoundingSphere>(rigidbodyBox2, std::make_shared<BoundingSphere>(rigidbodyBox2->transform.position, rigidbodyBox2->transform.scale.x));
-    Vector3f nodePosition2 = nodeSphere2.m_volume->GetCenter();
+
+    //BVHNode<BoundingBox> nodeBox = BVHNode<BoundingBox>(rigidbodyBox, std::make_shared<BoundingBox>(rigidbodyBox->transform.position, rigidbodyBox->transform.scale.x));
+    //Vector3f nodePosition = nodeBox.m_volume->GetCenter();
+
+    //BVHNode<BoundingBox> nodeBox2 = BVHNode<BoundingBox>(rigidbodyBox2, std::make_shared<BoundingBox>(rigidbodyBox2->transform.position, rigidbodyBox2->transform.scale.x));
+    //Vector3f nodePosition2 = nodeBox2.m_volume->GetCenter();
+
+    //nodeBox.Insert(rigidbodyBox2, std::make_shared<BoundingBox>(rigidbodyBox2->transform.position, rigidbodyBox2->transform.scale.x));
+
+    //BVHNode<BoundingSphere> nodeSphere = BVHNode<BoundingSphere>(rigidbodyBox, std::make_shared<BoundingSphere>(rigidbodyBox->transform.position, rigidbodyBox->transform.scale.x));
+    //Vector3f nodePosition = nodeSphere.m_volume->GetCenter();
+    //BVHNode<BoundingSphere> nodeSphere2 = BVHNode<BoundingSphere>(rigidbodyBox2, std::make_shared<BoundingSphere>(rigidbodyBox2->transform.position, rigidbodyBox2->transform.scale.x));
+    //Vector3f nodePosition2 = nodeSphere2.m_volume->GetCenter();
+
+    std::shared_ptr<BVHNode> nodeSphere = std::make_shared<BVHNode>(rigidbodyBox, std::make_shared<BoundingSphere>(rigidbodyBox->transform.position, rigidbodyBox->transform.scale.x));
+    //BVHNode nodeSphere(rigidbodyBox/*, std::make_shared<BoundingSphere>(rigidbodyBox->transform.position, rigidbodyBox->transform.scale.x)*/);
+    Vector3f nodePosition = nodeSphere->m_volume->GetCenter();
+
+    std::cout << "IsLeaf : " << nodeSphere->IsLeaf() << std::endl;
+    std::cout << "Overlaps: " << nodeSphere->Overlaps(nodeSphere) << std::endl;
+
+    std::shared_ptr<BVHNode> nodeSphere2 = std::make_shared<BVHNode>(rigidbodyBox2, std::make_shared<BoundingSphere>(rigidbodyBox2->transform.position, rigidbodyBox2->transform.scale.x));
+    Vector3f nodePosition2 = nodeSphere2->m_volume->GetCenter();
+
+    nodeSphere->Insert(nodeSphere2->m_rigidbody, nodeSphere2->m_volume);
 #pragma endregion
 
 #pragma region Timestep
