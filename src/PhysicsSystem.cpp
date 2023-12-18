@@ -8,14 +8,36 @@
 #include "Collision/BVHNode.hpp"
 #include "Collision/BoundingSphere.hpp"
 #include "Collision/BoundingBox.hpp"
+#include "Collision/BVHNode.hpp"
 
 PhysicsSystem::PhysicsSystem(std::shared_ptr<ForceRegistry> forceRegistry) :
 	m_forceRegistry(forceRegistry),
 	m_integrator(std::make_unique<EulerIntegrator>())
 {
+	m_potentialContact = new PotentialContact();
+}
+
+PhysicsSystem::~PhysicsSystem()
+{
+	delete(m_potentialContact);
 }
 
 void PhysicsSystem::Update(float deltaTime, bool isGravityEnabled)
+{
+	// Clear les forces des particles et rigidbodies
+	ClearForces();
+
+	// Mise à jour des forces
+	m_forceRegistry->UpdateForces(deltaTime);
+
+	// Mise à jour des particules
+	m_integrator->Update(m_particles, m_rigidbodies, deltaTime, isGravityEnabled);	
+
+	// Résolution des collisions
+	BroadPhaseCollisionDetection();
+}
+
+void PhysicsSystem::ClearForces()
 {
 	for (auto& particle : m_particles)
 	{
@@ -25,37 +47,21 @@ void PhysicsSystem::Update(float deltaTime, bool isGravityEnabled)
 	{
 		rigidbody->ClearForce();
 		rigidbody->ClearTorque();
-	
 	}
-	// Mise à jour des forces
-	m_forceRegistry->UpdateForces(deltaTime);
+}
 
-	// Mise à jour des particules
-	m_integrator->Update(m_particles, m_rigidbodies, deltaTime, isGravityEnabled);	
-
-	// Génération des contacts
-	//std::vector<ParticleContact> contacts;
-	//for (auto generator : contactGenerators) {
-	//	generator->GenerateContacts(contacts);
-	//}
-
-	// Résolution des contacts
-	//contactResolver.ResolveContacts(contacts, deltaTime);
-
-	// Résolution des collisions
-	BroadPhaseCollisionDetection();
-	NarrowPhaseCollisionDetection();
-
-
+void PhysicsSystem::AddRootBVHNode(std::shared_ptr<BVHNode> node)
+{
+	m_rootBVHNode = node;
 }
 
 void PhysicsSystem::BroadPhaseCollisionDetection()
 {
-}
+	m_rootBVHNode->RecalculateBoundingVolume();
+	m_rootBVHNode->GetPotentialContact(m_potentialContact, 1000);
 
-void PhysicsSystem::NarrowPhaseCollisionDetection()
-{
-	
+	//std::cout << "Potential contacts: " << m_potentialContact->rigidbodies[0]->name << std::endl;
+	//std::cout << "Potential contacts: " << m_potentialContact->rigidbodies[1]->name << std::endl;
 }
 
 void PhysicsSystem::AddParticle(std::shared_ptr<Particle> particle)

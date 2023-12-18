@@ -118,23 +118,3 @@ std::shared_ptr<BVHNode> BVHNode::GetRoot()
 	else
 		return m_parent->GetRoot();
 }
-
-//void BVHNode::RebuildTree()
-//{
-//	if (IsLeaf())
-//		return;
-//
-//	std::shared_ptr<BVHNode> node0 = children[0];
-//	std::shared_ptr<BVHNode> node1 = children[1];
-//
-//	node0->RebuildTree();
-//	node1->RebuildTree();
-//
-//	children[0] = std::make_shared<BVHNode>(node0);
-//	children[1] = std::make_shared<BVHNode>(node1);
-//
-//	children[0]->m_parent = std::make_shared<BVHNode>(this);
-//	children[1]->m_parent = std::make_shared<BVHNode>(this);
-//
-//	RecalculateBoundingVolume();
-//}

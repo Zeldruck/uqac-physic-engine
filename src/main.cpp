@@ -122,6 +122,9 @@ int main(int argc, char** argv)
     std::shared_ptr<Rigidbody> rigidbodyBox2 = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 5.f, 0.f), Quaternionf(1.f, 0.f, 45.f * Deg2Rad, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Cube2", RigidbodyType::BOX);
     physics.AddRigidbody(rigidbodyBox2);
 
+    std::shared_ptr<Rigidbody> rigidbodyBox3 = std::make_shared<Rigidbody>(Transform(Vector3f(0.f, 8.f, 0.f), Quaternionf(1.f, 0.f, 45.f * Deg2Rad, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Cube3", RigidbodyType::BOX);
+    physics.AddRigidbody(rigidbodyBox3);
+
     std::shared_ptr<Rigidbody> rigidbodyTriangle = std::make_shared<Rigidbody>(Transform(Vector3f(5.f, 5.f, 0.f), Quaternionf(1.f, 0.f, 0.f, 0.f), Vector3f::One), Vector3f::Zero, Vector3f::Zero, 10.f, Vector3f::Zero, Vector3f::Zero, Vector3f::Zero, "Triangle", RigidbodyType::TRIANGLE);
     physics.AddRigidbody(rigidbodyTriangle);
 
@@ -134,6 +137,7 @@ int main(int argc, char** argv)
     std::shared_ptr<ForceAnchoredSpring> forceAnchoredSpringTriangle = std::make_shared<ForceAnchoredSpring>(10.f, 5.0f, Vector3f::Zero, Vector3f(0.0f, 0.5f, 0.0f));
 
     forceRegistry->Add(rigidbodyBox2, forceGravity);
+    forceRegistry->Add(rigidbodyBox3, forceGravity);
     //forceRegistry->Add(rigidbodyBox, forceGravity);
     //forceRegistry->Add(rigidbodyBox, strongForceDrag);
     //forceRegistry->Add(rigidbodyBox, forceAnchoredSpringCube);
@@ -182,7 +186,13 @@ int main(int argc, char** argv)
     std::shared_ptr<BVHNode> nodeSphere2 = std::make_shared<BVHNode>(rigidbodyBox2, std::make_shared<BoundingSphere>(rigidbodyBox2->transform.position, rigidbodyBox2->transform.scale.x));
     Vector3f nodePosition2 = nodeSphere2->m_volume->GetCenter();
 
+    std::shared_ptr<BVHNode> nodeSphere3 = std::make_shared<BVHNode>(rigidbodyBox3, std::make_shared<BoundingSphere>(rigidbodyBox3->transform.position, rigidbodyBox3->transform.scale.x));
+    Vector3f nodePosition3 = nodeSphere3->m_volume->GetCenter();
+
     nodeSphere->Insert(nodeSphere2->m_rigidbody, nodeSphere2->m_volume);
+    nodeSphere->Insert(nodeSphere3->m_rigidbody, nodeSphere3->m_volume);
+
+    physics.AddRootBVHNode(nodeSphere);
 #pragma endregion
 
 #pragma region Timestep
@@ -251,6 +261,7 @@ int main(int argc, char** argv)
     std::vector<glm::vec3> cubePositions;
     cubePositions.push_back(glm::vec3(rigidbodyBox->transform.position.x, rigidbodyBox->transform.position.y, rigidbodyBox->transform.position.z));
     cubePositions.push_back(glm::vec3(rigidbodyBox2->transform.position.x, rigidbodyBox2->transform.position.y, rigidbodyBox2->transform.position.z));
+    cubePositions.push_back(glm::vec3(rigidbodyBox3->transform.position.x, rigidbodyBox3->transform.position.y, rigidbodyBox3->transform.position.z));
     std::vector<glm::vec3> cubeRotations;
     cubeRotations.push_back(glm::vec3(0.0f, 0.0f, 0.0f));
     cubeRotations.push_back(glm::vec3(0.0f, 45.0f, 0.0f));
@@ -358,6 +369,7 @@ int main(int argc, char** argv)
     std::vector<glm::vec3> spherePositions;
     spherePositions.push_back(glm::vec3(nodePosition.x, nodePosition.y, nodePosition.z));
     spherePositions.push_back(glm::vec3(nodePosition2.x, nodePosition2.y, nodePosition2.z));
+    //spherePositions.push_back(glm::vec3(nodePosition3.x, nodePosition3.y, nodePosition3.z));
     glm::vec3 sphereRotation = glm::vec3(0.0f, 0.0f, 0.0f);
     GLuint VAO3, VBO3;
     glGenVertexArrays(1, &VAO3);
@@ -424,6 +436,7 @@ int main(int argc, char** argv)
 
         cubePositions[0] = glm::vec3(rigidbodyBox->transform.position.x, rigidbodyBox->transform.position.y, rigidbodyBox->transform.position.z);
         cubePositions[1] = glm::vec3(rigidbodyBox2->transform.position.x, rigidbodyBox2->transform.position.y, rigidbodyBox2->transform.position.z);
+        cubePositions[2] = glm::vec3(rigidbodyBox3->transform.position.x, rigidbodyBox3->transform.position.y, rigidbodyBox3->transform.position.z);
         cubeRotation = glm::vec3(rigidbodyBox->transform.rotation.GetX(), rigidbodyBox->transform.rotation.GetY(), rigidbodyBox->transform.rotation.GetZ());
 
         trianglePosition = glm::vec3(rigidbodyTriangle->transform.position.x, rigidbodyTriangle->transform.position.y, rigidbodyTriangle->transform.position.z);
@@ -432,6 +445,7 @@ int main(int argc, char** argv)
         // Rotate sphere on Y axis
         spherePositions[0] = glm::vec3(nodePosition.x, nodePosition.y, nodePosition.z);
         spherePositions[1] = glm::vec3(rigidbodyBox2->transform.position.x, rigidbodyBox2->transform.position.y, rigidbodyBox2->transform.position.z);
+        //spherePositions[2] = glm::vec3(rigidbodyBox3->transform.position.x, rigidbodyBox3->transform.position.y, rigidbodyBox3->transform.position.z);
         sphereRotation = glm::vec3(sphereRotation.x, sphereRotation.y + 0.01f, sphereRotation.z);
         
         glm::mat4 sModel = glm::mat4(1.0f);

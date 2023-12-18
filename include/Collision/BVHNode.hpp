@@ -27,7 +27,6 @@ public:
 	void Insert(std::shared_ptr<Rigidbody> newRigidbody, std::shared_ptr<BoundingSphere> newVolume);
 	void RecalculateBoundingVolume(bool recurse = true);
 	std::shared_ptr<BVHNode> GetRoot();
-	//void RebuildTree();
 
 	std::array<std::shared_ptr<BVHNode>, 2> children;
 	std::shared_ptr<BVHNode> m_parent;
