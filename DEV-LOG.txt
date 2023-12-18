@@ -29,6 +29,12 @@ Tâches:
 - Rigidbody: Lan-Anh Virginie Nguyen
 - Graphiques: Félix Jouanneau & Lan-Anh Virginie Nguyen
 
+Références utilisées:
+- https://learnopengl.com
+- https://wikipedia.org
+- https://en.wikipedia.org/wiki/List_of_moments_of_inertia
+- Millington chapitre 9, 10, 11
+
 TP4:
 Tâches:
 - Broad Phase: Lan-Anh Virginie Nguyen
@@ -37,7 +43,6 @@ Tâches:
 - Graphiques: Félix Jouanneau & Lan-Anh Virginie Nguyen
 
 Références utilisées:
-- https://learnopengl.com
-- https://wikipedia.org
-- https://en.wikipedia.org/wiki/List_of_moments_of_inertia
-- Millington chapitre 9, 10, 11
+- Millington chapitre 12, 13, 14
+- Ericson chapitre 6
+- http://www.songho.ca/opengl/gl_sphere.html
