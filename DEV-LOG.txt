@@ -46,3 +46,6 @@ Références utilisées:
 - Millington chapitre 12, 13, 14
 - Ericson chapitre 6
 - http://www.songho.ca/opengl/gl_sphere.html
+
+Problème rencontré :
+- Broad Phase : problème de template, puis de constructeur avec std::shared_ptr et l'utilisation de this (no overloaded function could convert all the argument types)
