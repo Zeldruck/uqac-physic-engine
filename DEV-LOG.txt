@@ -29,6 +29,13 @@ Tâches:
 - Rigidbody: Lan-Anh Virginie Nguyen
 - Graphiques: Félix Jouanneau & Lan-Anh Virginie Nguyen
 
+TP4:
+Tâches:
+- Broad Phase: Lan-Anh Virginie Nguyen
+- Narrow Phase: Félix Jouanneau
+- Résolution de Contact : Félix Jouanneau
+- Graphiques: Félix Jouanneau & Lan-Anh Virginie Nguyen
+
 Références utilisées:
 - https://learnopengl.com
 - https://wikipedia.org
