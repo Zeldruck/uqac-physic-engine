@@ -40,6 +40,7 @@ Tâches:
 - Broad Phase: Lan-Anh Virginie Nguyen
 - Narrow Phase: Félix Jouanneau
 - Résolution de Contact : Félix Jouanneau
+- Primitive : Félix Jouanneau & Lan-Anh Virignie Nguyen
 - Graphiques: Félix Jouanneau & Lan-Anh Virginie Nguyen
 
 Références utilisées:
@@ -49,3 +50,4 @@ Références utilisées:
 
 Problème rencontré :
 - Broad Phase : problème de template, puis de constructeur avec std::shared_ptr et l'utilisation de this (no overloaded function could convert all the argument types)
+- Sphere : affichage graphique
