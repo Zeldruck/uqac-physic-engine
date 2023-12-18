@@ -76,7 +76,7 @@ void Contact::CalculateDeltaVelocity(float duration)
         velocityAcceleration -= rigidbodies[1]->GetAcceleration() * duration * contactNormal;
     }
 
-    float thisRestitution = 0.5f;//restitution
+    float thisRestitution = 0.f;//restitution
     if (std::abs(contactVelocity.x) < 0.25f)
     {
         thisRestitution = 0.0f;

@@ -19,7 +19,6 @@ public:
 
 	void SetCurrentContacts(const int newContacts);
 
-private:
 	void DetectSandS(const Sphere& sphereA, const Sphere& sphereB);
 	void DetectSandHS(const Sphere& sphere, const Plane& plane);
 	void DetectSandP(const Sphere& sphere, const Plane& plane);

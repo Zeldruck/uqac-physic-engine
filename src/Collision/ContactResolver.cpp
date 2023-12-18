@@ -14,6 +14,8 @@ void ContactResolver::ResolveContacts(std::vector<std::shared_ptr<Contact>>& con
 
 	ResolveVelocity(contacts, duration);
 	ResolveInterpenetration(contacts, duration);
+
+    contacts.clear();
 }
 
 void ContactResolver::ResolveVelocity(std::vector<std::shared_ptr<Contact>>& contacts, float duration)
@@ -44,7 +46,7 @@ void ContactResolver::ResolveVelocity(std::vector<std::shared_ptr<Contact>>& con
         inverseInertiaTensor[0] = contacts[index]->rigidbodies[0]->GetInverseInertiaTensorWorld();
 
         if (contacts[index]->rigidbodies[1])
-            contacts[index]->rigidbodies[1]->GetInverseInertiaTensorWorld();
+            inverseInertiaTensor[1] = contacts[index]->rigidbodies[1]->GetInverseInertiaTensorWorld();
 
         Vector3f impulseContact;
         float friction = 0.0f;
@@ -99,7 +101,6 @@ void ContactResolver::ResolveVelocity(std::vector<std::shared_ptr<Contact>>& con
             }
         }
 
-
 		iterationsUsed++;
 	}
 }
@@ -141,8 +142,7 @@ void ContactResolver::ResolveInterpenetration(std::vector<std::shared_ptr<Contac
         {
             if (contacts[index]->rigidbodies[j])
             {
-                Matrix3f inverseInertiaTensor = Matrix3f();
-                contacts[index]->rigidbodies[j]->inverseInertiaTensorWorld;
+                Matrix3f inverseInertiaTensor = contacts[index]->rigidbodies[j]->inverseInertiaTensorWorld;
 
                 Vector3f angularInertiaWorld = Vector3f::CrossProduct(contacts[index]->relativeContactPosition[j], contacts[index]->contactNormal);
                 angularInertiaWorld = inverseInertiaTensor.TransformTranspose(angularInertiaWorld);

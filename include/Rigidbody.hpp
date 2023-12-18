@@ -9,7 +9,6 @@ class Particle;
 class BoundingSphere;
 class BoundingBox;
 
-// TO REMOVE LATER
 enum RigidbodyType
 {
 	BOX,
