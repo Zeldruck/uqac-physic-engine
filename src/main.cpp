@@ -69,6 +69,7 @@ void LoadTexture(unsigned int& texture, const std::string& texturePath);
 
 void ImGuiCameraPanel();
 void ImGuiStatsPanel(float deltaTime);
+void ImGuiSceneSelectionPanel(Scene& currentScene);
 
 void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene);
 void Scene2(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene);
@@ -270,6 +271,7 @@ void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         // Add imgui panels here
         ImGuiCameraPanel();
         ImGuiStatsPanel(dt);
+        ImGuiSceneSelectionPanel(currentScene);
         imguiCpp.Render();
 
         glfwSwapBuffers(window.GetHandle());
@@ -396,6 +398,7 @@ void Scene2(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         // Add imgui panels here
         ImGuiCameraPanel();
         ImGuiStatsPanel(dt);
+        ImGuiSceneSelectionPanel(currentScene);
         imguiCpp.Render();
 
         glfwSwapBuffers(window.GetHandle());
@@ -546,6 +549,7 @@ void Scene3(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         // Add imgui panels here
         ImGuiCameraPanel();
         ImGuiStatsPanel(dt);
+        ImGuiSceneSelectionPanel(currentScene);
         imguiCpp.Render();
 
         glfwSwapBuffers(window.GetHandle());
@@ -798,6 +802,19 @@ void ImGuiStatsPanel(float deltaTime)
     ImGui::Text("Delta Time: %f", deltaTime);
     ImGui::Text("FPS: %.f", std::clamp(1000 / (deltaTime * 1000), 0.f, 60.f));
     ImGui::End();
+}
+
+void ImGuiSceneSelectionPanel(Scene& currentScene)
+{
+	ImGui::Begin("Scene Selection");
+    ImGui::Text("Active Scene: %d", (int)currentScene + 1);
+	if (ImGui::Button("Keyboard 1 : Scene 1"))
+		currentScene = Scene::SCENE_1;
+	if (ImGui::Button("Keybaord 2 : Scene 2"))
+		currentScene = Scene::SCENE_2;
+	if (ImGui::Button("Keyboard 3 : Scene 3"))
+		currentScene = Scene::SCENE_3;
+	ImGui::End();
 }
 
 // 
