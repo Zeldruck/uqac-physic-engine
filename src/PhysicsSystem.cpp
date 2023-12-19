@@ -22,7 +22,7 @@ PhysicsSystem::~PhysicsSystem()
 	delete(m_potentialContact);
 }
 
-void PhysicsSystem::Update(float deltaTime, bool isGravityEnabled)
+void PhysicsSystem::Update(float deltaTime, bool isGravityEnabled, bool detectCollisions /* = true */)
 {
 	// Clear les forces des particles et rigidbodies
 	ClearForces();
@@ -34,7 +34,8 @@ void PhysicsSystem::Update(float deltaTime, bool isGravityEnabled)
 	m_integrator->Update(m_particles, m_rigidbodies, deltaTime, isGravityEnabled);	
 
 	// Résolution des collisions
-	BroadPhaseCollisionDetection();
+	if(detectCollisions)
+		BroadPhaseCollisionDetection();
 }
 
 void PhysicsSystem::ClearForces()
@@ -97,6 +98,11 @@ void PhysicsSystem::RemoveRigidbody(std::shared_ptr<Rigidbody> rigidbody)
 			return;
 		}
 	}
+}
+
+std::vector<std::shared_ptr<Particle>> PhysicsSystem::GetParticles()
+{
+	return m_particles;
 }
 
 void PhysicsSystem::PrintParticles()

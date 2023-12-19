@@ -10,9 +10,8 @@ void EulerIntegrator::Update(std::vector<std::shared_ptr<Particle>>& particles, 
 	// Update particles postions
 	for (std::shared_ptr<Particle> particle : particles)
 	{
-		Vector3f newPosition = particle->position + particle->velocity * deltaTime;
-		particle->position = newPosition;
 		particle->velocity += particle->GetAcceleration() * deltaTime;
+		particle->position += particle->velocity * deltaTime;
 	}
 
 	// Update Rigidbodies position and rotation

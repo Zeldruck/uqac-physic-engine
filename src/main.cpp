@@ -17,6 +17,17 @@
 #include "EngineCpp/cppImgui.hpp"
 #include "EngineCpp/cppShader.hpp"
 
+#include "PhysicsSystem.hpp"
+#include "Particle.hpp"
+
+#include "Force/ForceRegistry.hpp"
+#include "Force/ForceGenerator.hpp"
+#include "Force/ForceGravity.hpp"
+#include "Force/ForceDrag.hpp"
+#include "Force/ForceSpring.hpp"
+#include "Force/ForceAnchoredSpring.hpp"
+#include "Force/ForceBuoyancy.hpp"
+
 using m_clock = std::chrono::high_resolution_clock;
 
 #pragma region Settings
@@ -25,7 +36,7 @@ const unsigned int SCR_HEIGHT = 1080;
 #pragma endregion
 
 #pragma region Camera
-Camera camera(glm::vec3(0.0f, 0.0f, 20.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 30.0f));
 
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -74,6 +85,8 @@ void ImGuiStatsPanel(float deltaTime);
 void ImGuiSceneSelectionPanel(Scene& currentScene);
 
 void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene);
+void ImGuiScene1Panel(const std::vector<std::shared_ptr<Particle>>& particles);
+
 void Scene2(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene);
 void Scene3(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene);
 void Scene4(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene);
@@ -130,30 +143,71 @@ int main()
 
 void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
 {
+#pragma region PhysicsSystem
+    std::shared_ptr<ForceRegistry> forceRegistry = std::make_shared<ForceRegistry>();
+    PhysicsSystem physics(forceRegistry);
+#pragma endregion
+
+#pragma region Particles
+    std::shared_ptr<Particle> particle1 = std::make_shared<Particle>("Particle 1 Gravity", Vector3f::Up * 10.0f);
+    std::shared_ptr<Particle> particle2 = std::make_shared<Particle>("Particle 2 Gravity & Drag", Vector3f::Left * 10.0f, 1.0f);
+    std::shared_ptr<Particle> particle3a = std::make_shared<Particle>("Particle 3A Spring", Vector3f::Right * 4.0f, 1.0f);
+    std::shared_ptr<Particle> particle3b = std::make_shared<Particle>("Particle 3B Spring", Vector3f::Left * 4.0f, 1.0f);
+    std::shared_ptr<Particle> particle4 = std::make_shared<Particle>("Particle 4 Anchored Spring", Vector3f::Up * 5.0f, 10.0f);
+    std::shared_ptr<Particle> particle5 = std::make_shared<Particle>("Particle 5 Buoyancy", Vector3f::Down * 4.0f, 1.0f);
+
+    physics.AddParticle(particle1);
+    physics.AddParticle(particle2);
+    physics.AddParticle(particle3a);
+    physics.AddParticle(particle3b);
+    physics.AddParticle(particle4);
+    physics.AddParticle(particle5);
+#pragma endregion
+
+#pragma region Forces
+    std::shared_ptr<ForceGravity> gravity = std::make_shared<ForceGravity>();
+	std::shared_ptr<ForceDrag> drag = std::make_shared<ForceDrag>(10.f, 0.0f);
+	std::shared_ptr<ForceSpring> spring = std::make_shared<ForceSpring>(particle3b, 1.0f, 10.0f);
+	std::shared_ptr<ForceAnchoredSpring> anchoredSpring = std::make_shared<ForceAnchoredSpring>(Vector3f::Zero, 100.0f, 0.0f);
+	std::shared_ptr<ForceBuoyancy> buoyancy = std::make_shared<ForceBuoyancy>(2.0f, 1.0f, 0.0f, 10.0f);
+
+    // Test Gravity
+    forceRegistry->Add(particle1, gravity);
+
+    // Test Gravity and Drag
+    forceRegistry->Add(particle2, gravity);
+	forceRegistry->Add(particle2, drag);
+
+    // Test Spring
+    forceRegistry->Add(particle3a, spring);
+
+    // Test Anchored Spring
+	forceRegistry->Add(particle4, anchoredSpring);
+
+    // Test Buoyancy
+    forceRegistry->Add(particle5, buoyancy);
+#pragma endregion
+
 #pragma region Shader
     Shader ourShader("assets/shaders/test.vert", "assets/shaders/test.frag");
 
     std::string texturePath = "assets/textures/test.jpg";
     unsigned int texture1;
     LoadTexture(texture1, texturePath);
-
 #pragma endregion 
 
 #pragma region Model
-
     // For Sphere
     std::vector<glm::vec3> sphereVertices;
     CreateSphere(sphereVertices, 1.f, 50, 50);
 
     std::vector<glm::vec3> spherePositions;
-    spherePositions.push_back(glm::vec3(0.f, 0.f, 0.f));
-    spherePositions.push_back(glm::vec3(4.f, 0.f, 0.f));
-    spherePositions.push_back(glm::vec3(-4.f, 0.f, 0.f));
-
-    std::vector<glm::vec3> sphereRotations;
-    sphereRotations.push_back(glm::vec3(0.f, 0.f, 0.f));
-    sphereRotations.push_back(glm::vec3(0.f, 0.f, 0.f));
-    sphereRotations.push_back(glm::vec3(0.f, 0.f, 0.f));
+    spherePositions.push_back(glm::vec3(particle1->position.x, particle1->position.y, particle1->position.z));
+    spherePositions.push_back(glm::vec3(particle2->position.x, particle2->position.y, particle2->position.z));
+    spherePositions.push_back(glm::vec3(particle3a->position.x, particle3a->position.y, particle3a->position.z));
+    spherePositions.push_back(glm::vec3(particle3b->position.x, particle3b->position.y, particle3b->position.z));
+    spherePositions.push_back(glm::vec3(particle4->position.x, particle4->position.y, particle4->position.z));
+    spherePositions.push_back(glm::vec3(particle5->position.x, particle5->position.y, particle5->position.z));
 
     GLuint VAO1, VBO1;
     glGenVertexArrays(1, &VAO1);
@@ -169,17 +223,11 @@ void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
     // For Cube
     std::vector<glm::vec3> cubeVertices;
     std::vector<glm::vec2> cubeTexCoords;
+
     CreateCube(cubeVertices, cubeTexCoords, 1.0f);
 
     std::vector<glm::vec3> cubePositions;
-    cubePositions.push_back(glm::vec3(0.f, 0.f, 0.f));
-    cubePositions.push_back(glm::vec3(4.f, 0.f, 0.f));
-    cubePositions.push_back(glm::vec3(-4.f, 0.f, 0.f));
-
-    std::vector<glm::vec3> cubeRotations;
-    cubeRotations.push_back(glm::vec3(0.f, 0.f, 0.f));
-    cubeRotations.push_back(glm::vec3(0.f, 45.f, 0.f));
-    cubeRotations.push_back(glm::vec3(0.f, 0.f, 45.f));
+    cubePositions.push_back(glm::vec3(anchoredSpring->GetAnchor().x, anchoredSpring->GetAnchor().y, anchoredSpring->GetAnchor().z));
 
     GLuint VAO2, VBO2;
     glGenVertexArrays(1, &VAO2);
@@ -200,7 +248,6 @@ void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
 
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
-
 #pragma endregion
 
 #pragma region Timestep
@@ -221,8 +268,8 @@ void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         double newTime = HiresTimeInSeconds();
         double frameTime = newTime - currentTime;
         // max frame time to avoid spiral of death(on slow devices)
-        if (frameTime > 0.25)
-            frameTime = 0.25;
+        if (frameTime > 0.015)
+            frameTime = 0.015;
         currentTime = newTime;
 
         accumulator += frameTime;
@@ -230,7 +277,7 @@ void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         while (accumulator >= dt)
         {
             previous = current;
-            // physics.Update(currentState, dt);
+            physics.Update(dt, true, false);
             accumulator -= dt;
             t += dt;
         }
@@ -251,14 +298,19 @@ void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.SetMat4("view", view);
 
+        // Update Spheres Positions
+        spherePositions[0] = glm::vec3(particle1->position.x, particle1->position.y, particle1->position.z);
+        spherePositions[1] = glm::vec3(particle2->position.x, particle2->position.y, particle2->position.z);
+        spherePositions[2] = glm::vec3(particle3a->position.x, particle3a->position.y, particle3a->position.z);
+        spherePositions[3] = glm::vec3(particle3b->position.x, particle3b->position.y, particle3b->position.z);
+        spherePositions[4] = glm::vec3(particle4->position.x, particle4->position.y, particle4->position.z);
+        spherePositions[5] = glm::vec3(particle5->position.x, particle5->position.y, particle5->position.z);
+
         // Render Spheres
         for (int i = 0; i < spherePositions.size(); ++i)
         {
             model = glm::mat4(1.0f); // Initialize model matrix for each object
             model = glm::translate(model, spherePositions[i]);
-            model = glm::rotate(model, glm::radians(sphereRotations[i].x), glm::vec3(1.f, 0.f, 0.f));
-            model = glm::rotate(model, glm::radians(sphereRotations[i].y), glm::vec3(0.f, 1.f, 0.f));
-            model = glm::rotate(model, glm::radians(sphereRotations[i].z), glm::vec3(0.f, 0.f, 1.f));
             ourShader.SetMat4("model", model);
             glBindVertexArray(VAO1);
             glDrawArrays(GL_LINE_STRIP, 0, sphereVertices.size());
@@ -267,21 +319,19 @@ void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         // Render Cubes
         for (int i = 0; i < cubePositions.size(); ++i)
         {
-            model = glm::mat4(1.0f); // Reset model matrix for the next object
-            model = glm::translate(model, cubePositions[i]);
-            model = glm::rotate(model, glm::radians(cubeRotations[i].x), glm::vec3(1.f, 0.f, 0.f));
-            model = glm::rotate(model, glm::radians(cubeRotations[i].y), glm::vec3(0.f, 1.f, 0.f));
-            model = glm::rotate(model, glm::radians(cubeRotations[i].z), glm::vec3(0.f, 0.f, 1.f));
-            ourShader.SetMat4("model", model);
-            glBindVertexArray(VAO2);
-            glDrawArrays(GL_TRIANGLES, 0, cubeVertices.size());
-        }
+			model = glm::mat4(1.0f); // Reset model matrix for the next object
+			model = glm::translate(model, cubePositions[i]);
+			ourShader.SetMat4("model", model);
+			glBindVertexArray(VAO2);
+			glDrawArrays(GL_TRIANGLES, 0, cubeVertices.size());
+		}
 
         imguiCpp.NewFrame();
         // Add imgui panels here
         ImGuiCameraPanel();
         ImGuiStatsPanel(dt);
         ImGuiSceneSelectionPanel(currentScene);
+        ImGuiScene1Panel(physics.GetParticles());
         imguiCpp.Render();
 
         glfwSwapBuffers(window.GetHandle());
@@ -290,8 +340,21 @@ void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
 #pragma endregion
     glDeleteVertexArrays(1, &VAO1);
     glDeleteBuffers(1, &VBO1);
-    glDeleteVertexArrays(1, &VAO2);
-    glDeleteBuffers(1, &VBO2);
+}
+
+void ImGuiScene1Panel(const std::vector<std::shared_ptr<Particle>>& particles)
+{
+    ImGui::Begin("Particles");
+    for (auto& particle : particles)
+    {
+        ImGui::Text("%s", particle->name.c_str());
+        ImGui::Text("Position: %f, %f, %f", particle->position.x, particle->position.y, particle->position.z);
+        ImGui::Text("Velocity: %f, %f, %f", particle->velocity.x, particle->velocity.y, particle->velocity.z);
+        ImGui::Text("Acceleration: %f, %f, %f", particle->GetAcceleration().x, particle->GetAcceleration().y, particle->GetAcceleration().z);
+        ImGui::Text("Mass: %f", particle->mass);
+        ImGui::Separator();
+    }
+    ImGui::End();
 }
 
 void Scene2(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
@@ -665,8 +728,8 @@ void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         double newTime = HiresTimeInSeconds();
         double frameTime = newTime - currentTime;
         // max frame time to avoid spiral of death(on slow devices)
-        if (frameTime > 0.25)
-            frameTime = 0.25;
+        if (frameTime > 0.015)
+            frameTime = 0.015;
         currentTime = newTime;
 
         accumulator += frameTime;
@@ -967,7 +1030,7 @@ void ProcessSceneInput(GLFWwindow* window, Scene& currentScene)
 
 double HiresTimeInSeconds()
 {
-    return std::chrono::duration_cast<std::chrono::seconds>(m_clock::now().time_since_epoch()).count();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(m_clock::now().time_since_epoch()).count() / 1000.0;
 }
 
 void CreateSphere(std::vector<glm::vec3>& vertices, float radius, int slices, int stacks) 
@@ -1532,12 +1595,6 @@ void ImGuiSceneSelectionPanel(Scene& currentScene)
 //    //glBindBuffer(GL_ARRAY_BUFFER, 0);
 //    //glBindVertexArray(0);
 //#pragma endregion
-//
-//
-//    //while (1)
-//    //{
-//    //    GameLoop();
-//    //}
 //
 //    bool isGravityEnabled = true;
 //    while (!window.ShouldClose())

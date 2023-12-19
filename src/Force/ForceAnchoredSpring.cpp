@@ -2,7 +2,7 @@
 #include "Particle.hpp"
 #include "Rigidbody.hpp"
 
-ForceAnchoredSpring::ForceAnchoredSpring(float k, float restLength, Vector3f anchor) :
+ForceAnchoredSpring::ForceAnchoredSpring(Vector3f anchor, float k, float restLength) :
 	m_k(k),
 	m_restLength(restLength),
 	m_anchor(anchor)
@@ -61,6 +61,11 @@ void ForceAnchoredSpring::UpdateForce(std::shared_ptr<Rigidbody> rigidbody, floa
 void ForceAnchoredSpring::SetAnchor(Vector3f anchor)
 {
 	m_anchor = anchor;
+}
+
+Vector3f ForceAnchoredSpring::GetAnchor()
+{
+	return m_anchor;
 }
 
 void ForceAnchoredSpring::SetSpringConstant(float k)

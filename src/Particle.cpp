@@ -3,21 +3,62 @@
 
 Particle::Particle() 
 	: 
+	name(std::string("Particle")),
 	position(Vector3f::Zero),
 	velocity(Vector3f::Zero),
 	m_acceleration(Vector3f::Zero),
 	mass(MIN_MASS),
-	name(std::string("Particle"))
+	force(Vector3f::Zero)
 {
 }
 
-Particle::Particle(Vector3f position, Vector3f velocity, Vector3f acceleration, float mass, std::string name)
-    :
+Particle::Particle(std::string name) :
+	name(name),
+	position(Vector3f::Zero),
+	velocity(Vector3f::Zero),
+	m_acceleration(Vector3f::Zero),
+	mass(MIN_MASS),
+	force(Vector3f::Zero)
+{
+}
+
+Particle::Particle(std::string name, Vector3f position) :
+	name(name),
+	position(position),
+	velocity(Vector3f::Zero),
+	m_acceleration(Vector3f::Zero),
+	mass(MIN_MASS),
+	force(Vector3f::Zero)
+{
+}
+
+Particle::Particle(std::string name, Vector3f position, float mass) :
+	name(name),
+	position(position),
+	velocity(Vector3f::Zero),
+	m_acceleration(Vector3f::Zero),
+	mass(mass > MIN_MASS ? mass : MIN_MASS),
+	force(Vector3f::Zero)
+{
+}
+
+Particle::Particle(std::string name, Vector3f position, float mass, Vector3f velocity) :
+	name(name),
+	position(position),
+	velocity(velocity),
+	m_acceleration(Vector3f::Zero),
+	mass(mass > MIN_MASS ? mass : MIN_MASS),
+	force(Vector3f::Zero)
+{
+}
+
+Particle::Particle(std::string name, Vector3f position, float mass, Vector3f velocity, Vector3f acceleration) :
+	name(name),
 	position(position),
 	velocity(velocity),
 	m_acceleration(acceleration),
 	mass(mass > MIN_MASS ? mass : MIN_MASS),
-	name(name)
+	force(Vector3f::Zero)
 {
 }
 
@@ -29,11 +70,6 @@ void Particle::ClearForce()
 void Particle::AddForce(const Vector3f& f)
 {
 	force += f;
-}
-
-void Particle::RemoveForce(const Vector3f& f)
-{
-	force -= f;
 }
 
 Vector3f const Particle::GetAcceleration()

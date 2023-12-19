@@ -23,9 +23,10 @@ public:
 	PhysicsSystem& operator=(PhysicsSystem&&) = delete;
 	PhysicsSystem& operator=(const PhysicsSystem&) = delete;
 
-	void Update(float deltaTime, bool isGravityEnabled);
+	void Update(float deltaTime, bool isGravityEnabled, bool detectCollisions = true);
 	void AddParticle(std::shared_ptr<Particle> particle);
 	void RemoveParticle(std::shared_ptr<Particle> particle);
+	std::vector<std::shared_ptr<Particle>> GetParticles();
 	void PrintParticles();
 
 	void AddRigidbody(std::shared_ptr<Rigidbody> rigidbody);

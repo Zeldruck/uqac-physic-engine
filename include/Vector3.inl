@@ -153,6 +153,12 @@ Vector3<T> Vector3<T>::GetUnitNormalized() const
 }
 
 template<typename T>
+Vector3<T> Vector3<T>::GetInvert() const
+{
+	return Vector3(-x, -y, -z);
+}
+
+template<typename T>
 float Vector3<T>::DotProduct(const Vector3& vecA, const Vector3& vecB)
 {
 	return vecA.x*vecB.x + vecA.y*vecB.y + vecA.z*vecB.z;
@@ -184,7 +190,6 @@ Vector3<T> Vector3<T>::Cross(const Vector3<T>& vecB) const
 	return CrossProduct(*this, vecB);
 }
 
-
 template<typename T>
 Vector3<T> operator*(T value, const Vector3<T>& vec)
 {
@@ -208,3 +213,21 @@ const Vector3<T> Vector3<T>::Zero = Vector3<T>::GetZero();
 
 template<typename T>
 const Vector3<T> Vector3<T>::One = Vector3<T>::GetOne();
+
+template<typename T>
+const Vector3<T> Vector3<T>::Up = Vector3<T>::GetUp();
+
+template<typename T>
+const Vector3<T> Vector3<T>::Down = Vector3<T>::GetDown();
+
+template<typename T>
+const Vector3<T> Vector3<T>::Left = Vector3<T>::GetLeft();
+
+template<typename T>
+const Vector3<T> Vector3<T>::Right = Vector3<T>::GetRight();
+
+template<typename T>
+const Vector3<T> Vector3<T>::Forward = Vector3<T>::GetForward();
+
+template<typename T>
+const Vector3<T> Vector3<T>::Backward = Vector3<T>::GetBackward();
