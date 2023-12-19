@@ -51,7 +51,9 @@ enum class Scene
 {
     SCENE_1,
     SCENE_2,
-    SCENE_3
+    SCENE_3,
+    SCENE_4,
+    SCENE_5
 };
 
 #pragma region Functions
@@ -74,6 +76,8 @@ void ImGuiSceneSelectionPanel(Scene& currentScene);
 void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene);
 void Scene2(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene);
 void Scene3(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene);
+void Scene4(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene);
+void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene);
 #pragma endregion
 
 int main()
@@ -110,6 +114,12 @@ int main()
 				break;
             case Scene::SCENE_3:
                 Scene3(window, imguiCpp, currentScene);
+                break;
+            case Scene::SCENE_4:
+                Scene4(window, imguiCpp, currentScene);
+                break;
+            case Scene::SCENE_5:
+                Scene5(window, imguiCpp, currentScene);
                 break;
         }
     }
@@ -409,6 +419,312 @@ void Scene2(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
     glDeleteBuffers(1, &VBO2);
 }
 
+void Scene4(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
+{
+#pragma region Shader
+    Shader ourShader("assets/shaders/test.vert", "assets/shaders/test.frag");
+
+    std::string texturePath = "assets/textures/test.jpg";
+    unsigned int texture1;
+    LoadTexture(texture1, texturePath);
+
+#pragma endregion 
+
+#pragma region Model
+
+    // For Sphere
+    std::vector<glm::vec3> sphereVertices;
+    CreateSphere(sphereVertices, 1.f, 50, 50);
+
+    std::vector<glm::vec3> spherePositions;
+    spherePositions.push_back(glm::vec3(0.f, 0.f, 0.f));
+    spherePositions.push_back(glm::vec3(4.f, 0.f, 0.f));
+    spherePositions.push_back(glm::vec3(-4.f, 0.f, 0.f));
+
+    std::vector<glm::vec3> sphereRotations;
+    sphereRotations.push_back(glm::vec3(0.f, 0.f, 0.f));
+    sphereRotations.push_back(glm::vec3(0.f, 0.f, 0.f));
+    sphereRotations.push_back(glm::vec3(0.f, 0.f, 0.f));
+
+    GLuint VAO1, VBO1;
+    glGenVertexArrays(1, &VAO1);
+    glBindVertexArray(VAO1);
+
+    glGenBuffers(1, &VBO1);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO1);
+    glBufferData(GL_ARRAY_BUFFER, sphereVertices.size() * sizeof(glm::vec3), sphereVertices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // For Cube
+    std::vector<glm::vec3> cubeVertices;
+    std::vector<glm::vec2> cubeTexCoords;
+    CreateCube(cubeVertices, cubeTexCoords, 1.0f);
+
+    std::vector<glm::vec3> cubePositions;
+    cubePositions.push_back(glm::vec3(0.f, 0.f, 0.f));
+    cubePositions.push_back(glm::vec3(4.f, 0.f, 0.f));
+    cubePositions.push_back(glm::vec3(-4.f, 0.f, 0.f));
+
+    std::vector<glm::vec3> cubeRotations;
+    cubeRotations.push_back(glm::vec3(0.f, 0.f, 0.f));
+    cubeRotations.push_back(glm::vec3(0.f, 45.f, 0.f));
+    cubeRotations.push_back(glm::vec3(0.f, 0.f, 45.f));
+
+    GLuint VAO2, VBO2;
+    glGenVertexArrays(1, &VAO2);
+    glBindVertexArray(VAO2);
+
+    // Vertex Positions
+    glGenBuffers(1, &VBO2);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    glBufferData(GL_ARRAY_BUFFER, cubeVertices.size() * sizeof(glm::vec3), cubeVertices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Texture Coords
+    glGenBuffers(1, &VBO2);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    glBufferData(GL_ARRAY_BUFFER, cubeTexCoords.size() * sizeof(glm::vec2), cubeTexCoords.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+
+#pragma endregion
+
+#pragma region Timestep
+    double t = 0.0;
+    double dt = 0.01;
+    double currentTime = HiresTimeInSeconds();
+    double accumulator = 0.0;
+
+    State previous;
+    State current;
+#pragma endregion
+
+    glm::mat4 model = glm::mat4(1.0f);
+#pragma region Loop
+
+    while (!window.ShouldClose() && currentScene == Scene::SCENE_4)
+    {
+        double newTime = HiresTimeInSeconds();
+        double frameTime = newTime - currentTime;
+        // max frame time to avoid spiral of death(on slow devices)
+        if (frameTime > 0.25)
+            frameTime = 0.25;
+        currentTime = newTime;
+
+        accumulator += frameTime;
+
+        while (accumulator >= dt)
+        {
+            previous = current;
+            // physics.Update(currentState, dt);
+            accumulator -= dt;
+            t += dt;
+        }
+
+        const double alpha = accumulator / dt;
+        State state = current * alpha + previous * (1.0 - alpha);
+
+        ProcessCameraInput(window.GetHandle(), dt);
+        ProcessSceneInput(window.GetHandle(), currentScene);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        ourShader.Use();
+
+        glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        ourShader.SetMat4("projection", projection);
+        glm::mat4 view = camera.GetViewMatrix();
+        ourShader.SetMat4("view", view);
+
+        // Render Spheres
+        for (int i = 0; i < spherePositions.size(); ++i)
+        {
+            model = glm::mat4(1.0f); // Initialize model matrix for each object
+            model = glm::translate(model, spherePositions[i]);
+            model = glm::rotate(model, glm::radians(sphereRotations[i].x), glm::vec3(1.f, 0.f, 0.f));
+            model = glm::rotate(model, glm::radians(sphereRotations[i].y), glm::vec3(0.f, 1.f, 0.f));
+            model = glm::rotate(model, glm::radians(sphereRotations[i].z), glm::vec3(0.f, 0.f, 1.f));
+            ourShader.SetMat4("model", model);
+            glBindVertexArray(VAO1);
+            glDrawArrays(GL_LINE_STRIP, 0, sphereVertices.size());
+        }
+
+        imguiCpp.NewFrame();
+        // Add imgui panels here
+        ImGuiCameraPanel();
+        ImGuiStatsPanel(dt);
+        ImGuiSceneSelectionPanel(currentScene);
+        imguiCpp.Render();
+
+        glfwSwapBuffers(window.GetHandle());
+        glfwPollEvents();
+    }
+#pragma endregion
+    glDeleteVertexArrays(1, &VAO1);
+    glDeleteBuffers(1, &VBO1);
+    glDeleteVertexArrays(1, &VAO2);
+    glDeleteBuffers(1, &VBO2);
+}
+
+void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
+{
+#pragma region Shader
+    Shader ourShader("assets/shaders/test.vert", "assets/shaders/test.frag");
+
+    std::string texturePath = "assets/textures/test.jpg";
+    unsigned int texture1;
+    LoadTexture(texture1, texturePath);
+
+#pragma endregion 
+
+#pragma region Model
+
+    // For Sphere
+    std::vector<glm::vec3> sphereVertices;
+    CreateSphere(sphereVertices, 1.f, 50, 50);
+
+    std::vector<glm::vec3> spherePositions;
+    spherePositions.push_back(glm::vec3(0.f, 0.f, 0.f));
+    spherePositions.push_back(glm::vec3(4.f, 0.f, 0.f));
+    spherePositions.push_back(glm::vec3(-4.f, 0.f, 0.f));
+
+    std::vector<glm::vec3> sphereRotations;
+    sphereRotations.push_back(glm::vec3(0.f, 0.f, 0.f));
+    sphereRotations.push_back(glm::vec3(0.f, 0.f, 0.f));
+    sphereRotations.push_back(glm::vec3(0.f, 0.f, 0.f));
+
+    GLuint VAO1, VBO1;
+    glGenVertexArrays(1, &VAO1);
+    glBindVertexArray(VAO1);
+
+    glGenBuffers(1, &VBO1);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO1);
+    glBufferData(GL_ARRAY_BUFFER, sphereVertices.size() * sizeof(glm::vec3), sphereVertices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // For Cube
+    std::vector<glm::vec3> cubeVertices;
+    std::vector<glm::vec2> cubeTexCoords;
+    CreateCube(cubeVertices, cubeTexCoords, 1.0f);
+
+    std::vector<glm::vec3> cubePositions;
+    cubePositions.push_back(glm::vec3(0.f, 0.f, 0.f));
+    cubePositions.push_back(glm::vec3(4.f, 0.f, 0.f));
+    cubePositions.push_back(glm::vec3(-4.f, 0.f, 0.f));
+
+    std::vector<glm::vec3> cubeRotations;
+    cubeRotations.push_back(glm::vec3(0.f, 0.f, 0.f));
+    cubeRotations.push_back(glm::vec3(0.f, 45.f, 0.f));
+    cubeRotations.push_back(glm::vec3(0.f, 0.f, 45.f));
+
+    GLuint VAO2, VBO2;
+    glGenVertexArrays(1, &VAO2);
+    glBindVertexArray(VAO2);
+
+    // Vertex Positions
+    glGenBuffers(1, &VBO2);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    glBufferData(GL_ARRAY_BUFFER, cubeVertices.size() * sizeof(glm::vec3), cubeVertices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Texture Coords
+    glGenBuffers(1, &VBO2);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    glBufferData(GL_ARRAY_BUFFER, cubeTexCoords.size() * sizeof(glm::vec2), cubeTexCoords.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+
+#pragma endregion
+
+#pragma region Timestep
+    double t = 0.0;
+    double dt = 0.01;
+    double currentTime = HiresTimeInSeconds();
+    double accumulator = 0.0;
+
+    State previous;
+    State current;
+#pragma endregion
+
+    glm::mat4 model = glm::mat4(1.0f);
+#pragma region Loop
+
+    while (!window.ShouldClose() && currentScene == Scene::SCENE_5)
+    {
+        double newTime = HiresTimeInSeconds();
+        double frameTime = newTime - currentTime;
+        // max frame time to avoid spiral of death(on slow devices)
+        if (frameTime > 0.25)
+            frameTime = 0.25;
+        currentTime = newTime;
+
+        accumulator += frameTime;
+
+        while (accumulator >= dt)
+        {
+            previous = current;
+            // physics.Update(currentState, dt);
+            accumulator -= dt;
+            t += dt;
+        }
+
+        const double alpha = accumulator / dt;
+        State state = current * alpha + previous * (1.0 - alpha);
+
+        ProcessCameraInput(window.GetHandle(), dt);
+        ProcessSceneInput(window.GetHandle(), currentScene);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        ourShader.Use();
+
+        glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        ourShader.SetMat4("projection", projection);
+        glm::mat4 view = camera.GetViewMatrix();
+        ourShader.SetMat4("view", view);
+
+        // Render Spheres
+        for (int i = 0; i < spherePositions.size(); ++i)
+        {
+            model = glm::mat4(1.0f); // Initialize model matrix for each object
+            model = glm::translate(model, spherePositions[i]);
+            model = glm::rotate(model, glm::radians(sphereRotations[i].x), glm::vec3(1.f, 0.f, 0.f));
+            model = glm::rotate(model, glm::radians(sphereRotations[i].y), glm::vec3(0.f, 1.f, 0.f));
+            model = glm::rotate(model, glm::radians(sphereRotations[i].z), glm::vec3(0.f, 0.f, 1.f));
+            ourShader.SetMat4("model", model);
+            glBindVertexArray(VAO1);
+            glDrawArrays(GL_LINE_STRIP, 0, sphereVertices.size());
+        }
+
+        imguiCpp.NewFrame();
+        // Add imgui panels here
+        ImGuiCameraPanel();
+        ImGuiStatsPanel(dt);
+        ImGuiSceneSelectionPanel(currentScene);
+        imguiCpp.Render();
+
+        glfwSwapBuffers(window.GetHandle());
+        glfwPollEvents();
+    }
+#pragma endregion
+    glDeleteVertexArrays(1, &VAO1);
+    glDeleteBuffers(1, &VBO1);
+    glDeleteVertexArrays(1, &VAO2);
+    glDeleteBuffers(1, &VBO2);
+}
+
 void Scene3(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
 {
 #pragma region Shader
@@ -561,6 +877,8 @@ void Scene3(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
     glDeleteVertexArrays(1, &VAO2);
     glDeleteBuffers(1, &VBO2);
 }
+
+
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
@@ -641,6 +959,10 @@ void ProcessSceneInput(GLFWwindow* window, Scene& currentScene)
 		currentScene = Scene::SCENE_2;
 	if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
 		currentScene = Scene::SCENE_3;
+    if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+        currentScene = Scene::SCENE_4;
+    if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+        currentScene = Scene::SCENE_5;
 }
 
 double HiresTimeInSeconds()
@@ -808,12 +1130,16 @@ void ImGuiSceneSelectionPanel(Scene& currentScene)
 {
 	ImGui::Begin("Scene Selection");
     ImGui::Text("Active Scene: %d", (int)currentScene + 1);
-	if (ImGui::Button("Keyboard 1 : Scene 1"))
+	if (ImGui::Button("Keyboard 1 : Scene Particles"))
 		currentScene = Scene::SCENE_1;
-	if (ImGui::Button("Keybaord 2 : Scene 2"))
+	if (ImGui::Button("Keybaord 2 : Scene Rigidbody"))
 		currentScene = Scene::SCENE_2;
-	if (ImGui::Button("Keyboard 3 : Scene 3"))
+	if (ImGui::Button("Keyboard 3 : Scene Collisions Broad Phase"))
 		currentScene = Scene::SCENE_3;
+    if (ImGui::Button("Keyboard 3 : Scene Collisions Narrow Phase"))
+        currentScene = Scene::SCENE_4;
+    if (ImGui::Button("Keyboard 3 : Scene Collisions Full"))
+        currentScene = Scene::SCENE_5;
 	ImGui::End();
 }
 
