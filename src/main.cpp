@@ -32,21 +32,6 @@ float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 #pragma endregion
 
-#pragma region Functions
-void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
-void MouseCallback(GLFWwindow* window, double xposIn, double yposIn);
-void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-void ProcessCameraInput(GLFWwindow* window, float deltaTime);
-double HiresTimeInSeconds();
-
-GLfloat* CreateBox(float size);
-void CreateCube(std::vector<glm::vec3>& cubeVertices, float size);
-void CreateSphere(std::vector<glm::vec3>& sphereVertices, float radius, int slices, int stacks);
-
-void ImGuiCameraPanel();
-void ImGuiStatsPanel(float deltaTime);
-#pragma endregion
-
 struct State
 {
     double x = 0.0; // position
@@ -61,6 +46,34 @@ struct State
         return { x + rhs.x, v + rhs.v };
     }
 };
+
+enum class Scene
+{
+    SCENE_1,
+    SCENE_2,
+    SCENE_3
+};
+
+#pragma region Functions
+void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
+void MouseCallback(GLFWwindow* window, double xposIn, double yposIn);
+void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void ProcessCameraInput(GLFWwindow* window, float deltaTime);
+void ProcessSceneInput(GLFWwindow* window, Scene& currentScene);
+double HiresTimeInSeconds();
+
+void CreateCube(std::vector<glm::vec3>& cubeVertices, std::vector<glm::vec2>& cubeTexCoords, float size);
+void CreateSphere(std::vector<glm::vec3>& sphereVertices, float radius, int slices, int stacks);
+
+void LoadTexture(unsigned int& texture, const std::string& texturePath);
+
+void ImGuiCameraPanel();
+void ImGuiStatsPanel(float deltaTime);
+
+void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene);
+void Scene2(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene);
+void Scene3(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene);
+#pragma endregion
 
 int main()
 {
@@ -81,12 +94,55 @@ int main()
 
     ImguiCpp imguiCpp(&window);
 
+#pragma region Loop
+    Scene currentScene = Scene::SCENE_1;
+
+    while (!window.ShouldClose())
+    {
+        switch (currentScene)
+        {
+            case Scene::SCENE_1:
+                Scene1(window, imguiCpp, currentScene);
+				break;
+            case Scene::SCENE_2:
+                Scene2(window, imguiCpp, currentScene);
+				break;
+            case Scene::SCENE_3:
+                Scene3(window, imguiCpp, currentScene);
+                break;
+        }
+    }
+#pragma endregion Loop
+	return 0;
+}
+
+
+void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
+{
+#pragma region Shader
     Shader ourShader("assets/shaders/test.vert", "assets/shaders/test.frag");
+
+    std::string texturePath = "assets/textures/test.jpg";
+    unsigned int texture1;
+    LoadTexture(texture1, texturePath);
+
+#pragma endregion 
+
 #pragma region Model
 
     // For Sphere
     std::vector<glm::vec3> sphereVertices;
     CreateSphere(sphereVertices, 1.f, 50, 50);
+
+    std::vector<glm::vec3> spherePositions;
+    spherePositions.push_back(glm::vec3(0.f, 0.f, 0.f));
+    spherePositions.push_back(glm::vec3(4.f, 0.f, 0.f));
+    spherePositions.push_back(glm::vec3(-4.f, 0.f, 0.f));
+
+    std::vector<glm::vec3> sphereRotations;
+    sphereRotations.push_back(glm::vec3(0.f, 0.f, 0.f));
+    sphereRotations.push_back(glm::vec3(0.f, 0.f, 0.f));
+    sphereRotations.push_back(glm::vec3(0.f, 0.f, 0.f));
 
     GLuint VAO1, VBO1;
     glGenVertexArrays(1, &VAO1);
@@ -101,18 +157,39 @@ int main()
 
     // For Cube
     std::vector<glm::vec3> cubeVertices;
-    CreateCube(cubeVertices, 1.f);
+    std::vector<glm::vec2> cubeTexCoords;
+    CreateCube(cubeVertices, cubeTexCoords, 1.0f);
+
+    std::vector<glm::vec3> cubePositions;
+    cubePositions.push_back(glm::vec3(0.f, 0.f, 0.f));
+    cubePositions.push_back(glm::vec3(4.f, 0.f, 0.f));
+    cubePositions.push_back(glm::vec3(-4.f, 0.f, 0.f));
+
+    std::vector<glm::vec3> cubeRotations;
+    cubeRotations.push_back(glm::vec3(0.f, 0.f, 0.f));
+    cubeRotations.push_back(glm::vec3(0.f, 45.f, 0.f));
+    cubeRotations.push_back(glm::vec3(0.f, 0.f, 45.f));
 
     GLuint VAO2, VBO2;
     glGenVertexArrays(1, &VAO2);
     glBindVertexArray(VAO2);
 
+    // Vertex Positions
     glGenBuffers(1, &VBO2);
     glBindBuffer(GL_ARRAY_BUFFER, VBO2);
     glBufferData(GL_ARRAY_BUFFER, cubeVertices.size() * sizeof(glm::vec3), cubeVertices.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
+    // Texture Coords
+    glGenBuffers(1, &VBO2);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    glBufferData(GL_ARRAY_BUFFER, cubeTexCoords.size() * sizeof(glm::vec2), cubeTexCoords.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+
 #pragma endregion
 
 #pragma region Timestep
@@ -125,11 +202,10 @@ int main()
     State current;
 #pragma endregion
 
+    glm::mat4 model = glm::mat4(1.0f);
 #pragma region Loop
 
-    glm::mat4 model = glm::mat4(1.0f);
-
-    while (!window.ShouldClose())
+    while (!window.ShouldClose() && currentScene == Scene::SCENE_1)
     {
         double newTime = HiresTimeInSeconds();
         double frameTime = newTime - currentTime;
@@ -146,13 +222,13 @@ int main()
             // physics.Update(currentState, dt);
             accumulator -= dt;
             t += dt;
-            std::cout << "dt: " << dt << std::endl;
         }
 
         const double alpha = accumulator / dt;
         State state = current * alpha + previous * (1.0 - alpha);
 
         ProcessCameraInput(window.GetHandle(), dt);
+        ProcessSceneInput(window.GetHandle(), currentScene);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -163,36 +239,324 @@ int main()
         ourShader.SetMat4("projection", projection);
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.SetMat4("view", view);
-        
-        glm::vec3 spherePosition = glm::vec3(0.f, 0.f, 0.f);
-        model = glm::translate(model, spherePosition);
 
-        ourShader.SetMat4("model", model);
-        glDrawArrays(GL_LINE_STRIP, 0, sphereVertices.size());
+        // Render Spheres
+        for (int i = 0; i < spherePositions.size(); ++i)
+        {
+            model = glm::mat4(1.0f); // Initialize model matrix for each object
+            model = glm::translate(model, spherePositions[i]);
+            model = glm::rotate(model, glm::radians(sphereRotations[i].x), glm::vec3(1.f, 0.f, 0.f));
+            model = glm::rotate(model, glm::radians(sphereRotations[i].y), glm::vec3(0.f, 1.f, 0.f));
+            model = glm::rotate(model, glm::radians(sphereRotations[i].z), glm::vec3(0.f, 0.f, 1.f));
+            ourShader.SetMat4("model", model);
+            glBindVertexArray(VAO1);
+            glDrawArrays(GL_LINE_STRIP, 0, sphereVertices.size());
+        }
 
-        glm::vec3 cubePosition = glm::vec3(0.f, 0.f, 0.f);
-        model = glm::translate(model, cubePosition);
-        glDrawArrays(GL_TRIANGLES, 0, cubeVertices.size());
+        // Render Cubes
+        for (int i = 0; i < cubePositions.size(); ++i)
+        {
+            model = glm::mat4(1.0f); // Reset model matrix for the next object
+            model = glm::translate(model, cubePositions[i]);
+            model = glm::rotate(model, glm::radians(cubeRotations[i].x), glm::vec3(1.f, 0.f, 0.f));
+            model = glm::rotate(model, glm::radians(cubeRotations[i].y), glm::vec3(0.f, 1.f, 0.f));
+            model = glm::rotate(model, glm::radians(cubeRotations[i].z), glm::vec3(0.f, 0.f, 1.f));
+            ourShader.SetMat4("model", model);
+            glBindVertexArray(VAO2);
+            glDrawArrays(GL_TRIANGLES, 0, cubeVertices.size());
+        }
+
         imguiCpp.NewFrame();
         // Add imgui panels here
-		ImGuiCameraPanel();
+        ImGuiCameraPanel();
         ImGuiStatsPanel(dt);
         imguiCpp.Render();
 
         glfwSwapBuffers(window.GetHandle());
         glfwPollEvents();
     }
-
-#pragma endregion Loop
-
+#pragma endregion
     glDeleteVertexArrays(1, &VAO1);
     glDeleteBuffers(1, &VBO1);
     glDeleteVertexArrays(1, &VAO2);
     glDeleteBuffers(1, &VBO2);
-
-	return 0;
 }
 
+void Scene2(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
+{
+#pragma region Shader
+    Shader ourShader("assets/shaders/test.vert", "assets/shaders/test.frag");
+
+    std::string texturePath = "assets/textures/test.jpg";
+    unsigned int texture1;
+    LoadTexture(texture1, texturePath);
+
+#pragma endregion 
+
+#pragma region Model
+    // For Cube
+    std::vector<glm::vec3> cubeVertices;
+    std::vector<glm::vec2> cubeTexCoords;
+    CreateCube(cubeVertices, cubeTexCoords, 1.0f);
+
+    std::vector<glm::vec3> cubePositions;
+    cubePositions.push_back(glm::vec3(0.f, 0.f, 0.f));
+    cubePositions.push_back(glm::vec3(4.f, 0.f, 0.f));
+    cubePositions.push_back(glm::vec3(-4.f, 0.f, 0.f));
+
+    std::vector<glm::vec3> cubeRotations;
+    cubeRotations.push_back(glm::vec3(0.f, 0.f, 0.f));
+    cubeRotations.push_back(glm::vec3(0.f, 45.f, 0.f));
+    cubeRotations.push_back(glm::vec3(0.f, 0.f, 45.f));
+
+    GLuint VAO2, VBO2;
+    glGenVertexArrays(1, &VAO2);
+    glBindVertexArray(VAO2);
+
+    // Vertex Positions
+    glGenBuffers(1, &VBO2);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    glBufferData(GL_ARRAY_BUFFER, cubeVertices.size() * sizeof(glm::vec3), cubeVertices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Texture Coords
+    glGenBuffers(1, &VBO2);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    glBufferData(GL_ARRAY_BUFFER, cubeTexCoords.size() * sizeof(glm::vec2), cubeTexCoords.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+
+#pragma endregion
+
+#pragma region Timestep
+    double t = 0.0;
+    double dt = 0.01;
+    double currentTime = HiresTimeInSeconds();
+    double accumulator = 0.0;
+
+    State previous;
+    State current;
+#pragma endregion
+
+    glm::mat4 model = glm::mat4(1.0f);
+#pragma region Loop
+
+    while (!window.ShouldClose() && currentScene == Scene::SCENE_2)
+    {
+        double newTime = HiresTimeInSeconds();
+        double frameTime = newTime - currentTime;
+        // max frame time to avoid spiral of death(on slow devices)
+        if (frameTime > 0.25)
+            frameTime = 0.25;
+        currentTime = newTime;
+
+        accumulator += frameTime;
+
+        while (accumulator >= dt)
+        {
+            previous = current;
+            // physics.Update(currentState, dt);
+            accumulator -= dt;
+            t += dt;
+        }
+
+        const double alpha = accumulator / dt;
+        State state = current * alpha + previous * (1.0 - alpha);
+
+        ProcessCameraInput(window.GetHandle(), dt);
+        ProcessSceneInput(window.GetHandle(), currentScene);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        ourShader.Use();
+
+        glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        ourShader.SetMat4("projection", projection);
+        glm::mat4 view = camera.GetViewMatrix();
+        ourShader.SetMat4("view", view);
+
+        // Render Cubes
+        for (int i = 0; i < cubePositions.size(); ++i)
+        {
+            model = glm::mat4(1.0f); // Reset model matrix for the next object
+            model = glm::translate(model, cubePositions[i]);
+            model = glm::rotate(model, glm::radians(cubeRotations[i].x), glm::vec3(1.f, 0.f, 0.f));
+            model = glm::rotate(model, glm::radians(cubeRotations[i].y), glm::vec3(0.f, 1.f, 0.f));
+            model = glm::rotate(model, glm::radians(cubeRotations[i].z), glm::vec3(0.f, 0.f, 1.f));
+            ourShader.SetMat4("model", model);
+            glBindVertexArray(VAO2);
+            glDrawArrays(GL_TRIANGLES, 0, cubeVertices.size());
+        }
+
+        imguiCpp.NewFrame();
+        // Add imgui panels here
+        ImGuiCameraPanel();
+        ImGuiStatsPanel(dt);
+        imguiCpp.Render();
+
+        glfwSwapBuffers(window.GetHandle());
+        glfwPollEvents();
+    }
+#pragma endregion
+    glDeleteVertexArrays(1, &VAO2);
+    glDeleteBuffers(1, &VBO2);
+}
+
+void Scene3(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
+{
+#pragma region Shader
+    Shader ourShader("assets/shaders/test.vert", "assets/shaders/test.frag");
+
+    std::string texturePath = "assets/textures/test.jpg";
+    unsigned int texture1;
+    LoadTexture(texture1, texturePath);
+
+#pragma endregion 
+
+#pragma region Model
+
+    // For Sphere
+    std::vector<glm::vec3> sphereVertices;
+    CreateSphere(sphereVertices, 1.f, 50, 50);
+
+    std::vector<glm::vec3> spherePositions;
+    spherePositions.push_back(glm::vec3(0.f, 0.f, 0.f));
+    spherePositions.push_back(glm::vec3(4.f, 0.f, 0.f));
+    spherePositions.push_back(glm::vec3(-4.f, 0.f, 0.f));
+
+    std::vector<glm::vec3> sphereRotations;
+    sphereRotations.push_back(glm::vec3(0.f, 0.f, 0.f));
+    sphereRotations.push_back(glm::vec3(0.f, 0.f, 0.f));
+    sphereRotations.push_back(glm::vec3(0.f, 0.f, 0.f));
+
+    GLuint VAO1, VBO1;
+    glGenVertexArrays(1, &VAO1);
+    glBindVertexArray(VAO1);
+
+    glGenBuffers(1, &VBO1);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO1);
+    glBufferData(GL_ARRAY_BUFFER, sphereVertices.size() * sizeof(glm::vec3), sphereVertices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // For Cube
+    std::vector<glm::vec3> cubeVertices;
+    std::vector<glm::vec2> cubeTexCoords;
+    CreateCube(cubeVertices, cubeTexCoords, 1.0f);
+
+    std::vector<glm::vec3> cubePositions;
+    cubePositions.push_back(glm::vec3(0.f, 0.f, 0.f));
+    cubePositions.push_back(glm::vec3(4.f, 0.f, 0.f));
+    cubePositions.push_back(glm::vec3(-4.f, 0.f, 0.f));
+
+    std::vector<glm::vec3> cubeRotations;
+    cubeRotations.push_back(glm::vec3(0.f, 0.f, 0.f));
+    cubeRotations.push_back(glm::vec3(0.f, 45.f, 0.f));
+    cubeRotations.push_back(glm::vec3(0.f, 0.f, 45.f));
+
+    GLuint VAO2, VBO2;
+    glGenVertexArrays(1, &VAO2);
+    glBindVertexArray(VAO2);
+
+    // Vertex Positions
+    glGenBuffers(1, &VBO2);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    glBufferData(GL_ARRAY_BUFFER, cubeVertices.size() * sizeof(glm::vec3), cubeVertices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Texture Coords
+    glGenBuffers(1, &VBO2);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    glBufferData(GL_ARRAY_BUFFER, cubeTexCoords.size() * sizeof(glm::vec2), cubeTexCoords.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+
+#pragma endregion
+
+#pragma region Timestep
+    double t = 0.0;
+    double dt = 0.01;
+    double currentTime = HiresTimeInSeconds();
+    double accumulator = 0.0;
+
+    State previous;
+    State current;
+#pragma endregion
+
+    glm::mat4 model = glm::mat4(1.0f);
+#pragma region Loop
+
+    while (!window.ShouldClose() && currentScene == Scene::SCENE_3)
+    {
+        double newTime = HiresTimeInSeconds();
+        double frameTime = newTime - currentTime;
+        // max frame time to avoid spiral of death(on slow devices)
+        if (frameTime > 0.25)
+            frameTime = 0.25;
+        currentTime = newTime;
+
+        accumulator += frameTime;
+
+        while (accumulator >= dt)
+        {
+            previous = current;
+            // physics.Update(currentState, dt);
+            accumulator -= dt;
+            t += dt;
+        }
+
+        const double alpha = accumulator / dt;
+        State state = current * alpha + previous * (1.0 - alpha);
+
+        ProcessCameraInput(window.GetHandle(), dt);
+        ProcessSceneInput(window.GetHandle(), currentScene);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        ourShader.Use();
+
+        glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        ourShader.SetMat4("projection", projection);
+        glm::mat4 view = camera.GetViewMatrix();
+        ourShader.SetMat4("view", view);
+
+        // Render Spheres
+        for (int i = 0; i < spherePositions.size(); ++i)
+        {
+            model = glm::mat4(1.0f); // Initialize model matrix for each object
+            model = glm::translate(model, spherePositions[i]);
+            model = glm::rotate(model, glm::radians(sphereRotations[i].x), glm::vec3(1.f, 0.f, 0.f));
+            model = glm::rotate(model, glm::radians(sphereRotations[i].y), glm::vec3(0.f, 1.f, 0.f));
+            model = glm::rotate(model, glm::radians(sphereRotations[i].z), glm::vec3(0.f, 0.f, 1.f));
+            ourShader.SetMat4("model", model);
+            glBindVertexArray(VAO1);
+            glDrawArrays(GL_LINE_STRIP, 0, sphereVertices.size());
+        }
+
+        imguiCpp.NewFrame();
+        // Add imgui panels here
+        ImGuiCameraPanel();
+        ImGuiStatsPanel(dt);
+        imguiCpp.Render();
+
+        glfwSwapBuffers(window.GetHandle());
+        glfwPollEvents();
+    }
+#pragma endregion
+    glDeleteVertexArrays(1, &VAO1);
+    glDeleteBuffers(1, &VBO1);
+    glDeleteVertexArrays(1, &VAO2);
+    glDeleteBuffers(1, &VBO2);
+}
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
@@ -233,6 +597,24 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		else
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
+
+    // Toggle wireframe on F2 key
+    if (key == GLFW_KEY_F2 && action == GLFW_PRESS)
+    {
+		if (glIsEnabled(GL_CULL_FACE))
+			glDisable(GL_CULL_FACE);
+		else
+			glEnable(GL_CULL_FACE);
+	}
+
+    // Toggle depth test on F3 key
+    if (key == GLFW_KEY_F3 && action == GLFW_PRESS)
+    {
+		if (glIsEnabled(GL_DEPTH_TEST))
+			glDisable(GL_DEPTH_TEST);
+		else
+			glEnable(GL_DEPTH_TEST);
+	}
 }
 
 void ProcessCameraInput(GLFWwindow* window, float deltaTime)
@@ -245,6 +627,21 @@ void ProcessCameraInput(GLFWwindow* window, float deltaTime)
 		camera.ProcessKeyboard(Camera_Movement::LEFT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera.ProcessKeyboard(Camera_Movement::RIGHT, deltaTime);
+}
+
+void ProcessSceneInput(GLFWwindow* window, Scene& currentScene)
+{
+	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+		currentScene = Scene::SCENE_1;
+	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+		currentScene = Scene::SCENE_2;
+	if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+		currentScene = Scene::SCENE_3;
+}
+
+double HiresTimeInSeconds()
+{
+    return std::chrono::duration_cast<std::chrono::seconds>(m_clock::now().time_since_epoch()).count();
 }
 
 void CreateSphere(std::vector<glm::vec3>& vertices, float radius, int slices, int stacks) 
@@ -267,110 +664,124 @@ void CreateSphere(std::vector<glm::vec3>& vertices, float radius, int slices, in
     }
 }
 
-GLfloat* CreateBox(float size)
-{
-    GLfloat cubeVertices[] = {
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-    };
-
-    return cubeVertices;
-}
-
-void CreateCube(std::vector<glm::vec3>& cubeVertices, float _size)
+void CreateCube(std::vector<glm::vec3>& cubeVertices, std::vector<glm::vec2>& cubeTexCoords, float _size)
 {
     float size = _size / 2;
     // Front face
 	cubeVertices.emplace_back(-size, -size, -size);
+    cubeTexCoords.emplace_back(0.0f, 0.0f);
 	cubeVertices.emplace_back(size, -size, -size);
+    cubeTexCoords.emplace_back(1.0f, 0.0f);
 	cubeVertices.emplace_back(size, size, -size);
+    cubeTexCoords.emplace_back(1.0f, 1.0f);
 	cubeVertices.emplace_back(size, size, -size);
+    cubeTexCoords.emplace_back(1.0f, 1.0f);
 	cubeVertices.emplace_back(-size, size, -size);
+    cubeTexCoords.emplace_back(0.0f, 1.0f);
 	cubeVertices.emplace_back(-size, -size, -size);
+    cubeTexCoords.emplace_back(0.0f, 0.0f);
 
     // Back face
 	cubeVertices.emplace_back(-size, -size, size);
+    cubeTexCoords.emplace_back(1.0f, 0.0f);
 	cubeVertices.emplace_back(size, -size, size);
+    cubeTexCoords.emplace_back(0.0f, 0.0f);
 	cubeVertices.emplace_back(size, size, size);
+    cubeTexCoords.emplace_back(0.0f, 1.0f);
 	cubeVertices.emplace_back(size, size, size);
+    cubeTexCoords.emplace_back(0.0f, 1.0f);
 	cubeVertices.emplace_back(-size, size, size);
+    cubeTexCoords.emplace_back(1.0f, 1.0f);
 	cubeVertices.emplace_back(-size, -size, size);
+    cubeTexCoords.emplace_back(1.0f, 0.0f);
 
     // Left face
 	cubeVertices.emplace_back(-size, size, size);
+    cubeTexCoords.emplace_back(0.0f, 1.0f);
 	cubeVertices.emplace_back(-size, size, -size);
+    cubeTexCoords.emplace_back(1.0f, 1.0f);
 	cubeVertices.emplace_back(-size, -size, -size);
+    cubeTexCoords.emplace_back(1.0f, 0.0f);
 	cubeVertices.emplace_back(-size, -size, -size);
+    cubeTexCoords.emplace_back(1.0f, 0.0f);
 	cubeVertices.emplace_back(-size, -size, size);
+    cubeTexCoords.emplace_back(0.0f, 0.0f);
 	cubeVertices.emplace_back(-size, size, size);
+    cubeTexCoords.emplace_back(0.0f, 1.0f);
 
     // Right face
 	cubeVertices.emplace_back(size, size, size);
+    cubeTexCoords.emplace_back(1.0f, 1.0f);
 	cubeVertices.emplace_back(size, size, -size);
+    cubeTexCoords.emplace_back(0.0f, 1.0f);
 	cubeVertices.emplace_back(size, -size, -size);
+    cubeTexCoords.emplace_back(0.0f, 0.0f);
 	cubeVertices.emplace_back(size, -size, -size);
+    cubeTexCoords.emplace_back(0.0f, 0.0f);
 	cubeVertices.emplace_back(size, -size, size);
+    cubeTexCoords.emplace_back(1.0f, 0.0f);
 	cubeVertices.emplace_back(size, size, size);
+    cubeTexCoords.emplace_back(1.0f, 1.0f);
 
     // Bottom face
 	cubeVertices.emplace_back(-size, -size, -size);
+    cubeTexCoords.emplace_back(1.0f, 1.0f);
 	cubeVertices.emplace_back(size, -size, -size);
+    cubeTexCoords.emplace_back(0.0f, 1.0f);
 	cubeVertices.emplace_back(size, -size, size);
+    cubeTexCoords.emplace_back(0.0f, 0.0f);
 	cubeVertices.emplace_back(size, -size, size);
+    cubeTexCoords.emplace_back(0.0f, 0.0f);
 	cubeVertices.emplace_back(-size, -size, size);
+    cubeTexCoords.emplace_back(1.0f, 0.0f);
 	cubeVertices.emplace_back(-size, -size, -size);
+    cubeTexCoords.emplace_back(1.0f, 1.0f);
 
     // Top face
 	cubeVertices.emplace_back(-size, size, -size);
+    cubeTexCoords.emplace_back(0.0f, 1.0f);
 	cubeVertices.emplace_back(size, size, -size);
+    cubeTexCoords.emplace_back(1.0f, 1.0f);
 	cubeVertices.emplace_back(size, size, size);
+    cubeTexCoords.emplace_back(1.0f, 0.0f);
 	cubeVertices.emplace_back(size, size, size);
+    cubeTexCoords.emplace_back(1.0f, 0.0f);
 	cubeVertices.emplace_back(-size, size, size);
+    cubeTexCoords.emplace_back(0.0f, 0.0f);
 	cubeVertices.emplace_back(-size, size, -size);
+    cubeTexCoords.emplace_back(0.0f, 1.0f);
 }
 
-double HiresTimeInSeconds()
+void LoadTexture(unsigned int& texture, const std::string& texturePath)
 {
-    return std::chrono::duration_cast<std::chrono::seconds>(m_clock::now().time_since_epoch()).count();
+    // load and create a texture 
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	// set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	
+    // load image, create texture and generate mipmaps
+	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+	
+	// The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
+	unsigned char* data = stbi_load(texturePath.c_str(), &width, &height, &nrChannels, 0);
+	if (data)
+	{
+	    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	    glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+	    std::cout << "Failed to load texture" << std::endl;
+	}
+	stbi_image_free(data);
 }
 
 void ImGuiCameraPanel()
