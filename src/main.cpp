@@ -85,7 +85,7 @@ void ImGuiStatsPanel(float deltaTime);
 void ImGuiSceneSelectionPanel(Scene& currentScene);
 
 void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene);
-void ImGuiScene1Panel(const std::vector<std::shared_ptr<Particle>>& particles);
+void ImGuiScene1Panel(const std::vector<std::shared_ptr<Particle>>& particles, const std::vector<glm::vec3> cubePositions);
 
 void Scene2(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene);
 void Scene3(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene);
@@ -113,7 +113,7 @@ int main()
     ImguiCpp imguiCpp(&window);
 
 #pragma region Loop
-    Scene currentScene = Scene::SCENE_1;
+    Scene currentScene = Scene::SCENE_2;
 
     while (!window.ShouldClose())
     {
@@ -151,10 +151,10 @@ void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
 #pragma region Particles
     std::shared_ptr<Particle> particle1 = std::make_shared<Particle>("Particle 1 Gravity", Vector3f::Up * 10.0f);
     std::shared_ptr<Particle> particle2 = std::make_shared<Particle>("Particle 2 Gravity & Drag", Vector3f::Left * 10.0f, 1.0f);
-    std::shared_ptr<Particle> particle3a = std::make_shared<Particle>("Particle 3A Spring", Vector3f::Right * 4.0f, 1.0f);
-    std::shared_ptr<Particle> particle3b = std::make_shared<Particle>("Particle 3B Spring", Vector3f::Left * 4.0f, 1.0f);
+    std::shared_ptr<Particle> particle3a = std::make_shared<Particle>("Particle 3A Spring", Vector3f::Right * 4.0f + Vector3f::Up * 10.0f, 1.0f);
+    std::shared_ptr<Particle> particle3b = std::make_shared<Particle>("Particle 3B Spring", Vector3f::Left * 4.0f + Vector3f::Up * 10.0f, 1.0f);
     std::shared_ptr<Particle> particle4 = std::make_shared<Particle>("Particle 4 Anchored Spring", Vector3f::Up * 5.0f, 10.0f);
-    std::shared_ptr<Particle> particle5 = std::make_shared<Particle>("Particle 5 Buoyancy", Vector3f::Down * 4.0f, 1.0f);
+    std::shared_ptr<Particle> particle5 = std::make_shared<Particle>("Particle 5 Buoyancy", Vector3f::Down * 4.0f + Vector3f::Right * 10.0f, 1.0f);
 
     physics.AddParticle(particle1);
     physics.AddParticle(particle2);
@@ -331,7 +331,7 @@ void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         ImGuiCameraPanel();
         ImGuiStatsPanel(dt);
         ImGuiSceneSelectionPanel(currentScene);
-        ImGuiScene1Panel(physics.GetParticles());
+        ImGuiScene1Panel(physics.GetParticles(), cubePositions);
         imguiCpp.Render();
 
         glfwSwapBuffers(window.GetHandle());
@@ -340,10 +340,15 @@ void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
 #pragma endregion
     glDeleteVertexArrays(1, &VAO1);
     glDeleteBuffers(1, &VBO1);
+    glDeleteVertexArrays(1, &VAO2);
+    glDeleteBuffers(1, &VBO2);
 }
 
-void ImGuiScene1Panel(const std::vector<std::shared_ptr<Particle>>& particles)
+void ImGuiScene1Panel(const std::vector<std::shared_ptr<Particle>>& particles, const std::vector<glm::vec3> cubesPositions)
 {
+    ImGui::Begin("Center Cube Anchored");
+    ImGui::Text("Position: %f, %f, %f", cubesPositions[0].x, cubesPositions[0].y, cubesPositions[0].z);
+    ImGui::End();
     ImGui::Begin("Particles");
     for (auto& particle : particles)
     {
