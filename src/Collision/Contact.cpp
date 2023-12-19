@@ -14,9 +14,9 @@ void Contact::PreCalculation(float duration)
 {
     CalculateContactBasis();
 
-    relativeContactPosition[0] = contactPoint - rigidbodies[0]->transform.position;
+    relativeContactPosition[0] = contactPoint - rigidbodies[0]->position;
     if (rigidbodies[1])
-        relativeContactPosition[1] = contactPoint - rigidbodies[1]->transform.position;
+        relativeContactPosition[1] = contactPoint - rigidbodies[1]->position;
 
     contactVelocity = CalculateLocalVelocity(0, duration);
 
@@ -87,7 +87,7 @@ void Contact::CalculateDeltaVelocity(float duration)
 
 Vector3f Contact::CalculateLocalVelocity(int index, float duration)
 {
-    Vector3 velocity = Vector3f::CrossProduct(rigidbodies[index]->transform.rotation.GetRotation(), relativeContactPosition[index]);
+    Vector3 velocity = Vector3f::CrossProduct(rigidbodies[index]->rotation.GetRotation(), relativeContactPosition[index]);
     velocity += rigidbodies[index]->velocity;
 
     Vector3 contactVelocity = contactToWorld.TransformTranspose(velocity);

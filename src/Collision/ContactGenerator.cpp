@@ -28,8 +28,8 @@ void ContactGenerator::DetectSandS(const Sphere& sphereA, const Sphere& sphereB)
 {
 	if (currentContacts >= maxContacts) return;
 
-	Vector3f posA = sphereA.rigidbody->transform.position;
-	Vector3f posB = sphereB.rigidbody->transform.position;
+	Vector3f posA = sphereA.rigidbody->position;
+	Vector3f posB = sphereB.rigidbody->position;
 
 	float distance = (posA - posB).GetLength();
 
@@ -55,7 +55,7 @@ void ContactGenerator::DetectSandHS(const Sphere& sphere, const Plane& plane)
 {
 	if (currentContacts >= maxContacts) return;
 
-	Vector3f sPos = sphere.rigidbody->transform.position;
+	Vector3f sPos = sphere.rigidbody->position;
 
 	float distanceFromPlane = plane.normal * sPos - sphere.radius - plane.offset;
 
@@ -81,7 +81,7 @@ void ContactGenerator::DetectSandP(const Sphere& sphere, const Plane& plane)
 {
 	if (currentContacts >= maxContacts) return;
 
-	Vector3f sPos = sphere.rigidbody->transform.position;
+	Vector3f sPos = sphere.rigidbody->position;
 
 	float distance = plane.normal * sPos - plane.offset;
 
@@ -107,7 +107,7 @@ void ContactGenerator::DetectSandB(const Sphere& sphere, const Box& box)
 {
 	if (currentContacts >= maxContacts) return;
 
-	Vector3f center = sphere.rigidbody->transform.position;
+	Vector3f center = sphere.rigidbody->position;
 	Vector3f rCenter = box.rigidbody->transformMatrix.TransformInverse(center);
 	Vector3f closestPoint;
 	float distance = center.x;
@@ -207,7 +207,7 @@ bool ContactGenerator::SAT(const Box& boxA, const Box& boxB, const Vector3f& axi
 		boxB.halfSize.y + std::abs(Vector3f::DotProduct(axis, boxB.rigidbody->transformMatrix.GetAxis(0))) +
 		boxB.halfSize.z + std::abs(Vector3f::DotProduct(axis, boxB.rigidbody->transformMatrix.GetAxis(0)));
 
-	Vector3f center = boxB.rigidbody->transform.position - boxA.rigidbody->transform.position;
+	Vector3f center = boxB.rigidbody->position - boxA.rigidbody->position;
 
 	float distance = std::abs(Vector3f::DotProduct(center, axis));
 
@@ -216,7 +216,7 @@ bool ContactGenerator::SAT(const Box& boxA, const Box& boxB, const Vector3f& axi
 
 bool ContactGenerator::SATBandB(const Box& boxA, const Box& boxB)
 {
-	Vector3f center = boxB.rigidbody->transform.position - boxB.rigidbody->transform.position;
+	Vector3f center = boxB.rigidbody->position - boxB.rigidbody->position;
 
 	return (
 		SAT(boxA, boxB, boxA.rigidbody->transformMatrix.GetAxis(0)) &&

@@ -31,6 +31,7 @@ public:
 
 	void AddRigidbody(std::shared_ptr<Rigidbody> rigidbody);
 	void RemoveRigidbody(std::shared_ptr<Rigidbody> rigidbody);
+	std::vector<std::shared_ptr<Rigidbody>> GetRigidbodies();
 	void PrintRigidbodies();
 
 	void AddRootBVHNode(std::shared_ptr<BVHNode> node);

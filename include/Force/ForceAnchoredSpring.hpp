@@ -14,7 +14,7 @@ private:
 	 
 public:
 	ForceAnchoredSpring(Vector3f anchor, float k, float restLength);
-	ForceAnchoredSpring(float k, float restLength, Vector3f anchor, Vector3f connectionPoint);
+	ForceAnchoredSpring(Vector3f anchor, Vector3f connectionPoint, float k, float restLength);
 
 	// apply spring force
 	void UpdateForce(std::shared_ptr<Particle> particle, float deltaTime) override;

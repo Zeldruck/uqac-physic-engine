@@ -60,14 +60,13 @@ void ForceSpring::UpdateForce(std::shared_ptr<Rigidbody> rigidbody, float deltaT
 
 	// Calculate local to world space points
 	Vector3f localInWorldSpace = rigidbody->GetPointInWorldSpace(connectionPoint);
-	Vector3f otherInWorldSpace = rigidbody->GetPointInWorldSpace(otherConnectionPoint);
+	Vector3f otherInWorldSpace = m_otherRigidbody->GetPointInWorldSpace(otherConnectionPoint);
 
 	// Calculate the force of the spring
 	Vector3f force = localInWorldSpace - otherInWorldSpace;
 
 	// Calculate the displacement from the rest length
 	float displacement = force.GetLength() - m_restLength;
-
 	// Calculate the magnitude of the spring force
 	float magnitude = m_k * displacement;
 
@@ -76,7 +75,7 @@ void ForceSpring::UpdateForce(std::shared_ptr<Rigidbody> rigidbody, float deltaT
 	force *= -magnitude;
 
 	rigidbody->AddForceAtPoint(force, localInWorldSpace);
-	rigidbody->AddForceAtPoint(force.GetInvert(), otherInWorldSpace); // Opposite force applied to the other connection point
+	m_otherRigidbody->AddForceAtPoint(force.GetInvert(), otherInWorldSpace); // Opposite force applied to the other connection point
 }
 
 void ForceSpring::SetOtherEnd(std::shared_ptr<Particle> otherEnd)

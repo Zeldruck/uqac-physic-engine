@@ -39,7 +39,7 @@ void ForceBuoyancy::UpdateForce(std::shared_ptr<Particle> particle, float deltaT
 void ForceBuoyancy::UpdateForce(std::shared_ptr<Rigidbody> rigidbody, float deltaTime)
 {
 	// calculate the submersion depth
-	float depth = rigidbody->transform.position.y;
+	float depth = rigidbody->position.y;
 
 	// check if we're out of the water
 	if (depth >= m_waterHeight + m_maxDepth)

@@ -1,48 +1,103 @@
 #include "Rigidbody.hpp"
 #include "Constants/PhysicConstants.hpp"
 #include "Constants/MathConstants.hpp"
-#include "Matrix4.hpp"
-#include "Matrix3.hpp"
-#include "Quaternion.hpp"
-#include "Particle.hpp"
-#include "Collision/BoundingVolume.hpp"
 #include "Collision/BoundingSphere.hpp"
 #include "Collision/BoundingBox.hpp"
 
-Rigidbody::Rigidbody()
-	:
-	transform(Transform()),
+Rigidbody::Rigidbody() :
+	name("Rigidbody"),
+	type(SPHERE),
+	position(Vector3f::Zero),
+	rotation(Quaternionf()),
+	scale(Vector3f::One),
 	velocity(Vector3f::Zero),
 	m_acceleration(Vector3f::Zero),
 	force(Vector3f::Zero),
 	angularVelocity(Vector3f::Zero),
 	m_angularAcceleration(Vector3f::Zero),
-	inertiaTensor(GetBoxInertiaTensorLocal()),
+	inertiaTensor(GetSphereInertiaTensorLocal()),
 	mass(MIN_MASS),
 	inverseMass(1.0f / MIN_MASS),
-	type(RigidbodyType::BOX),
-	massPoints(std::vector<Particle>())
+	isAwake(true)
 {
-	inertiaTensor = GetBoxInertiaTensorLocal();
 	inverseInertiaTensor = inertiaTensor.Inverse();
 	CalculateDerivedData();
-	CalculateCenterOfMass();
 }
 
-Rigidbody::Rigidbody(Transform transform, Vector3f velocity, Vector3f acceleration, float mass, Vector3f angularVelocity, Vector3f angularAcceleration, Vector3f momentOfInertia, std::string name, RigidbodyType type, std::vector<Particle> massPoints /*= std::vector<Particle>()*/, float linearDamping/* = 0.0f*/, float angularDamping/*= 0.5f*/)
-	:
-	transform(transform),
-	velocity(velocity),
-	m_acceleration(acceleration),
+Rigidbody::Rigidbody(std::string name) :
+	name(name),
+	type(SPHERE),
+	position(Vector3f::Zero),
+	rotation(Quaternionf()),
+	scale(Vector3f::One),
+	velocity(Vector3f::Zero),
+	m_acceleration(Vector3f::Zero),
 	force(Vector3f::Zero),
-	mass(mass > MIN_MASS ? mass : MIN_MASS),
-	angularVelocity(angularVelocity),
-	m_angularAcceleration(angularAcceleration),
+	angularVelocity(Vector3f::Zero),
+	m_angularAcceleration(Vector3f::Zero),
+	inertiaTensor(GetSphereInertiaTensorLocal()),
+	mass(MIN_MASS),
+	inverseMass(1.0f / MIN_MASS),
+	isAwake(true)
+{
+	inverseInertiaTensor = inertiaTensor.Inverse();
+	CalculateDerivedData();
+}
+
+Rigidbody::Rigidbody(std::string name, Vector3f position) :
+	name(name),
+	type(SPHERE),
+	position(position),
+	rotation(Quaternionf()),
+	scale(Vector3f::One),
+	velocity(Vector3f::Zero),
+	m_acceleration(Vector3f::Zero),
+	force(Vector3f::Zero),
+	angularVelocity(Vector3f::Zero),
+	m_angularAcceleration(Vector3f::Zero),
+	inertiaTensor(GetSphereInertiaTensorLocal()),
+	mass(MIN_MASS),
+	inverseMass(1.0f / MIN_MASS),
+	isAwake(true)
+{
+	inverseInertiaTensor = inertiaTensor.Inverse();
+	CalculateDerivedData();
+}
+
+Rigidbody::Rigidbody(std::string name, Vector3f position, float mass) :
+	name(name),
+	type(SPHERE),
+	position(position),
+	rotation(Quaternionf()),
+	scale(Vector3f::One),
+	velocity(Vector3f::Zero),
+	m_acceleration(Vector3f::Zero),
+	force(Vector3f::Zero),
+	angularVelocity(Vector3f::Zero),
+	m_angularAcceleration(Vector3f::Zero),
+	inertiaTensor(GetSphereInertiaTensorLocal()),
+	mass(mass),
+	inverseMass(1.0f / MIN_MASS),
+	isAwake(true)
+{
+	inverseInertiaTensor = inertiaTensor.Inverse();
+	CalculateDerivedData();
+}
+
+Rigidbody::Rigidbody(std::string name, RigidbodyType type) :
 	name(name),
 	type(type),
-	massPoints(std::vector<Particle>()),
-	linearDamping(linearDamping),
-	angularDamping(angularDamping)
+	position(Vector3f::Zero),
+	rotation(Quaternionf()),
+	scale(Vector3f::One),
+	velocity(Vector3f::Zero),
+	m_acceleration(Vector3f::Zero),
+	force(Vector3f::Zero),
+	angularVelocity(Vector3f::Zero),
+	m_angularAcceleration(Vector3f::Zero),
+	mass(MIN_MASS),
+	inverseMass(1.0f / MIN_MASS),
+	isAwake(true)
 {
 	switch (type)
 	{
@@ -52,26 +107,141 @@ Rigidbody::Rigidbody(Transform transform, Vector3f velocity, Vector3f accelerati
 	case SPHERE:
 		inertiaTensor = GetSphereInertiaTensorLocal();
 		break;
-	case TRIANGLE:
-		inertiaTensor = GetTriangleInertiaTensorLocal();
-		break;
-	case ROD:
-		inertiaTensor = GetRodInertiaTensorLocal();
-		break;
-	case RODEND:
-		inertiaTensor = GetRodEndInertiaTensorLocal();
-		break;
-	case CYLINDER:
-		inertiaTensor = GetCylinderInertiaTensorLocal();
+	case TETRAHEDRON:
+		inertiaTensor = GetTetrahedronInertiaTensorLocal();
 		break;
 	}
 
 	inverseInertiaTensor = inertiaTensor.Inverse();
 	CalculateDerivedData();
-	CalculateCenterOfMass();
-	inverseMass = 1.0f / mass;
+}
 
-	isAwake = true;
+Rigidbody::Rigidbody(std::string name, RigidbodyType type, Vector3f position) :
+	name(name),
+	type(type),
+	position(position),
+	rotation(Quaternionf()),
+	scale(Vector3f::One),
+	velocity(Vector3f::Zero),
+	m_acceleration(Vector3f::Zero),
+	force(Vector3f::Zero),
+	angularVelocity(Vector3f::Zero),
+	m_angularAcceleration(Vector3f::Zero),
+	mass(MIN_MASS),
+	inverseMass(1.0f / MIN_MASS),
+	isAwake(true)
+{
+	switch (type)
+	{
+	case BOX:
+		inertiaTensor = GetBoxInertiaTensorLocal();
+		break;
+	case SPHERE:
+		inertiaTensor = GetSphereInertiaTensorLocal();
+		break;
+	case TETRAHEDRON:
+		inertiaTensor = GetTetrahedronInertiaTensorLocal();
+		break;
+	}
+
+	inverseInertiaTensor = inertiaTensor.Inverse();
+	CalculateDerivedData();
+}
+
+Rigidbody::Rigidbody(std::string name, RigidbodyType type, Vector3f position, float mass) :
+	name(name),
+	type(type),
+	position(position),
+	rotation(Quaternionf()),
+	scale(Vector3f::One),
+	velocity(Vector3f::Zero),
+	m_acceleration(Vector3f::Zero),
+	force(Vector3f::Zero),
+	angularVelocity(Vector3f::Zero),
+	m_angularAcceleration(Vector3f::Zero),
+	mass(mass),
+	inverseMass(1.0f / MIN_MASS),
+	isAwake(true)
+{
+	switch (type)
+	{
+	case BOX:
+		inertiaTensor = GetBoxInertiaTensorLocal();
+		break;
+	case SPHERE:
+		inertiaTensor = GetSphereInertiaTensorLocal();
+		break;
+	case TETRAHEDRON:
+		inertiaTensor = GetTetrahedronInertiaTensorLocal();
+		break;
+	}
+
+	inverseInertiaTensor = inertiaTensor.Inverse();
+	CalculateDerivedData();
+}
+
+Rigidbody::Rigidbody(std::string name, RigidbodyType type, Vector3f position, Quaternionf rotation, float mass) :
+	name(name),
+	type(type),
+	position(position),
+	rotation(rotation),
+	scale(Vector3f::One),
+	velocity(Vector3f::Zero),
+	m_acceleration(Vector3f::Zero),
+	force(Vector3f::Zero),
+	angularVelocity(Vector3f::Zero),
+	m_angularAcceleration(Vector3f::Zero),
+	mass(mass),
+	inverseMass(1.0f / MIN_MASS),
+	isAwake(true)
+{
+	switch (type)
+	{
+	case BOX:
+		inertiaTensor = GetBoxInertiaTensorLocal();
+		break;
+	case SPHERE:
+		inertiaTensor = GetSphereInertiaTensorLocal();
+		break;
+	case TETRAHEDRON:
+		inertiaTensor = GetTetrahedronInertiaTensorLocal();
+		break;
+	}
+
+	inverseInertiaTensor = inertiaTensor.Inverse();
+	CalculateDerivedData();
+}
+
+Rigidbody::Rigidbody(std::string name, RigidbodyType, Vector3f position, Quaternionf rotation, Vector3f scale, float mass) :
+	name(name),
+	type(type),
+	position(position),
+	rotation(rotation),
+	scale(scale),
+	velocity(Vector3f::Zero),
+	m_acceleration(Vector3f::Zero),
+	force(Vector3f::Zero),
+	angularVelocity(Vector3f::Zero),
+	m_angularAcceleration(Vector3f::Zero),
+	mass(mass),
+	inverseMass(1.0f / MIN_MASS),
+	isAwake(true)
+{
+	switch (type)
+	{
+	case BOX:
+		inertiaTensor = GetBoxInertiaTensorLocal();
+		break;
+	case SPHERE:
+		inertiaTensor = GetSphereInertiaTensorLocal();
+		break;
+	case TETRAHEDRON:
+		inertiaTensor = GetTetrahedronInertiaTensorLocal();
+		break;
+	}
+
+	inverseInertiaTensor = inertiaTensor.Inverse();
+	CalculateDerivedData();
 }
 
 void Rigidbody::ClearForce()
@@ -102,7 +272,7 @@ Vector3f Rigidbody::GetPointInLocalSpace(const Vector3f& point)
 void Rigidbody::AddForceAtPoint(const Vector3f& f, const Vector3f& point)
 {
 	Vector3f pt = point;
-	pt -= transform.position;
+	pt -= position;
 	force += f;
 	torque += pt.Cross(f);
 }
@@ -115,7 +285,7 @@ void Rigidbody::AddForceAtBodyPoint(const Vector3f& f, const Vector3f& point)
 
 Vector3f const Rigidbody::GetAcceleration()
 {
-	m_acceleration = force * inverseMass;
+	m_acceleration = force / mass;
 	return m_acceleration;
 }
 
@@ -127,13 +297,13 @@ Vector3f const Rigidbody::GetAngularAcceleration()
 
 void Rigidbody::CalculateTransformMatrix()
 {
-	float x = transform.rotation.GetX();
-	float y = transform.rotation.GetY();
-	float z = transform.rotation.GetZ();
-	float s = transform.rotation.GetS();
-	float posX = transform.position.x;
-	float posY = transform.position.y;
-	float posZ = transform.position.z;
+	float x = rotation.GetX();
+	float y = rotation.GetY();
+	float z = rotation.GetZ();
+	float s = rotation.GetS();
+	float posX = position.x;
+	float posY = position.y;
+	float posZ = position.z;
 
 	transformMatrix = Matrix4f({
 		1.0f - 2.0f * y * y - 2.0f * z * z,     2.0f * x * y - 2.0f * s * z,			2.0f * x * z + 2.0f * s * y,			posX,
@@ -153,7 +323,7 @@ void Rigidbody::CalculateDerivedData()
 Matrix3f Rigidbody::GetBoxInertiaTensorLocal()
 {
 	float mass = this->mass;
-	Vector3f scale = transform.scale;
+	Vector3f scale = scale;
 
 	float Ixx = (mass / 12.0f) * (scale.y * scale.y + scale.z * scale.z);
 	float Iyy = (mass / 12.0f) * (scale.x * scale.x + scale.z * scale.z);
@@ -168,7 +338,7 @@ Matrix3f Rigidbody::GetBoxInertiaTensorLocal()
 
 Matrix3f Rigidbody::GetSphereInertiaTensorLocal()
 {
-	float radius = transform.scale.x;
+	float radius = scale.x;
 
 	float I = (2.0f / 5.0f) * (mass * radius * radius);
 
@@ -179,47 +349,10 @@ Matrix3f Rigidbody::GetSphereInertiaTensorLocal()
 		});
 }
 
-Matrix3f Rigidbody::GetTriangleInertiaTensorLocal()
+Matrix3f Rigidbody::GetTetrahedronInertiaTensorLocal()
 {
-	float s = transform.scale.x;
+	float s = scale.x;
 	float I = (1.0f / 20.0f) * mass * s * s;
-
-	return Matrix3f({
-		I, 0.0f, 0.0f,
-		0.0f, I, 0.0f,
-		0.0f, 0.0f, I
-		});
-}
-
-Matrix3f Rigidbody::GetRodInertiaTensorLocal()
-{
-	float length = transform.scale.x;
-	float I = (1.0f / 12.0f) * mass * length * length;
-
-	return Matrix3f({
-		I, 0.0f, 0.0f,
-		0.0f, I, 0.0f,
-		0.0f, 0.0f, I
-		});
-}
-
-Matrix3f Rigidbody::GetRodEndInertiaTensorLocal()
-{
-	float length = transform.scale.x;
-	float I = (1.0f / 3.0f) * mass * length * length;
-
-	return Matrix3f({
-		I, 0.0f, 0.0f,
-		0.0f, I, 0.0f,
-		0.0f, 0.0f, I
-		}); ;
-}
-
-Matrix3f Rigidbody::GetCylinderInertiaTensorLocal()
-{
-	float radius = transform.scale.x;
-	float height = transform.scale.y;
-	float I = (1.0f / 12.0f) * mass * (3 * radius * radius + height * height);
 
 	return Matrix3f({
 		I, 0.0f, 0.0f,
@@ -231,7 +364,7 @@ Matrix3f Rigidbody::GetCylinderInertiaTensorLocal()
 Matrix3f Rigidbody::GetInverseInertiaTensorWorld()
 {
 	Matrix3f iitLocal = inverseInertiaTensor;
-	Quaternion q = transform.rotation;
+	Quaternion q = rotation;
 	Matrix4f rotM = transformMatrix;
 
 	float t4 = rotM.Value(0, 0) * iitLocal.Value(0, 0) +
@@ -277,66 +410,12 @@ Matrix3f Rigidbody::GetInverseInertiaTensorWorld()
 	return iitWorld;
 }
 
-Matrix3f Rigidbody::CalculateInertiaMatrix()
-{
-	float Ixx = 0.0f;
-	float Iyy = 0.0f;
-	float Izz = 0.0f;
-	float Ixy = 0.0f;
-	float Ixz = 0.0f;
-	float Iyz = 0.0f;
-
-	// Calculate the product of inertia components
-	for (const Particle& massPoint : massPoints) 
-	{
-		float x = massPoint.position.x - centerOfMass.x;
-		float y = massPoint.position.y - centerOfMass.y;
-		float z = massPoint.position.z - centerOfMass.z;
-		float m = massPoint.mass;
-
-		// Update the matrix components
-		Ixx += m * (y * y + z * z);
-		Iyy += m * (x * x + z * z);
-		Izz += m * (x * x + y * y);
-		Ixy -= m * (x * y);
-		Ixz -= m * (x * z);
-		Iyz -= m * (y * z);
-	}
-
-	return Matrix3f({
-		Ixx, Ixy, Ixz,
-		Ixy, Iyy, Iyz,
-		Ixz, Iyz, Izz
-		});
-}
-
-void Rigidbody::CalculateCenterOfMass()
-{
-	float totalMass = 0.0f;
-	Vector3f totalPosition = Vector3f::Zero;
-
-	for (const Particle& massPoint : massPoints) 
-	{
-		totalMass += massPoint.mass;
-		totalPosition += massPoint.position;
-	}
-
-	if (totalMass != 0.0f) 
-	{
-		centerOfMass = (totalMass * totalPosition) / mass;
-	}
-	else
-	{
-		centerOfMass = Vector3f::Zero;
-	}
-}
-
 BoundingSphere Rigidbody::GetBoundingSphere()
 {
-	return BoundingSphere(transform.position, transform.scale.x);
+	return BoundingSphere(position, scale.x);
 }
 
 BoundingBox Rigidbody::GetBoundingBox()
 {
-	return BoundingBox(transform.position, transform.scale);
+	return BoundingBox(position, scale);
 }

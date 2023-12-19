@@ -68,7 +68,7 @@ void ContactResolver::ResolveVelocity(std::vector<std::shared_ptr<Contact>>& con
         velocityChange[0] += impulse * contacts[index]->rigidbodies[0]->inverseMass;
 
         contacts[index]->rigidbodies[0]->velocity += velocityChange[0];
-        contacts[index]->rigidbodies[0]->transform.rotation.AddScaleVector(rotationChange[0], 1.f);
+        contacts[index]->rigidbodies[0]->rotation.AddScaleVector(rotationChange[0], 1.f);
 
         if (contacts[index]->rigidbodies[1])
         {
@@ -78,7 +78,7 @@ void ContactResolver::ResolveVelocity(std::vector<std::shared_ptr<Contact>>& con
             velocityChange[1] += impulse * -contacts[index]->rigidbodies[1]->inverseMass;
 
             contacts[index]->rigidbodies[1]->velocity += velocityChange[1];
-            contacts[index]->rigidbodies[1]->transform.rotation.AddScaleVector(rotationChange[1], 1.f);
+            contacts[index]->rigidbodies[1]->rotation.AddScaleVector(rotationChange[1], 1.f);
         }
 
         for (int i = 0; i < contacts.size(); i++)
@@ -196,8 +196,8 @@ void ContactResolver::ResolveInterpenetration(std::vector<std::shared_ptr<Contac
                 linearChange[j] = contacts[index]->contactNormal * linearMove[j];
 
 
-                contacts[index]->rigidbodies[j]->transform.position = contacts[index]->contactNormal * linearMove[j];
-                contacts[index]->rigidbodies[j]->transform.rotation.AddScaleVector(angularChange[j], 1.0f);
+                contacts[index]->rigidbodies[j]->position = contacts[index]->contactNormal * linearMove[j];
+                contacts[index]->rigidbodies[j]->rotation.AddScaleVector(angularChange[j], 1.0f);
 
 
                 if (!contacts[index]->rigidbodies[j]->isAwake) 

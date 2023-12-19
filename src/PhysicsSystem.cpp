@@ -115,13 +115,18 @@ void PhysicsSystem::PrintParticles()
 	}
 }
 
+std::vector<std::shared_ptr<Rigidbody>> PhysicsSystem::GetRigidbodies()
+{
+	return m_rigidbodies;
+}
+
 void PhysicsSystem::PrintRigidbodies()
 {
 	for (const std::shared_ptr<Rigidbody> rigidbody : m_rigidbodies)
 	{
-		std::cout << rigidbody->name << " position" << rigidbody->transform.position << std::endl;
-		std::cout << rigidbody->name << " rotation" << rigidbody->transform.rotation << std::endl;
-		std::cout << rigidbody->name << " scale" << rigidbody->transform.scale << std::endl;
+		std::cout << rigidbody->name << " position" << rigidbody->position << std::endl;
+		std::cout << rigidbody->name << " rotation" << rigidbody->rotation << std::endl;
+		std::cout << rigidbody->name << " scale" << rigidbody->scale << std::endl;
 		std::cout << rigidbody->name << " velocity" << rigidbody->velocity << std::endl;
 		std::cout << rigidbody->name << " acceleration" << rigidbody->GetAcceleration() << std::endl;
 		std::cout << rigidbody->name << " angular velocity" << rigidbody->angularVelocity << std::endl;

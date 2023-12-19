@@ -5,11 +5,12 @@
 ForceAnchoredSpring::ForceAnchoredSpring(Vector3f anchor, float k, float restLength) :
 	m_k(k),
 	m_restLength(restLength),
-	m_anchor(anchor)
+	m_anchor(anchor),
+	connectionPoint(Vector3f::Zero)
 {
 }
 
-ForceAnchoredSpring::ForceAnchoredSpring(float k, float restLength, Vector3f anchor, Vector3f connectionPoint) :
+ForceAnchoredSpring::ForceAnchoredSpring(Vector3f anchor, Vector3f connectionPoint, float k, float restLength) :
 	m_k(k),
 	m_restLength(restLength),
 	m_anchor(anchor),

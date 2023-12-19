@@ -42,26 +42,6 @@ Particle::Particle(std::string name, Vector3f position, float mass) :
 {
 }
 
-Particle::Particle(std::string name, Vector3f position, float mass, Vector3f velocity) :
-	name(name),
-	position(position),
-	velocity(velocity),
-	m_acceleration(Vector3f::Zero),
-	mass(mass > MIN_MASS ? mass : MIN_MASS),
-	force(Vector3f::Zero)
-{
-}
-
-Particle::Particle(std::string name, Vector3f position, float mass, Vector3f velocity, Vector3f acceleration) :
-	name(name),
-	position(position),
-	velocity(velocity),
-	m_acceleration(acceleration),
-	mass(mass > MIN_MASS ? mass : MIN_MASS),
-	force(Vector3f::Zero)
-{
-}
-
 void Particle::ClearForce()
 {
 	force = Vector3f::Zero;

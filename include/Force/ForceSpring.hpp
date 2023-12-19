@@ -18,7 +18,6 @@ private:
 	Vector3f connectionPoint;
 	Vector3f otherConnectionPoint;
 
-
 public:
 	ForceSpring(std::shared_ptr<Particle> otherEnd, float k, float restLength);
 	ForceSpring(std::shared_ptr<Rigidbody> otherEnd, float k, float restLength);
