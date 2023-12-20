@@ -48,7 +48,6 @@ public:
 	void Insert(std::shared_ptr<Box> newBox, std::shared_ptr<BoundingSphere> volume);
 	void Insert(std::shared_ptr<Plane> newPlane, std::shared_ptr<BoundingSphere> volume);
 
-
 	void RecalculateBoundingVolume(bool recurse = true);
 	std::shared_ptr<BVHNode> GetRoot();
 

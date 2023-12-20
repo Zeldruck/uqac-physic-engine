@@ -45,8 +45,9 @@ public:
 	void ParsePotentialContactsPrimitive();
 
 	void ClearForces();
-	void BroadPhaseCollisionDetection();
 
+	void BroadPhaseCollisionDetection();
+	void NarrowPhaseCollisionDetection();
 
 private:
 	std::vector<std::shared_ptr<Particle>> m_particles;

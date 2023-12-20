@@ -33,7 +33,7 @@ PhysicsSystem::~PhysicsSystem()
 		delete(m_potentialContactPrimitive);
 }
 
-void PhysicsSystem::Update(State& current, float deltaTime, bool isGravityEnabled, bool detectCollisions /* = true */)
+void PhysicsSystem::Update(State& current, float deltaTime, bool isGravityEnabled, bool hasToDetectCollisions /* = true */)
 {
 	// Clear les forces des particles et rigidbodies
 	ClearForces();
@@ -45,8 +45,12 @@ void PhysicsSystem::Update(State& current, float deltaTime, bool isGravityEnable
 	m_integrator->Update(current, m_particles, m_rigidbodies, deltaTime, isGravityEnabled);	
 
 	// Résolution des collisions
-	if(detectCollisions)
+	if (hasToDetectCollisions)
+	{
 		BroadPhaseCollisionDetection();
+		NarrowPhaseCollisionDetection();
+	}
+
 }
 
 void PhysicsSystem::ClearForces()
@@ -74,6 +78,11 @@ void PhysicsSystem::BroadPhaseCollisionDetection()
 	m_potentialContactPrimitiveCount = m_rootBVHNode->GetPotentialContactPrimitive(m_potentialContactPrimitive, 1000);
 	ParsePotentialContacts();
 	ParsePotentialContactsPrimitive();
+}
+
+void PhysicsSystem::NarrowPhaseCollisionDetection()
+{
+
 }
 
 void PhysicsSystem::AddParticle(std::shared_ptr<Particle> particle)
