@@ -3,8 +3,11 @@
 #include <memory>
 #include <array>
 #include <Collision/BoundingSphere.hpp>
-#include <Collision/BoundingBox.hpp>
-#include <Rigidbody.hpp>
+
+class Rigidbody;
+class Primitive;
+class Sphere;
+class Box;
 
 struct PotentialContact
 {
@@ -20,12 +23,20 @@ public:
 	BVHNode(std::shared_ptr<Rigidbody> rigidbody, std::shared_ptr<BoundingSphere> volume);
 	BVHNode(std::shared_ptr<BVHNode> node);
 	BVHNode(std::shared_ptr<BVHNode> node, std::shared_ptr<Rigidbody> body, std::shared_ptr<BoundingSphere> volume);
+	BVHNode(std::shared_ptr<Primitive> primitive);
+	BVHNode(std::shared_ptr<Primitive> primitive, std::shared_ptr<BoundingSphere> volume);
+	BVHNode(std::shared_ptr<Sphere> sphere, std::shared_ptr<BoundingSphere> volume);
+	BVHNode(std::shared_ptr<Box> box, std::shared_ptr<BoundingSphere> volume);
 
 	bool IsLeaf() const;
 	bool Overlaps(std::shared_ptr<BVHNode> other) const;
 	unsigned int GetPotentialContact(PotentialContact* contacts, unsigned int limit) const;
 	unsigned int GetPotentialContactsWith(std::shared_ptr<BVHNode> other, PotentialContact* contacts, unsigned int limit) const;
 	void Insert(std::shared_ptr<Rigidbody> newRigidbody, std::shared_ptr<BoundingSphere> newVolume);
+	void Insert(std::shared_ptr<Primitive> newPrimitive, std::shared_ptr<BoundingSphere> newVolume);
+	void Insert(std::shared_ptr<Sphere> newSphere, std::shared_ptr<BoundingSphere> volume);
+	void Insert(std::shared_ptr<Box> newBox, std::shared_ptr<BoundingSphere> volume);
+
 	void RecalculateBoundingVolume(bool recurse = true);
 	std::shared_ptr<BVHNode> GetRoot();
 

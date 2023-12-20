@@ -4,6 +4,10 @@
 #include <Collision/BoundingSphere.hpp>
 #include <Collision/BoundingBox.hpp>
 #include <Rigidbody.hpp>
+#include <Collision/Primitives/Primitive.hpp>
+#include <Collision/Primitives/Sphere.hpp>
+#include <Collision/Primitives/Box.hpp>
+#include <Collision/Primitives/Plane.hpp>
 
 BVHNode::BVHNode(std::shared_ptr<Rigidbody> rigidbody) :
 	m_rigidbody(rigidbody),
@@ -33,6 +37,34 @@ BVHNode::BVHNode(std::shared_ptr<BVHNode> node, std::shared_ptr<Rigidbody> body,
 	m_volume(volume),
 	m_rigidbody(body),
 	m_parent(node)
+{
+}
+
+BVHNode::BVHNode(std::shared_ptr<Primitive> primitive) :
+	m_rigidbody(primitive->rigidbody),
+	m_volume(primitive->rigidbody->GetBoundingSphere()),
+	m_parent(nullptr)
+{
+}
+
+BVHNode::BVHNode(std::shared_ptr<Primitive> primitive, std::shared_ptr<BoundingSphere> volume) :
+	m_rigidbody(primitive->rigidbody),
+	m_volume(volume),
+	m_parent(nullptr)
+{
+}
+
+BVHNode::BVHNode(std::shared_ptr<Sphere> sphere, std::shared_ptr<BoundingSphere> volume) :
+	m_rigidbody(sphere->rigidbody),
+	m_volume(volume),
+	m_parent(nullptr)
+{
+}
+
+BVHNode::BVHNode(std::shared_ptr<Box> box, std::shared_ptr<BoundingSphere> volume) :
+	m_rigidbody(box->rigidbody),
+	m_volume(volume),
+	m_parent(nullptr)
 {
 }
 
@@ -104,6 +136,69 @@ void BVHNode::Insert(std::shared_ptr<Rigidbody> newRigidbody, std::shared_ptr<Bo
 			children[0]->Insert(newRigidbody, newVolume);
 		else
 			children[1]->Insert(newRigidbody, newVolume);
+	}
+}
+
+void BVHNode::Insert(std::shared_ptr<Primitive> newPrimitive, std::shared_ptr<BoundingSphere> newVolume)
+{
+	if (IsLeaf())
+	{
+		// Children 0 has this node as parent but has data from this node
+		children[0] = std::make_shared<BVHNode>(std::make_shared<BVHNode>(*this), m_rigidbody, m_volume);
+		// Children 1 his new node with this node as parent
+		children[1] = std::make_shared<BVHNode>(std::make_shared<BVHNode>(*this), newPrimitive->rigidbody, newVolume);
+
+		m_rigidbody = nullptr;
+		RecalculateBoundingVolume();
+	}
+	else
+	{
+		if (children[0]->m_volume->GetGrowth(newVolume) < children[1]->m_volume->GetGrowth(newVolume))
+			children[0]->Insert(newPrimitive->rigidbody, newVolume);
+		else
+			children[1]->Insert(newPrimitive->rigidbody, newVolume);
+	}
+}
+
+void BVHNode::Insert(std::shared_ptr<Sphere> newSphere, std::shared_ptr<BoundingSphere> newVolume)
+{
+	if (IsLeaf())
+	{
+		// Children 0 has this node as parent but has data from this node
+		children[0] = std::make_shared<BVHNode>(std::make_shared<BVHNode>(*this), m_rigidbody, m_volume);
+		// Children 1 his new node with this node as parent
+		children[1] = std::make_shared<BVHNode>(std::make_shared<BVHNode>(*this), newSphere->rigidbody, newVolume);
+
+		m_rigidbody = nullptr;
+		RecalculateBoundingVolume();
+	}
+	else
+	{
+		if (children[0]->m_volume->GetGrowth(newVolume) < children[1]->m_volume->GetGrowth(newVolume))
+			children[0]->Insert(newSphere->rigidbody, newVolume);
+		else
+			children[1]->Insert(newSphere->rigidbody, newVolume);
+	}
+}
+
+void BVHNode::Insert(std::shared_ptr<Box> newBox, std::shared_ptr<BoundingSphere> newVolume)
+{
+	if (IsLeaf())
+	{
+		// Children 0 has this node as parent but has data from this node
+		children[0] = std::make_shared<BVHNode>(std::make_shared<BVHNode>(*this), m_rigidbody, m_volume);
+		// Children 1 his new node with this node as parent
+		children[1] = std::make_shared<BVHNode>(std::make_shared<BVHNode>(*this), newBox->rigidbody, newVolume);
+
+		m_rigidbody = nullptr;
+		RecalculateBoundingVolume();
+	}
+	else
+	{
+		if (children[0]->m_volume->GetGrowth(newVolume) < children[1]->m_volume->GetGrowth(newVolume))
+			children[0]->Insert(newBox->rigidbody, newVolume);
+		else
+			children[1]->Insert(newBox->rigidbody, newVolume);
 	}
 }
 

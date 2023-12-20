@@ -652,6 +652,9 @@ void Scene3(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
 
     physics.AddRigidbody(rigidbody1);
     physics.AddRigidbody(rigidbody2);
+
+    std::shared_ptr<Sphere> sphere = std::make_shared<Sphere>(rigidbody1, Matrix4f(), 1.f);
+    std::shared_ptr<Box> box = std::make_shared<Box>(rigidbody2, Matrix4f(), Vector3f(0.5f, 0.5f, 0.5f));
 #pragma endregion
 
 #pragma region Forces
@@ -668,7 +671,7 @@ void Scene3(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
     rigidbody2->m_boundingSphere = boundingSphere2;
 
     std::shared_ptr<BVHNode> bvhRoot = std::make_shared<BVHNode>(rigidbody1);
-    bvhRoot->Insert(rigidbody2, boundingSphere2);
+    bvhRoot->Insert(box, boundingSphere2);
 
     physics.AddRootBVHNode(bvhRoot);
     PotentialContact* potentialContacts = new PotentialContact;
