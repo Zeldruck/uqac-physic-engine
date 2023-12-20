@@ -101,6 +101,7 @@ void ImGuiCameraPanel();
 void ImGuiStatsPanel(float deltaTime);
 void ImGuiSceneSelectionPanel(Scene& currentScene);
 void ImGuiBroadPhasePanel(PotentialContact* potientialContact, unsigned int potentialContactCount);
+void ImGuiNarrowPhasePanel();
 
 void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene);
 void ImGuiScene1Panel(const std::vector<std::shared_ptr<Particle>>& particles, const std::vector<glm::vec3> cubePositions);
@@ -918,6 +919,225 @@ void Scene4(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
     forceRegistry->Add(rigidbody1, gravity);
 #pragma endregion
 
+#pragma region Narrow Phase
+
+    ContactGenerator contactGenerator = ContactGenerator(50);
+    ContactResolver contactResolver = ContactResolver(50);
+
+    Plane plane = Plane(nullptr, Matrix4f(), Vector3f(0, 1, 0), 0.f);
+
+    Sphere sphere = Sphere(rigidbody1, Matrix4f(), 1.f);
+    Sphere sphere2 = Sphere(rigidbody2, Matrix4f(), 1.f);
+
+    Box box = Box(rigidbody1, Matrix4f(), Vector3f(0.5f, 0.5f, 0.5f));
+#pragma endregion
+
+#pragma region Shader
+    Shader ourShader("assets/shaders/test.vert", "assets/shaders/test.frag");
+
+    std::string texturePath = "assets/textures/test.jpg";
+    unsigned int texture1;
+    LoadTexture(texture1, texturePath);
+#pragma endregion 
+
+#pragma region Model
+    // For Sphere
+    std::vector<glm::vec3> sphereVertices;
+    CreateSphere(sphereVertices, 1.f, 50, 50);
+
+    std::vector<glm::vec3> spherePositions;
+    spherePositions.push_back(glm::vec3(rigidbody1->position.x, rigidbody1->position.y, rigidbody1->position.z));
+
+    GLuint VAO1, VBO1;
+    glGenVertexArrays(1, &VAO1);
+    glBindVertexArray(VAO1);
+
+    glGenBuffers(1, &VBO1);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO1);
+    glBufferData(GL_ARRAY_BUFFER, sphereVertices.size() * sizeof(glm::vec3), sphereVertices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // For Cube
+    std::vector<glm::vec3> cubeVertices;
+    std::vector<glm::vec2> cubeTexCoords;
+    CreateCube(cubeVertices, cubeTexCoords, 1.0f);
+
+    std::vector<glm::vec3> cubePositions;
+    cubePositions.push_back(glm::vec3(rigidbody2->position.x, rigidbody2->position.y, rigidbody2->position.z));
+
+    GLuint VAO2, VBO2;
+    glGenVertexArrays(1, &VAO2);
+    glBindVertexArray(VAO2);
+
+    // Vertex Positions
+    glGenBuffers(1, &VBO2);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    glBufferData(GL_ARRAY_BUFFER, cubeVertices.size() * sizeof(glm::vec3), cubeVertices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Texture Coords
+    glGenBuffers(1, &VBO2);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    glBufferData(GL_ARRAY_BUFFER, cubeTexCoords.size() * sizeof(glm::vec2), cubeTexCoords.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+
+#pragma endregion
+
+#pragma region Timestep
+    double t = 0.0;
+    double dt = 0.01;
+    double currentTime = HiresTimeInSeconds();
+    double accumulator = 0.0;
+
+    State previous;
+    State current;
+#pragma endregion
+
+    glm::mat4 model = glm::mat4(1.0f);
+#pragma region Loop
+
+    while (!window.ShouldClose() && currentScene == Scene::SCENE_4)
+    {
+        double newTime = HiresTimeInSeconds();
+        double frameTime = newTime - currentTime;
+        // max frame time to avoid spiral of death(on slow devices)
+        if (frameTime > 0.015)
+            frameTime = 0.015;
+        currentTime = newTime;
+
+        accumulator += frameTime;
+
+        while (accumulator >= dt)
+        {
+            previous = current;
+            physics.Update(dt, true, false);
+            accumulator -= dt;
+            t += dt;
+        }
+
+        // TO MOVE INSIDE PHYSIC SYSTEM
+        //contactGenerator.DetectSandHS(sphere, plane);
+        //contactGenerator.DetectBandP(box, plane);
+        //contactGenerator.DetectSandB(sphere, box);
+        contactGenerator.DetectSandHS(sphere, plane);
+        contactResolver.ResolveContacts(contactGenerator.GetContacts(), dt);
+
+        const double alpha = accumulator / dt;
+        State state = current * alpha + previous * (1.0 - alpha);
+
+        ProcessCameraInput(window.GetHandle(), dt);
+        ProcessSceneInput(window.GetHandle(), currentScene);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        ourShader.Use();
+
+        glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        ourShader.SetMat4("projection", projection);
+        glm::mat4 view = camera.GetViewMatrix();
+        ourShader.SetMat4("view", view);
+
+        // Update Spheres Positions
+        spherePositions[0] = glm::vec3(rigidbody1->position.x, rigidbody1->position.y, rigidbody1->position.z);
+        spherePositions[1] = glm::vec3(rigidbody2->position.x, rigidbody2->position.y, rigidbody2->position.z);
+
+        // Render Spheres 
+        for (int i = 0; i < spherePositions.size(); ++i)
+        {
+            model = glm::mat4(1.0f); // Initialize model matrix for each object
+            model = glm::translate(model, spherePositions[i]);
+            ourShader.SetMat4("model", model);
+            glBindVertexArray(VAO1);
+            glDrawArrays(GL_LINE_STRIP, 0, sphereVertices.size());
+        }
+
+        // Render Cubes
+        for (int i = 0; i < cubePositions.size(); ++i)
+        {
+            model = glm::mat4(1.0f); // Reset model matrix for the next object
+            model = glm::scale(model, glm::vec3(10, 0.5f, 10));
+            model = glm::translate(model, cubePositions[i]);
+            ourShader.SetMat4("model", model);
+            glBindVertexArray(VAO2);
+            glDrawArrays(GL_TRIANGLES, 0, cubeVertices.size());
+        }
+
+        imguiCpp.NewFrame();
+        // Add imgui panels here
+        ImGuiCameraPanel();
+        ImGuiStatsPanel(dt);
+        ImGuiSceneSelectionPanel(currentScene);
+        ImGuiScene4Panel(physics.GetRigidbodies(), cubePositions);
+        ImGuiNarrowPhasePanel();
+        imguiCpp.Render();
+
+        glfwSwapBuffers(window.GetHandle());
+        glfwPollEvents();
+    }
+#pragma endregion
+    glDeleteVertexArrays(1, &VAO1);
+    glDeleteBuffers(1, &VBO1);
+    glDeleteVertexArrays(1, &VAO2);
+    glDeleteBuffers(1, &VBO2);
+}
+
+void ImGuiScene4Panel(const std::vector<std::shared_ptr<Rigidbody>>& rigidbodies, const std::vector<glm::vec3> cubesPositions)
+{
+    ImGui::Begin("Center Cube Anchored");
+    ImGui::Text("Position: %f, %f, %f", cubesPositions[0].x, cubesPositions[0].y, cubesPositions[0].z);
+    ImGui::End();
+    ImGui::Begin("Rigidbodies");
+    for (auto& rigidbody : rigidbodies)
+    {
+        ImGui::Text("%s", rigidbody->name.c_str());
+        ImGui::Text("Position: %f, %f, %f", rigidbody->position.x, rigidbody->position.y, rigidbody->position.z);
+        ImGui::Text("Rotation: %f, %f, %f", rigidbody->rotation.GetX(), rigidbody->rotation.GetY(), rigidbody->rotation.GetZ());
+        ImGui::Text("Scale: %f, %f, %f", rigidbody->scale.x, rigidbody->scale.y, rigidbody->scale.z);
+        ImGui::Text("Velocity: %f, %f, %f", rigidbody->velocity.x, rigidbody->velocity.y, rigidbody->velocity.z);
+        ImGui::Text("Acceleration: %f, %f, %f", rigidbody->GetAcceleration().x, rigidbody->GetAcceleration().y, rigidbody->GetAcceleration().z);
+        ImGui::Text("AngularVelocity: %f, %f, %f", rigidbody->angularVelocity.x, rigidbody->angularVelocity.y, rigidbody->angularVelocity.z);
+        ImGui::Text("AngularAcceleration: %f, %f, %f", rigidbody->GetAngularAcceleration().x, rigidbody->GetAngularAcceleration().y, rigidbody->GetAngularAcceleration().z);
+        ImGui::Text("Mass: %f", rigidbody->mass);
+        ImGui::Text("Inverse Mass: %f", rigidbody->inverseMass);
+        ImGui::Text("%s transformMatrix:\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f",
+            rigidbody->name.c_str(),
+            rigidbody->transformMatrix.Value(0, 0), rigidbody->transformMatrix.Value(0, 1), rigidbody->transformMatrix.Value(0, 2), rigidbody->transformMatrix.Value(0, 3),
+            rigidbody->transformMatrix.Value(1, 0), rigidbody->transformMatrix.Value(1, 1), rigidbody->transformMatrix.Value(1, 2), rigidbody->transformMatrix.Value(1, 3),
+            rigidbody->transformMatrix.Value(2, 0), rigidbody->transformMatrix.Value(2, 1), rigidbody->transformMatrix.Value(2, 2), rigidbody->transformMatrix.Value(2, 3),
+            rigidbody->transformMatrix.Value(3, 0), rigidbody->transformMatrix.Value(3, 1), rigidbody->transformMatrix.Value(3, 2), rigidbody->transformMatrix.Value(3, 3));
+        ImGui::Separator();
+    }
+    ImGui::End();
+}
+
+
+void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
+{
+#pragma region PhysicsSystem
+    std::shared_ptr<ForceRegistry> forceRegistry = std::make_shared<ForceRegistry>();
+    PhysicsSystem physics(forceRegistry);
+#pragma endregion
+
+#pragma region Rigidbodies
+    std::shared_ptr<Rigidbody> rigidbody1 = std::make_shared<Rigidbody>("Rigidbody 1 Sphere", Vector3f::Up * 10.0f);
+    std::shared_ptr<Rigidbody> rigidbody2 = std::make_shared<Rigidbody>("Rigidbody 2 Cube", RigidbodyType::CUBE, Vector3f::Zero, 10.0f);
+
+    physics.AddRigidbody(rigidbody1);
+    physics.AddRigidbody(rigidbody2);
+#pragma endregion
+
+#pragma region Forces
+    std::shared_ptr<ForceGravity> gravity = std::make_shared<ForceGravity>();
+    forceRegistry->Add(rigidbody1, gravity);
+#pragma endregion
+
 #pragma region BroadPhase
 
     std::shared_ptr<BoundingSphere> boundingSphere1 = std::make_shared<BoundingSphere>(rigidbody1);
@@ -1023,7 +1243,7 @@ void Scene4(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
     glm::mat4 model = glm::mat4(1.0f);
 #pragma region Loop
 
-    while (!window.ShouldClose() && currentScene == Scene::SCENE_4)
+    while (!window.ShouldClose() && currentScene == Scene::SCENE_5)
     {
         double newTime = HiresTimeInSeconds();
         double frameTime = newTime - currentTime;
@@ -1118,254 +1338,9 @@ void Scene4(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         ImGuiCameraPanel();
         ImGuiStatsPanel(dt);
         ImGuiSceneSelectionPanel(currentScene);
-        ImGuiScene3Panel(physics.GetRigidbodies(), cubePositions);
+        ImGuiScene5Panel(physics.GetRigidbodies(), cubePositions);
         ImGuiBroadPhasePanel(physics.GetPotentialContactArray(), physics.GetPotentialContactCount());
-        imguiCpp.Render();
-
-        glfwSwapBuffers(window.GetHandle());
-        glfwPollEvents();
-    }
-#pragma endregion
-    glDeleteVertexArrays(1, &VAO1);
-    glDeleteBuffers(1, &VBO1);
-    glDeleteVertexArrays(1, &VAO2);
-    glDeleteBuffers(1, &VBO2);
-    glDeleteVertexArrays(1, &VAO3);
-    glDeleteBuffers(1, &VBO3);
-
-    delete(potentialContacts);
-}
-
-void ImGuiScene4Panel(const std::vector<std::shared_ptr<Rigidbody>>& rigidbodies, const std::vector<glm::vec3> cubesPositions)
-{
-    ImGui::Begin("Center Cube Anchored");
-    ImGui::Text("Position: %f, %f, %f", cubesPositions[0].x, cubesPositions[0].y, cubesPositions[0].z);
-    ImGui::End();
-    ImGui::Begin("Rigidbodies");
-    for (auto& rigidbody : rigidbodies)
-    {
-        ImGui::Text("%s", rigidbody->name.c_str());
-        ImGui::Text("Position: %f, %f, %f", rigidbody->position.x, rigidbody->position.y, rigidbody->position.z);
-        ImGui::Text("Rotation: %f, %f, %f", rigidbody->rotation.GetX(), rigidbody->rotation.GetY(), rigidbody->rotation.GetZ());
-        ImGui::Text("Scale: %f, %f, %f", rigidbody->scale.x, rigidbody->scale.y, rigidbody->scale.z);
-        ImGui::Text("Velocity: %f, %f, %f", rigidbody->velocity.x, rigidbody->velocity.y, rigidbody->velocity.z);
-        ImGui::Text("Acceleration: %f, %f, %f", rigidbody->GetAcceleration().x, rigidbody->GetAcceleration().y, rigidbody->GetAcceleration().z);
-        ImGui::Text("AngularVelocity: %f, %f, %f", rigidbody->angularVelocity.x, rigidbody->angularVelocity.y, rigidbody->angularVelocity.z);
-        ImGui::Text("AngularAcceleration: %f, %f, %f", rigidbody->GetAngularAcceleration().x, rigidbody->GetAngularAcceleration().y, rigidbody->GetAngularAcceleration().z);
-        ImGui::Text("Mass: %f", rigidbody->mass);
-        ImGui::Text("Inverse Mass: %f", rigidbody->inverseMass);
-        ImGui::Text("%s transformMatrix:\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f",
-            rigidbody->name.c_str(),
-            rigidbody->transformMatrix.Value(0, 0), rigidbody->transformMatrix.Value(0, 1), rigidbody->transformMatrix.Value(0, 2), rigidbody->transformMatrix.Value(0, 3),
-            rigidbody->transformMatrix.Value(1, 0), rigidbody->transformMatrix.Value(1, 1), rigidbody->transformMatrix.Value(1, 2), rigidbody->transformMatrix.Value(1, 3),
-            rigidbody->transformMatrix.Value(2, 0), rigidbody->transformMatrix.Value(2, 1), rigidbody->transformMatrix.Value(2, 2), rigidbody->transformMatrix.Value(2, 3),
-            rigidbody->transformMatrix.Value(3, 0), rigidbody->transformMatrix.Value(3, 1), rigidbody->transformMatrix.Value(3, 2), rigidbody->transformMatrix.Value(3, 3));
-        ImGui::Separator();
-    }
-    ImGui::End();
-}
-
-void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
-{
-#pragma region PhysicsSystem
-    std::shared_ptr<ForceRegistry> forceRegistry = std::make_shared<ForceRegistry>();
-    PhysicsSystem physics(forceRegistry);
-#pragma endregion
-
-#pragma region Rigidbodies
-    std::shared_ptr<Rigidbody> rigidbody1 = std::make_shared<Rigidbody>("Rigidbody 1 Sphere", Vector3f::Up * 10.0f);
-    std::shared_ptr<Rigidbody> rigidbody2 = std::make_shared<Rigidbody>("Rigidbody 2 Cube", RigidbodyType::CUBE, Vector3f::Zero, 10.0f);
-
-    physics.AddRigidbody(rigidbody1);
-    physics.AddRigidbody(rigidbody2);
-#pragma endregion
-
-#pragma region Forces
-    std::shared_ptr<ForceGravity> gravity = std::make_shared<ForceGravity>();
-    forceRegistry->Add(rigidbody1, gravity);
-#pragma endregion
-
-#pragma region BroadPhase
-
-    std::shared_ptr<BoundingSphere> boundingSphere1 = std::make_shared<BoundingSphere>(rigidbody1);
-    rigidbody1->m_boundingSphere = boundingSphere1;
-
-    std::shared_ptr<BoundingSphere> boundingSphere2 = std::make_shared<BoundingSphere>(rigidbody2);
-    rigidbody2->m_boundingSphere = boundingSphere2;
-
-    std::shared_ptr<BVHNode> bvhRoot = std::make_shared<BVHNode>(rigidbody1);
-    bvhRoot->Insert(rigidbody2, boundingSphere2);
-
-    physics.AddRootBVHNode(bvhRoot);
-    PotentialContact* potentialContacts = new PotentialContact;
-#pragma endregion
-
-#pragma region Shader
-    Shader ourShader("assets/shaders/test.vert", "assets/shaders/test.frag");
-
-    std::string texturePath = "assets/textures/test.jpg";
-    unsigned int texture1;
-    LoadTexture(texture1, texturePath);
-#pragma endregion 
-
-#pragma region Model
-    // For Sphere
-    std::vector<glm::vec3> sphereVertices;
-    CreateSphere(sphereVertices, 1.f, 50, 50);
-
-    std::vector<glm::vec3> spherePositions;
-    spherePositions.push_back(glm::vec3(rigidbody1->position.x, rigidbody1->position.y, rigidbody1->position.z));
-    spherePositions.push_back(glm::vec3(rigidbody2->position.x, rigidbody2->position.y, rigidbody2->position.z));
-
-    GLuint VAO1, VBO1;
-    glGenVertexArrays(1, &VAO1);
-    glBindVertexArray(VAO1);
-
-    glGenBuffers(1, &VBO1);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO1);
-    glBufferData(GL_ARRAY_BUFFER, sphereVertices.size() * sizeof(glm::vec3), sphereVertices.data(), GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // For Cube
-    std::vector<glm::vec3> cubeVertices;
-    std::vector<glm::vec2> cubeTexCoords;
-    CreateCube(cubeVertices, cubeTexCoords, 1.0f);
-
-    std::vector<glm::vec3> cubePositions;
-    cubePositions.push_back(glm::vec3(rigidbody2->position.x, rigidbody2->position.y, rigidbody2->position.z));
-
-    GLuint VAO2, VBO2;
-    glGenVertexArrays(1, &VAO2);
-    glBindVertexArray(VAO2);
-
-    // Vertex Positions
-    glGenBuffers(1, &VBO2);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
-    glBufferData(GL_ARRAY_BUFFER, cubeVertices.size() * sizeof(glm::vec3), cubeVertices.data(), GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // Texture Coords
-    glGenBuffers(1, &VBO2);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
-    glBufferData(GL_ARRAY_BUFFER, cubeTexCoords.size() * sizeof(glm::vec2), cubeTexCoords.data(), GL_STATIC_DRAW);
-
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-
-    // For Bounding Sphere
-    GLuint VAO3, VBO3;
-    glGenVertexArrays(1, &VAO3);
-    glGenBuffers(1, &VBO3);
-    glBindVertexArray(VAO3);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO3);
-#pragma endregion
-
-#pragma region Timestep
-    double t = 0.0;
-    double dt = 0.01;
-    double currentTime = HiresTimeInSeconds();
-    double accumulator = 0.0;
-
-    State previous;
-    State current;
-#pragma endregion
-
-    glm::mat4 model = glm::mat4(1.0f);
-#pragma region Loop
-
-    while (!window.ShouldClose() && currentScene == Scene::SCENE_5)
-    {
-        double newTime = HiresTimeInSeconds();
-        double frameTime = newTime - currentTime;
-        // max frame time to avoid spiral of death(on slow devices)
-        if (frameTime > 0.015)
-            frameTime = 0.015;
-        currentTime = newTime;
-
-        accumulator += frameTime;
-
-        while (accumulator >= dt)
-        {
-            previous = current;
-            physics.Update(dt, true, true);
-            accumulator -= dt;
-            t += dt;
-        }
-
-        const double alpha = accumulator / dt;
-        State state = current * alpha + previous * (1.0 - alpha);
-
-        ProcessCameraInput(window.GetHandle(), dt);
-        ProcessSceneInput(window.GetHandle(), currentScene);
-
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        ourShader.Use();
-
-        // Render Bounding 
-        std::vector<glm::vec3> boundingSphereVertices;
-        CreateSphere(boundingSphereVertices, bvhRoot->m_volume->GetRadius() * 2.0f + 0.5f, 30, 30);
-
-        std::vector<glm::vec3> boundingSpherePositions;
-        boundingSpherePositions.push_back(glm::vec3(bvhRoot->m_volume->GetCenter().x, bvhRoot->m_volume->GetCenter().y, bvhRoot->m_volume->GetCenter().z));
-
-        glBindVertexArray(VAO3);
-        glBufferData(GL_ARRAY_BUFFER, boundingSphereVertices.size() * sizeof(glm::vec3), boundingSphereVertices.data(), GL_STATIC_DRAW);
-
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-
-        glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        ourShader.SetMat4("projection", projection);
-        glm::mat4 view = camera.GetViewMatrix();
-        ourShader.SetMat4("view", view);
-
-        // Update Spheres Positions
-        spherePositions[0] = glm::vec3(rigidbody1->position.x, rigidbody1->position.y, rigidbody1->position.z);
-        spherePositions[1] = glm::vec3(rigidbody2->position.x, rigidbody2->position.y, rigidbody2->position.z);
-
-        // Render Spheres 
-        for (int i = 0; i < spherePositions.size(); ++i)
-        {
-            model = glm::mat4(1.0f); // Initialize model matrix for each object
-            model = glm::translate(model, spherePositions[i]);
-            ourShader.SetMat4("model", model);
-            glBindVertexArray(VAO1);
-            glDrawArrays(GL_LINE_STRIP, 0, sphereVertices.size());
-        }
-
-        // Render Bounding Spheres
-        for (int i = 0; i < boundingSpherePositions.size(); ++i)
-        {
-            model = glm::mat4(1.0f); // Initialize model matrix for each object
-            model = glm::translate(model, boundingSpherePositions[i]);
-            ourShader.SetMat4("model", model);
-            glBindVertexArray(VAO3);
-            glDrawArrays(GL_LINE_STRIP, 0, boundingSphereVertices.size());
-        }
-
-        // Render Cubes
-        for (int i = 0; i < cubePositions.size(); ++i)
-        {
-            model = glm::mat4(1.0f); // Reset model matrix for the next object
-            model = glm::translate(model, cubePositions[i]);
-            ourShader.SetMat4("model", model);
-            glBindVertexArray(VAO2);
-            glDrawArrays(GL_TRIANGLES, 0, cubeVertices.size());
-        }
-
-        imguiCpp.NewFrame();
-        // Add imgui panels here
-        ImGuiCameraPanel();
-        ImGuiStatsPanel(dt);
-        ImGuiSceneSelectionPanel(currentScene);
-        ImGuiScene3Panel(physics.GetRigidbodies(), cubePositions);
-        ImGuiBroadPhasePanel(physics.GetPotentialContactArray(), physics.GetPotentialContactCount());
+        ImGuiNarrowPhasePanel();
         imguiCpp.Render();
 
         glfwSwapBuffers(window.GetHandle());
@@ -1685,4 +1660,10 @@ void ImGuiBroadPhasePanel(PotentialContact* potentialContact, unsigned int poten
         ImGui::Text("Potential contacts: %s", potentialContact->rigidbodies[1]->name.c_str());
     }
     ImGui::End();
+}
+
+void ImGuiNarrowPhasePanel()
+{
+    ImGui::Begin("Narrow Phase");
+	ImGui::End();
 }
