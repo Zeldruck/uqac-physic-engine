@@ -34,16 +34,21 @@ void EulerIntegrator::Update(State& current, std::vector<std::shared_ptr<Particl
 		rigidbody->angularVelocity += rigidbody->GetAngularAcceleration() * deltaTime * (1.0f - rigidbody->angularDamping);
 
 		// Calculate the rotation quaternion using the angular velocity
-		Quaternionf deltaRotation = Quaternionf(
-			cos(0.5f * rigidbody->angularVelocity.x * deltaTime),
-			sin(0.5f * rigidbody->angularVelocity.x * deltaTime),
-			sin(0.5f * rigidbody->angularVelocity.y * deltaTime),
-			sin(0.5f * rigidbody->angularVelocity.z * deltaTime)
-		);
+		//Quaternionf deltaRotation = Quaternionf(
+		//	cos(0.5f * rigidbody->angularVelocity.x * deltaTime),
+		//	sin(0.5f * rigidbody->angularVelocity.x * deltaTime),
+		//	sin(0.5f * rigidbody->angularVelocity.y * deltaTime),
+		//	sin(0.5f * rigidbody->angularVelocity.z * deltaTime)
+		//);
 
-		// Update the rotation
-		rigidbody->rotation = deltaRotation * rigidbody->rotation;
-		rigidbody->rotation.Normalize();  // Normalize the quaternion to avoid drift over time
+		//// Update the rotation
+		//rigidbody->rotation = deltaRotation * rigidbody->rotation;
+		//rigidbody->rotation.Normalize();  // Normalize the quaternion to avoid drift over time
+
+		Quaternionf newRotation = Quaternionf(0.f, rigidbody->angularVelocity.x, rigidbody->angularVelocity.y, rigidbody->angularVelocity.z) * deltaTime;
+		newRotation = newRotation * rigidbody->rotation;
+		rigidbody->rotation = rigidbody->rotation + newRotation * 0.5;
+		rigidbody->rotation.Normalize();
 
 		rigidbody->CalculateDerivedData();
 	}

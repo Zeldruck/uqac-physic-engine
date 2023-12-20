@@ -86,7 +86,7 @@ void LoadTexture(unsigned int& texture, const std::string& texturePath);
 void ImGuiCameraPanel();
 void ImGuiStatsPanel(float deltaTime);
 void ImGuiSceneSelectionPanel(Scene& currentScene);
-void ImGuiBroadPhasePanel(PotentialContact* potientialContact, unsigned int potentialContactCount);
+void ImGuiBroadPhasePanel(PotentialContact* potentialContact, unsigned int potentialContactsCount, PotentialContactPrimitive* potentialContactPrimitive, unsigned int potentialContactPrimitiveCount);
 void ImGuiNarrowPhasePanel();
 
 void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene);
@@ -670,11 +670,12 @@ void Scene3(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
     std::shared_ptr<BoundingSphere> boundingSphere2 = std::make_shared<BoundingSphere>(rigidbody2);
     rigidbody2->m_boundingSphere = boundingSphere2;
 
-    std::shared_ptr<BVHNode> bvhRoot = std::make_shared<BVHNode>(rigidbody1);
+    std::shared_ptr<BVHNode> bvhRoot = std::make_shared<BVHNode>(sphere);
     bvhRoot->Insert(box, boundingSphere2);
 
     physics.AddRootBVHNode(bvhRoot);
     PotentialContact* potentialContacts = new PotentialContact;
+    PotentialContactPrimitive* potentialContactsPrimitive = new PotentialContactPrimitive;
 #pragma endregion
 
 #pragma region Shader
@@ -842,7 +843,7 @@ void Scene3(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         ImGuiStatsPanel(dt);
         ImGuiSceneSelectionPanel(currentScene);
         ImGuiScene3Panel(physics.GetRigidbodies(), cubePositions);
-        ImGuiBroadPhasePanel(physics.GetPotentialContactArray(), physics.GetPotentialContactCount());
+        ImGuiBroadPhasePanel(physics.GetPotentialContactArray(), physics.GetPotentialContactCount(), physics.GetPotentialContactPrimitiveArray(), physics.GetPotentialContactPrimitiveCount());
         imguiCpp.Render();
 
         glfwSwapBuffers(window.GetHandle());
@@ -857,6 +858,7 @@ void Scene3(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
     glDeleteBuffers(1, &VBO3);
 
     delete(potentialContacts);
+    delete(potentialContactsPrimitive);
 }
 
 void ImGuiScene3Panel(const std::vector<std::shared_ptr<Rigidbody>>& rigidbodies, const std::vector<glm::vec3> cubesPositions)
@@ -1141,6 +1143,7 @@ void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
 
     physics.AddRootBVHNode(bvhRoot);
     PotentialContact* potentialContacts = new PotentialContact;
+    PotentialContactPrimitive* potentialContactsPrimitive = new PotentialContactPrimitive;
 #pragma endregion
 
 #pragma region Narrow Phase
@@ -1329,7 +1332,7 @@ void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         ImGuiStatsPanel(dt);
         ImGuiSceneSelectionPanel(currentScene);
         ImGuiScene5Panel(physics.GetRigidbodies(), cubePositions);
-        ImGuiBroadPhasePanel(physics.GetPotentialContactArray(), physics.GetPotentialContactCount());
+        ImGuiBroadPhasePanel(physics.GetPotentialContactArray(), physics.GetPotentialContactCount(), physics.GetPotentialContactPrimitiveArray(), physics.GetPotentialContactPrimitiveCount());
         ImGuiNarrowPhasePanel();
         imguiCpp.Render();
 
@@ -1344,7 +1347,8 @@ void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
     glDeleteVertexArrays(1, &VAO3);
     glDeleteBuffers(1, &VBO3);
 
-    delete[] potentialContacts;
+    delete(potentialContacts);
+    delete(potentialContactsPrimitive);
 }
 
 void ImGuiScene5Panel(const std::vector<std::shared_ptr<Rigidbody>>& rigidbodies, const std::vector<glm::vec3> cubesPositions)
@@ -1640,14 +1644,30 @@ void ImGuiSceneSelectionPanel(Scene& currentScene)
 	ImGui::End();
 }
 
-void ImGuiBroadPhasePanel(PotentialContact* potentialContact, unsigned int potentialContactsCount)
+void ImGuiBroadPhasePanel(PotentialContact* potentialContact, unsigned int potentialContactsCount, PotentialContactPrimitive* potentialContactPrimitive, unsigned int potentialContactPrimitiveCount)
 {
     ImGui::Begin("Broad Phase");
     ImGui::Text("Potential Contacts: %d", potentialContactsCount);
     if (potentialContactsCount > 0)
     {
-        ImGui::Text("Potential contacts: %s", potentialContact->rigidbodies[0]->name.c_str());
-        ImGui::Text("Potential contacts: %s", potentialContact->rigidbodies[1]->name.c_str());
+        for (unsigned int i = 0; i < potentialContactsCount; i++)
+        {
+            ImGui::Text("Potential contacts: %s", potentialContact->rigidbodies[0]->name.c_str());
+            ImGui::Text("Potential contacts: %s", potentialContact->rigidbodies[1]->name.c_str());
+            ImGui::Separator();
+        }
+    }
+    ImGui::Separator();
+    ImGui::Separator();
+    ImGui::Text("Potential Contacts Primitive: %d", potentialContactPrimitiveCount);
+    if (potentialContactPrimitiveCount > 0)
+    {
+        for (unsigned int i = 0; i < potentialContactPrimitiveCount; i++)
+        {
+            ImGui::Text("Potential contacts primitive: %s", potentialContactPrimitive->primitives[0]->rigidbody->name.c_str());
+            ImGui::Text("Potential contacts primitive: %s", potentialContactPrimitive->primitives[1]->rigidbody->name.c_str());
+            ImGui::Separator();
+        }
     }
     ImGui::End();
 }

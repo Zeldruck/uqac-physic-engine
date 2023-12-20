@@ -9,19 +9,28 @@
 #include "Collision/BoundingSphere.hpp"
 #include "Collision/BoundingBox.hpp"
 #include "Collision/BVHNode.hpp"
+#include "Collision/Primitives/Primitive.hpp"
+#include "Collision/Primitives/Sphere.hpp"
+#include "Collision/Primitives/Box.hpp"
+#include "Collision/Primitives/Plane.hpp"
 #include "State.hpp"
 
 PhysicsSystem::PhysicsSystem(std::shared_ptr<ForceRegistry> forceRegistry) :
 	m_forceRegistry(forceRegistry),
 	m_integrator(std::make_unique<EulerIntegrator>()),
-	m_potentialContactCount(0)
+	m_potentialContactCount(0),
+	m_potentialContactPrimitiveCount(0)
 {
 	m_potentialContact = new PotentialContact();
+	m_potentialContactPrimitive = new PotentialContactPrimitive();
 }
 
 PhysicsSystem::~PhysicsSystem()
 {
-	delete(m_potentialContact);
+	if(m_potentialContact)
+		delete(m_potentialContact);
+	if(m_potentialContactPrimitive)
+		delete(m_potentialContactPrimitive);
 }
 
 void PhysicsSystem::Update(State& current, float deltaTime, bool isGravityEnabled, bool detectCollisions /* = true */)
@@ -62,7 +71,9 @@ void PhysicsSystem::BroadPhaseCollisionDetection()
 {
 	m_rootBVHNode->RecalculateBoundingVolume();
 	m_potentialContactCount = m_rootBVHNode->GetPotentialContact(m_potentialContact, 1000);
+	m_potentialContactPrimitiveCount = m_rootBVHNode->GetPotentialContactPrimitive(m_potentialContactPrimitive, 1000);
 	ParsePotentialContacts();
+	ParsePotentialContactsPrimitive();
 }
 
 void PhysicsSystem::AddParticle(std::shared_ptr<Particle> particle)
@@ -130,6 +141,16 @@ unsigned int PhysicsSystem::GetPotentialContactCount() const
 	return m_potentialContactCount;
 }
 
+PotentialContactPrimitive* PhysicsSystem::GetPotentialContactPrimitiveArray() const
+{
+	return m_potentialContactPrimitive;
+}
+
+unsigned int PhysicsSystem::GetPotentialContactPrimitiveCount() const
+{
+	return m_potentialContactPrimitiveCount;
+}
+
 void PhysicsSystem::PrintRigidbodies()
 {
 	for (const std::shared_ptr<Rigidbody> rigidbody : m_rigidbodies)
@@ -155,4 +176,15 @@ void PhysicsSystem::ParsePotentialContacts()
 		std::cout << "Rigidbody 1: " << m_potentialContact[i].rigidbodies[0]->name << std::endl;
 		std::cout << "Rigidbody 2: " << m_potentialContact[i].rigidbodies[1]->name << std::endl;
 	}
+}
+
+void PhysicsSystem::ParsePotentialContactsPrimitive()
+{
+	for (unsigned int i = 0; i < m_potentialContactPrimitiveCount; ++i)
+	{
+		std::cout << "Contact " << i << std::endl;
+		std::cout << "Rigidbody 1: " << m_potentialContactPrimitive[i].primitives[0]->rigidbody->name << std::endl;
+		std::cout << "Rigidbody 2: " << m_potentialContactPrimitive[i].primitives[1]->rigidbody->name << std::endl;
+	}
+
 }

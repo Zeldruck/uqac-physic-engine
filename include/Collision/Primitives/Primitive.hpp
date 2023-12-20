@@ -2,6 +2,7 @@
 #include "Matrix4.hpp"
 
 #include <memory>
+#include <string>
 
 class Rigidbody;
 

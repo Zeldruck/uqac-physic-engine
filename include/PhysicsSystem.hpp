@@ -11,6 +11,7 @@ class Particle;
 class Rigidbody;
 class BVHNode;
 struct PotentialContact;
+struct PotentialContactPrimitive;
 struct State;
 
 class PhysicsSystem
@@ -39,6 +40,9 @@ public:
 	PotentialContact* GetPotentialContactArray() const;
 	unsigned int GetPotentialContactCount() const;
 	void ParsePotentialContacts();
+	PotentialContactPrimitive* GetPotentialContactPrimitiveArray() const;
+	unsigned int GetPotentialContactPrimitiveCount() const;
+	void ParsePotentialContactsPrimitive();
 
 	void ClearForces();
 	void BroadPhaseCollisionDetection();
@@ -48,11 +52,12 @@ private:
 	std::vector<std::shared_ptr<Particle>> m_particles;
 	std::vector<std::shared_ptr<Rigidbody>> m_rigidbodies;
 	std::shared_ptr<ForceRegistry> m_forceRegistry;
-	//std::shared_ptr<ContactRegistry> m_contactRegistry;
-	//std::vector<ParticleContactGenerator*> contactGenerators;
-	//ParticleContactResolver contactResolver;
 	std::unique_ptr<EulerIntegrator> m_integrator;
+
+	// Broad Phase Variables
 	std::shared_ptr<BVHNode> m_rootBVHNode;
 	PotentialContact* m_potentialContact;
 	unsigned int m_potentialContactCount;
+	PotentialContactPrimitive* m_potentialContactPrimitive;
+	unsigned int m_potentialContactPrimitiveCount;
 };
