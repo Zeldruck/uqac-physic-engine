@@ -12,7 +12,8 @@
 
 PhysicsSystem::PhysicsSystem(std::shared_ptr<ForceRegistry> forceRegistry) :
 	m_forceRegistry(forceRegistry),
-	m_integrator(std::make_unique<EulerIntegrator>())
+	m_integrator(std::make_unique<EulerIntegrator>()),
+	m_potentialContactCount(0)
 {
 	m_potentialContact = new PotentialContact();
 }
