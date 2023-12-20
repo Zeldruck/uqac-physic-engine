@@ -1012,6 +1012,7 @@ void Scene4(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         //contactGenerator.DetectBandP(box, plane);
         //contactGenerator.DetectSandB(sphere, box);
         contactGenerator.DetectSandHS(sphere, plane);
+        physics.GetPotentialContactArray();
         contactResolver.ResolveContacts(contactGenerator.GetContacts(), dt);
 
         const double alpha = accumulator / dt;
@@ -1140,15 +1141,15 @@ void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
 #pragma endregion
 
 #pragma region Narrow Phase
-    
+
     ContactGenerator contactGenerator = ContactGenerator(50);
     ContactResolver contactResolver = ContactResolver(50);
-    
+
     Plane plane = Plane(nullptr, Matrix4f(), Vector3f(0, 1, 0), 0.f);
-    
+
     Sphere sphere = Sphere(rigidbody1, Matrix4f(), 1.f);
     Sphere sphere2 = Sphere(rigidbody2, Matrix4f(), 1.f);
-    
+
     Box box = Box(rigidbody1, Matrix4f(), Vector3f(0.5f, 0.5f, 0.5f));
 #pragma endregion
 
@@ -1340,7 +1341,7 @@ void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
     glDeleteVertexArrays(1, &VAO3);
     glDeleteBuffers(1, &VBO3);
 
-    delete(potentialContacts);
+    delete[] potentialContacts;
 }
 
 void ImGuiScene5Panel(const std::vector<std::shared_ptr<Rigidbody>>& rigidbodies, const std::vector<glm::vec3> cubesPositions)

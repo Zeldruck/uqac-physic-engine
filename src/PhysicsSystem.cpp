@@ -62,6 +62,7 @@ void PhysicsSystem::BroadPhaseCollisionDetection()
 {
 	m_rootBVHNode->RecalculateBoundingVolume();
 	m_potentialContactCount = m_rootBVHNode->GetPotentialContact(m_potentialContact, 1000);
+	ParsePotentialContacts();
 }
 
 void PhysicsSystem::AddParticle(std::shared_ptr<Particle> particle)
@@ -143,5 +144,15 @@ void PhysicsSystem::PrintRigidbodies()
 		std::cout << rigidbody->name << " torque" << rigidbody->torque << std::endl;
 		std::cout << rigidbody->name << " mass"	 << rigidbody->mass << std::endl;
 		std::cout << rigidbody->name << " force" << rigidbody->force << std::endl;
+	}
+}
+
+void PhysicsSystem::ParsePotentialContacts()
+{
+	for (unsigned int i = 0; i < m_potentialContactCount; ++i)
+	{
+		std::cout << "Contact " << i << std::endl;
+		std::cout << "Rigidbody 1: " << m_potentialContact[i].rigidbodies[0]->name << std::endl;
+		std::cout << "Rigidbody 2: " << m_potentialContact[i].rigidbodies[1]->name << std::endl;
 	}
 }

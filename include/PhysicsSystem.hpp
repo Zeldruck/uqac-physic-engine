@@ -38,6 +38,7 @@ public:
 	void AddRootBVHNode(std::shared_ptr<BVHNode> node);
 	PotentialContact* GetPotentialContactArray() const;
 	unsigned int GetPotentialContactCount() const;
+	void ParsePotentialContacts();
 
 	void ClearForces();
 	void BroadPhaseCollisionDetection();
