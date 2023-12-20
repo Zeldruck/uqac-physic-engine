@@ -27,7 +27,7 @@ public:
 	Rigidbody(std::string name, RigidbodyType type, Vector3f position);
 	Rigidbody(std::string name, RigidbodyType type, Vector3f position, float mass);
 	Rigidbody(std::string name, RigidbodyType type, Vector3f position, Quaternionf rotation, float mass);
-	Rigidbody(std::string name, RigidbodyType type, Vector3f position, Quaternionf rotation, Vector3f scale, float mass);
+	Rigidbody(std::string name, RigidbodyType type, Vector3f position, Quaternionf rotation, Vector3f scale, float mass, float linearDamping = 0.0f, float angularDamping = 0.0f);
 
 	bool isAwake;
 	
@@ -41,6 +41,8 @@ public:
 	Vector3f force;
 	Vector3f angularVelocity;
 	Vector3f torque;
+	float linearDamping;
+	float angularDamping;
 
 	Vector3f centerOfMass;
 	float mass;

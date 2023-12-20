@@ -212,7 +212,7 @@ Rigidbody::Rigidbody(std::string name, RigidbodyType type, Vector3f position, Qu
 	CalculateDerivedData();
 }
 
-Rigidbody::Rigidbody(std::string name, RigidbodyType, Vector3f position, Quaternionf rotation, Vector3f scale, float mass) :
+Rigidbody::Rigidbody(std::string name, RigidbodyType, Vector3f position, Quaternionf rotation, Vector3f scale, float mass, float linearDamping, float angularDamping) :
 	name(name),
 	type(type),
 	position(position),
@@ -225,6 +225,8 @@ Rigidbody::Rigidbody(std::string name, RigidbodyType, Vector3f position, Quatern
 	m_angularAcceleration(Vector3f::Zero),
 	mass(mass),
 	inverseMass(1.0f / MIN_MASS),
+	linearDamping(linearDamping),
+	angularDamping(angularDamping),
 	isAwake(true)
 {
 	switch (type)
