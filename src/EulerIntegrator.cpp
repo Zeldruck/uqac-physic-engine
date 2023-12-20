@@ -21,8 +21,9 @@ void EulerIntegrator::Update(std::vector<std::shared_ptr<Particle>>& particles, 
 	{
 		rigidbody->velocity += rigidbody->GetAcceleration() * deltaTime;
 		rigidbody->position += rigidbody->velocity * deltaTime;
-
-		rigidbody->m_boundingSphere->m_center = rigidbody->position;
+		
+		if(rigidbody->m_boundingSphere != nullptr)
+			rigidbody->m_boundingSphere->m_center = rigidbody->position;
 
 		rigidbody->angularVelocity += rigidbody->GetAngularAcceleration() * deltaTime;
 
