@@ -35,7 +35,9 @@ public:
 	void PrintRigidbodies();
 
 	void AddRootBVHNode(std::shared_ptr<BVHNode> node);
-	
+	PotentialContact* GetPotentialContactArray() const;
+	unsigned int GetPotentialContactCount() const;
+
 	void ClearForces();
 	void BroadPhaseCollisionDetection();
 
@@ -50,4 +52,5 @@ private:
 	std::unique_ptr<EulerIntegrator> m_integrator;
 	std::shared_ptr<BVHNode> m_rootBVHNode;
 	PotentialContact* m_potentialContact;
+	unsigned int m_potentialContactCount;
 };
