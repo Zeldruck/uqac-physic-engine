@@ -9,6 +9,7 @@
 #include "Collision/BoundingSphere.hpp"
 #include "Collision/BoundingBox.hpp"
 #include "Collision/BVHNode.hpp"
+#include "State.hpp"
 
 PhysicsSystem::PhysicsSystem(std::shared_ptr<ForceRegistry> forceRegistry) :
 	m_forceRegistry(forceRegistry),
@@ -23,7 +24,7 @@ PhysicsSystem::~PhysicsSystem()
 	delete(m_potentialContact);
 }
 
-void PhysicsSystem::Update(float deltaTime, bool isGravityEnabled, bool detectCollisions /* = true */)
+void PhysicsSystem::Update(State& current, float deltaTime, bool isGravityEnabled, bool detectCollisions /* = true */)
 {
 	// Clear les forces des particles et rigidbodies
 	ClearForces();
@@ -32,7 +33,7 @@ void PhysicsSystem::Update(float deltaTime, bool isGravityEnabled, bool detectCo
 	m_forceRegistry->UpdateForces(deltaTime);
 
 	// Mise à jour des particules
-	m_integrator->Update(m_particles, m_rigidbodies, deltaTime, isGravityEnabled);	
+	m_integrator->Update(current, m_particles, m_rigidbodies, deltaTime, isGravityEnabled);	
 
 	// Résolution des collisions
 	if(detectCollisions)

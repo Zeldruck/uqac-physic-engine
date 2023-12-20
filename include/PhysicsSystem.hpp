@@ -11,6 +11,7 @@ class Particle;
 class Rigidbody;
 class BVHNode;
 struct PotentialContact;
+struct State;
 
 class PhysicsSystem
 {
@@ -23,7 +24,7 @@ public:
 	PhysicsSystem& operator=(PhysicsSystem&&) = delete;
 	PhysicsSystem& operator=(const PhysicsSystem&) = delete;
 
-	void Update(float deltaTime, bool isGravityEnabled, bool detectCollisions = true);
+	void Update(State& current, float deltaTime, bool isGravityEnabled, bool detectCollisions = true);
 	void AddParticle(std::shared_ptr<Particle> particle);
 	void RemoveParticle(std::shared_ptr<Particle> particle);
 	std::vector<std::shared_ptr<Particle>> GetParticles();

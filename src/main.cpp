@@ -11,6 +11,7 @@
 #include <imgui.h>
 
 #include "Camera.hpp"
+#include "State.hpp"
 
 #include "EngineCpp/cppGLFW.hpp"
 #include "EngineCpp/cppGLFWwindow.hpp"
@@ -59,21 +60,6 @@ float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 #pragma endregion
-
-struct State
-{
-    double x = 0.0; // position
-    double v = 0.0; // velocity
-
-    State operator*(double a) const
-    {
-        return { x * a, v * a };
-    }
-    State operator+(const State& rhs) const
-    {
-        return { x + rhs.x, v + rhs.v };
-    }
-};
 
 enum class Scene
 {
@@ -302,7 +288,7 @@ void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         while (accumulator >= dt)
         {
             previous = current;
-            physics.Update(dt, true, false);
+            physics.Update(current, dt, true, false);
             accumulator -= dt;
             t += dt;
         }
@@ -546,7 +532,7 @@ void Scene2(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         while (accumulator >= dt)
         {
             previous = current;
-            physics.Update(dt, true, false);
+            physics.Update(current, dt, true, false);
             accumulator -= dt;
             t += dt;
         }
@@ -779,7 +765,7 @@ void Scene3(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         while (accumulator >= dt)
         {
             previous = current;
-            physics.Update(dt, true, true);
+            physics.Update(current, dt, true, true);
             accumulator -= dt;
             t += dt;
         }
@@ -1016,7 +1002,7 @@ void Scene4(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         while (accumulator >= dt)
         {
             previous = current;
-            physics.Update(dt, true, false);
+            physics.Update(current, dt, true, false);
             accumulator -= dt;
             t += dt;
         }
@@ -1257,7 +1243,7 @@ void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         while (accumulator >= dt)
         {
             previous = current;
-            physics.Update(dt, true, true);
+            physics.Update(current, dt, true, true);
             accumulator -= dt;
             t += dt;
         }

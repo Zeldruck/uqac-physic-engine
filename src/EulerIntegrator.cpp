@@ -4,16 +4,22 @@
 #include "Particle.hpp"
 #include "Rigidbody.hpp"
 #include "Collision/BoundingSphere.hpp"
+#include "State.hpp"
 
-#include <iostream>
-
-void EulerIntegrator::Update(std::vector<std::shared_ptr<Particle>>& particles, std::vector<std::shared_ptr<Rigidbody>> rigidbodies, const float& deltaTime, bool isGravityEnabled /*= true*/)
+void EulerIntegrator::Update(State& current, std::vector<std::shared_ptr<Particle>>& particles, std::vector<std::shared_ptr<Rigidbody>> rigidbodies, const float& deltaTime, bool isGravityEnabled /*= true*/)
 {
 	// Update Particles
 	for (std::shared_ptr<Particle> particle : particles)
 	{
 		particle->velocity += particle->GetAcceleration() * deltaTime;
 		particle->position += particle->velocity * deltaTime;
+	}
+
+	// Save Particles Positions
+	current.m_particlePositions.clear();
+	for (std::shared_ptr<Particle> particle : particles)
+	{
+		current.m_particlePositions.push_back(particle->position);
 	}
 
 	// Update Rigidbodies
@@ -45,5 +51,14 @@ void EulerIntegrator::Update(std::vector<std::shared_ptr<Particle>>& particles, 
 		//rigidbody->rotation.Normalize();
 
 		rigidbody->CalculateDerivedData();
+	}
+
+	// Save Rigidbodies Positions & Rotations
+	current.m_rigidbodyPositions.clear();
+	current.m_rigidbodyRotations.clear();
+	for (std::shared_ptr<Rigidbody> rigidbody : rigidbodies)
+	{
+		current.m_rigidbodyPositions.push_back(rigidbody->position);
+		current.m_rigidbodyRotations.push_back(rigidbody->rotation);
 	}
 }
