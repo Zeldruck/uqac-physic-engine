@@ -5,6 +5,13 @@
 #include <Collision/BoundingBox.hpp>
 #include <Rigidbody.hpp>
 
+BVHNode::BVHNode(std::shared_ptr<Rigidbody> rigidbody) :
+	m_rigidbody(rigidbody),
+	m_volume(rigidbody->m_boundingSphere),
+	m_parent(nullptr)
+{
+}
+
 BVHNode::BVHNode(std::shared_ptr<Rigidbody> rigidbody, std::shared_ptr<BoundingSphere> volume) :
 	m_rigidbody(rigidbody),
 	m_volume(volume),
@@ -84,7 +91,7 @@ void BVHNode::Insert(std::shared_ptr<Rigidbody> newRigidbody, std::shared_ptr<Bo
 	if (IsLeaf())
 	{
 		// Children 0 has this node as parent but has data from this node
-		children[0] = std::make_shared<BVHNode>(std::make_shared<BVHNode>(*this), newRigidbody, newVolume);
+		children[0] = std::make_shared<BVHNode>(std::make_shared<BVHNode>(*this), m_rigidbody, m_volume);
 		// Children 1 his new node with this node as parent
 		children[1] = std::make_shared<BVHNode>(std::make_shared<BVHNode>(*this), newRigidbody, newVolume);
 

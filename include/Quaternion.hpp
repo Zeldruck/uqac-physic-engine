@@ -55,8 +55,8 @@ public:
 
 	void GetSinExponential(T& x, T& y, T& z);
 
+	// Not working why ?
 	void RotateByVector(const Vector3<T>& v);
-
 	void AddScaleVector(const Vector3<T>& v, T scale);
 
 protected:

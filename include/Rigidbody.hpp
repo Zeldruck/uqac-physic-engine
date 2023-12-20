@@ -11,7 +11,7 @@ class BoundingBox;
 
 enum RigidbodyType
 {
-	BOX,
+	CUBE,
 	SPHERE,
 	TETRAHEDRON
 };
@@ -30,6 +30,7 @@ public:
 	Rigidbody(std::string name, RigidbodyType type, Vector3f position, Quaternionf rotation, Vector3f scale, float mass);
 
 	bool isAwake;
+	
 
 	std::string name;
 	RigidbodyType type;
@@ -70,10 +71,12 @@ public:
 	Vector3f GetPointInWorldSpace(const Vector3f& point);
 	Vector3f GetPointInLocalSpace(const Vector3f& point);
 
-	BoundingSphere GetBoundingSphere();
+	std::shared_ptr<BoundingSphere> GetBoundingSphere();
 	BoundingBox GetBoundingBox();
+	std::shared_ptr<BoundingSphere> m_boundingSphere;
 
 private:
 	Vector3f m_acceleration;
 	Vector3f m_angularAcceleration;
+
 };

@@ -101,7 +101,7 @@ Rigidbody::Rigidbody(std::string name, RigidbodyType type) :
 {
 	switch (type)
 	{
-	case BOX:
+	case CUBE:
 		inertiaTensor = GetBoxInertiaTensorLocal();
 		break;
 	case SPHERE:
@@ -133,7 +133,7 @@ Rigidbody::Rigidbody(std::string name, RigidbodyType type, Vector3f position) :
 {
 	switch (type)
 	{
-	case BOX:
+	case CUBE:
 		inertiaTensor = GetBoxInertiaTensorLocal();
 		break;
 	case SPHERE:
@@ -165,7 +165,7 @@ Rigidbody::Rigidbody(std::string name, RigidbodyType type, Vector3f position, fl
 {
 	switch (type)
 	{
-	case BOX:
+	case CUBE:
 		inertiaTensor = GetBoxInertiaTensorLocal();
 		break;
 	case SPHERE:
@@ -197,7 +197,7 @@ Rigidbody::Rigidbody(std::string name, RigidbodyType type, Vector3f position, Qu
 {
 	switch (type)
 	{
-	case BOX:
+	case CUBE:
 		inertiaTensor = GetBoxInertiaTensorLocal();
 		break;
 	case SPHERE:
@@ -229,7 +229,7 @@ Rigidbody::Rigidbody(std::string name, RigidbodyType, Vector3f position, Quatern
 {
 	switch (type)
 	{
-	case BOX:
+	case CUBE:
 		inertiaTensor = GetBoxInertiaTensorLocal();
 		break;
 	case SPHERE:
@@ -323,7 +323,6 @@ void Rigidbody::CalculateDerivedData()
 Matrix3f Rigidbody::GetBoxInertiaTensorLocal()
 {
 	float mass = this->mass;
-	Vector3f scale = scale;
 
 	float Ixx = (mass / 12.0f) * (scale.y * scale.y + scale.z * scale.z);
 	float Iyy = (mass / 12.0f) * (scale.x * scale.x + scale.z * scale.z);
@@ -410,9 +409,9 @@ Matrix3f Rigidbody::GetInverseInertiaTensorWorld()
 	return iitWorld;
 }
 
-BoundingSphere Rigidbody::GetBoundingSphere()
+std::shared_ptr<BoundingSphere> Rigidbody::GetBoundingSphere()
 {
-	return BoundingSphere(position, scale.x);
+	return m_boundingSphere;
 }
 
 BoundingBox Rigidbody::GetBoundingBox()

@@ -59,10 +59,13 @@ void PhysicsSystem::AddRootBVHNode(std::shared_ptr<BVHNode> node)
 void PhysicsSystem::BroadPhaseCollisionDetection()
 {
 	m_rootBVHNode->RecalculateBoundingVolume();
-	m_rootBVHNode->GetPotentialContact(m_potentialContact, 1000);
+	unsigned int count = m_rootBVHNode->GetPotentialContact(m_potentialContact, 1000);
 
-	//std::cout << "Potential contacts: " << m_potentialContact->rigidbodies[0]->name << std::endl;
-	//std::cout << "Potential contacts: " << m_potentialContact->rigidbodies[1]->name << std::endl;
+	if (count > 0)
+	{
+		std::cout << "Potential contacts: " << m_potentialContact->rigidbodies[0]->name << std::endl;
+		std::cout << "Potential contacts: " << m_potentialContact->rigidbodies[1]->name << std::endl;
+	}
 }
 
 void PhysicsSystem::AddParticle(std::shared_ptr<Particle> particle)

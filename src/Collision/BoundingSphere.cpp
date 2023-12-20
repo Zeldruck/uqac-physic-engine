@@ -1,8 +1,16 @@
 #include <Collision/BoundingSphere.hpp>
 #include <Constants/MathConstants.hpp>
+#include <Rigidbody.hpp>
+
 BoundingSphere::BoundingSphere() :
 	m_center(Vector3f::Zero),
 	m_radius(0.0f)
+{
+}
+
+BoundingSphere::BoundingSphere(std::shared_ptr<Rigidbody> rigidbody) :
+	m_center(rigidbody->position),
+	m_radius(rigidbody->scale.x)
 {
 }
 
@@ -43,6 +51,7 @@ BoundingSphere::BoundingSphere(std::shared_ptr<BoundingSphere> one, std::shared_
 		m_center = one->m_center;
 		if (distance > 0.0f)
 		{
+
 			m_center += centerOffset * ((m_radius - one->m_radius) / distance);
 		}
 	}
@@ -69,9 +78,9 @@ float BoundingSphere::GetSize() const
 	return (4.0f / 3.0f) * PI * m_radius * m_radius * m_radius;
 }
 
-float BoundingSphere::GetGrowth(std::shared_ptr<BoundingVolume> other) const
+float BoundingSphere::GetGrowth(std::shared_ptr<BoundingSphere> other) const
 {
-	auto sphere = std::dynamic_pointer_cast<BoundingSphere>(other);
+	auto sphere = other;
 	Vector3f centerOffset = m_center - sphere->m_center;
 	float distance = centerOffset.GetLength();
 	return (distance + m_radius + sphere->m_radius) - m_radius;
