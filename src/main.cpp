@@ -124,9 +124,8 @@ int main()
 
     ImguiCpp imguiCpp(&window);
 
+    Scene currentScene = Scene::SCENE_5;
 #pragma region Loop
-    Scene currentScene = Scene::SCENE_4;
-
     while (!window.ShouldClose())
     {
         switch (currentScene)
@@ -1025,14 +1024,14 @@ void Scene4(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
             t += dt;
         }
 
+        const double alpha = accumulator / dt;
+        State state = current * alpha + previous * (1.0 - alpha);
+
         //contactGenerator.DetectSandHS(sphere, plane);
         //contactGenerator.DetectBandP(box, plane);
         //contactGenerator.DetectSandB(sphere, box);
         contactGenerator.DetectSandHS(sphere, plane);
-        contactResolver.ResolveContacts(contactGenerator.GetContacts(), dt);
-
-        const double alpha = accumulator / dt;
-        State state = current * alpha + previous * (1.0 - alpha);
+        contactResolver.ResolveContacts(contactGenerator.GetContacts(), dt, state);
 
         ProcessCameraInput(window.GetHandle(), dt);
         ProcessSceneInput(window.GetHandle(), currentScene);
@@ -1260,7 +1259,7 @@ void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         const double alpha = accumulator / dt;
         State state = current * alpha + previous * (1.0 - alpha);
         physics.m_contactGenerator->DetectSandHS(*sphere, *plane);
-        physics.m_contactResolver->ResolveContacts(physics.m_contactGenerator->GetContacts(), dt);
+        physics.m_contactResolver->ResolveContacts(physics.m_contactGenerator->GetContacts(), dt, state);
         ProcessCameraInput(window.GetHandle(), dt);
         ProcessSceneInput(window.GetHandle(), currentScene);
 
@@ -1619,7 +1618,7 @@ void ImGuiSceneSelectionPanel(Scene& currentScene)
 
 void ImGuiBroadPhasePanel(PotentialContact* potentialContact, unsigned int potentialContactsCount, PotentialContactPrimitive* potentialContactPrimitive, unsigned int potentialContactPrimitiveCount)
 {
-    //ImGui::Begin("Broad Phase");
+    ImGui::Begin("Broad Phase");
     //ImGui::Text("Potential Contacts: %d", potentialContactsCount);
     //if (potentialContactsCount > 0)
     //{

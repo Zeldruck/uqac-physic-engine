@@ -64,7 +64,7 @@ void PhysicsSystem::Update(State& current, float deltaTime, bool isGravityEnable
 	}
 	if(hasToResolveContact)
 	{
-		m_contactResolver->ResolveContacts(m_contactGenerator->GetContacts(), deltaTime);
+		m_contactResolver->ResolveContacts(m_contactGenerator->GetContacts(), deltaTime, current);
 	}
 
 }

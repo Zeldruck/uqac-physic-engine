@@ -8,17 +8,17 @@ ContactResolver::ContactResolver(int iterations)
 	this->iterationsUsed = 0;
 }
 
-void ContactResolver::ResolveContacts(std::vector<std::shared_ptr<Contact>>& contacts, float duration)
+void ContactResolver::ResolveContacts(std::vector<std::shared_ptr<Contact>>& contacts, float duration, const State& state)
 {
 	if (contacts.size() == 0) return;
 
-	ResolveVelocity(contacts, duration);
-	ResolveInterpenetration(contacts, duration);
+	ResolveVelocity(contacts, duration, state);
+	ResolveInterpenetration(contacts, duration, state);
 
     contacts.clear();
 }
 
-void ContactResolver::ResolveVelocity(std::vector<std::shared_ptr<Contact>>& contacts, float duration)
+void ContactResolver::ResolveVelocity(std::vector<std::shared_ptr<Contact>>& contacts, float duration, const State& state)
 {
 	iterationsUsed = 0;
 
@@ -105,7 +105,7 @@ void ContactResolver::ResolveVelocity(std::vector<std::shared_ptr<Contact>>& con
 	}
 }
 
-void ContactResolver::ResolveInterpenetration(std::vector<std::shared_ptr<Contact>>& contacts, float duration)
+void ContactResolver::ResolveInterpenetration(std::vector<std::shared_ptr<Contact>>& contacts, float duration, const State& state)
 {
     int i, index;
     Vector3f linearChange[2], angularChange[2];
