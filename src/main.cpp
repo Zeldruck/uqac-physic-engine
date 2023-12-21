@@ -87,7 +87,7 @@ void ImGuiCameraPanel();
 void ImGuiStatsPanel(float deltaTime);
 void ImGuiSceneSelectionPanel(Scene& currentScene);
 void ImGuiBroadPhasePanel(PotentialContact* potentialContact, unsigned int potentialContactsCount, PotentialContactPrimitive* potentialContactPrimitive, unsigned int potentialContactPrimitiveCount);
-void ImGuiNarrowPhasePanel();
+void ImGuiNarrowPhasePanel(std::vector<std::shared_ptr<Contact>> contacts, int contactCount);
 
 void Scene1(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene);
 void ImGuiScene1Panel(const std::vector<std::shared_ptr<Particle>>& particles, const std::vector<glm::vec3> cubePositions);
@@ -1025,7 +1025,6 @@ void Scene4(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
             t += dt;
         }
 
-        // TO MOVE INSIDE PHYSIC SYSTEM
         //contactGenerator.DetectSandHS(sphere, plane);
         //contactGenerator.DetectBandP(box, plane);
         //contactGenerator.DetectSandB(sphere, box);
@@ -1079,7 +1078,7 @@ void Scene4(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         ImGuiStatsPanel(dt);
         ImGuiSceneSelectionPanel(currentScene);
         ImGuiScene4Panel(physics.GetRigidbodies(), cubePositions);
-        ImGuiNarrowPhasePanel();
+        //ImGuiNarrowPhasePanel(physics.GetContactsArray(), physics.GetContactCount());
         imguiCpp.Render();
 
         glfwSwapBuffers(window.GetHandle());
@@ -1130,21 +1129,13 @@ void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
 
 #pragma region Rigidbodies
     std::shared_ptr<Rigidbody> rigidbody1 = std::make_shared<Rigidbody>("Rigidbody 1 Sphere", Vector3f::Up * 13.0f);
-    std::shared_ptr<Rigidbody> rigidbody2 = std::make_shared<Rigidbody>("Rigidbody 2 Cube", RigidbodyType::CUBE, Vector3f::Up * 10.0f, 10.0f);
-    std::shared_ptr<Rigidbody> rigidbody3 = std::make_shared<Rigidbody>("Rigidbody 3 Sphere", Vector3f::Up * 5.0f);
-    std::shared_ptr<Rigidbody> rigidbody4 = std::make_shared<Rigidbody>("Rigidbody 4 Plane", RigidbodyType::CUBE, Vector3f::Down * 5.0f, Vector3f(2.0f, .0f, 2.0f), 1.0f);
+    std::shared_ptr<Rigidbody> rigidbody2 = std::make_shared<Rigidbody>("Rigidbody 2 Plane", RigidbodyType::CUBE, Vector3f::Zero, Vector3f(2.0f, .0f, 2.0f), 1.0f);
 
     physics.AddRigidbody(rigidbody1);
     physics.AddRigidbody(rigidbody2);
-    physics.AddRigidbody(rigidbody3);
-    physics.AddRigidbody(rigidbody4);
 
     std::shared_ptr<Sphere> sphere = std::make_shared<Sphere>(rigidbody1, Matrix4f(), 1.f);
-    std::shared_ptr<Sphere> sphere2 = std::make_shared<Sphere>(rigidbody3, Matrix4f(), 1.f);
-
-    std::shared_ptr<Box> box = std::make_shared<Box>(rigidbody2, Matrix4f(), Vector3f(0.5f, 0.5f, 0.5f));
-
-    std::shared_ptr<Plane> plane = std::make_shared<Plane>(nullptr, Matrix4f(), Vector3f(0, 1, 0), 0.f);
+    std::shared_ptr<Plane> plane = std::make_shared<Plane>(rigidbody2, Matrix4f(), Vector3f(0, 1, 0), 0.f);
 #pragma endregion
 
 #pragma region Forces
@@ -1163,16 +1154,8 @@ void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
     std::shared_ptr<BoundingSphere> boundingSphere2 = std::make_shared<BoundingSphere>(rigidbody2);
     rigidbody2->m_boundingSphere = boundingSphere2;
 
-    std::shared_ptr<BoundingSphere> boundingSphere3 = std::make_shared<BoundingSphere>(rigidbody3);
-    rigidbody3->m_boundingSphere = boundingSphere3;
-
-    std::shared_ptr<BoundingSphere> boundingSphere4 = std::make_shared<BoundingSphere>(rigidbody4);
-    rigidbody4->m_boundingSphere = boundingSphere4;
-
     std::shared_ptr<BVHNode> bvhRoot = std::make_shared<BVHNode>(sphere);
-    bvhRoot->Insert(box, boundingSphere2);
-    bvhRoot->Insert(sphere2, boundingSphere3);
-    //bvhRoot->Insert(plane, boundingSphere4);
+    bvhRoot->Insert(plane, boundingSphere2);
 
     physics.AddRootBVHNode(bvhRoot);
     PotentialContact* potentialContacts = new PotentialContact;
@@ -1194,9 +1177,6 @@ void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
 
     std::vector<glm::vec3> spherePositions;
     spherePositions.push_back(glm::vec3(rigidbody1->position.x, rigidbody1->position.y, rigidbody1->position.z));
-    //spherePositions.push_back(glm::vec3(rigidbody2->position.x, rigidbody2->position.y, rigidbody2->position.z));
-    spherePositions.push_back(glm::vec3(rigidbody3->position.x, rigidbody3->position.y, rigidbody3->position.z));
-    //spherePositions.push_back(glm::vec3(rigidbody4->position.x, rigidbody4->position.y, rigidbody4->position.z));
 
     GLuint VAO1, VBO1;
     glGenVertexArrays(1, &VAO1);
@@ -1233,34 +1213,6 @@ void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
     glGenBuffers(1, &VBO2);
     glBindBuffer(GL_ARRAY_BUFFER, VBO2);
     glBufferData(GL_ARRAY_BUFFER, cubeTexCoords.size() * sizeof(glm::vec2), cubeTexCoords.data(), GL_STATIC_DRAW);
-
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-
-    // For Plane
-    std::vector<glm::vec3> planeVertices;
-    std::vector<glm::vec2> planeTexCoords;
-    CreateCube(planeVertices, planeTexCoords, 10.0f);
-
-    std::vector<glm::vec3> planePositions;
-    planePositions.push_back(glm::vec3(rigidbody4->position.x, rigidbody4->position.y, rigidbody4->position.z));
-
-    GLuint VAO4, VBO4;
-    glGenVertexArrays(1, &VAO4);
-    glBindVertexArray(VAO4);
-
-    // Vertex Positions
-    glGenBuffers(1, &VBO4);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO4);
-    glBufferData(GL_ARRAY_BUFFER, planeVertices.size() * sizeof(glm::vec3), planeVertices.data(), GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // Texture Coords
-    glGenBuffers(1, &VBO4);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO4);
-    glBufferData(GL_ARRAY_BUFFER, planeVertices.size() * sizeof(glm::vec2), planeVertices.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
@@ -1307,7 +1259,8 @@ void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
 
         const double alpha = accumulator / dt;
         State state = current * alpha + previous * (1.0 - alpha);
-
+        physics.m_contactGenerator->DetectSandHS(*sphere, *plane);
+        physics.m_contactResolver->ResolveContacts(physics.m_contactGenerator->GetContacts(), dt);
         ProcessCameraInput(window.GetHandle(), dt);
         ProcessSceneInput(window.GetHandle(), currentScene);
 
@@ -1316,19 +1269,6 @@ void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
 
         ourShader.Use();
 
-        // Render Bounding 
-        //std::vector<glm::vec3> boundingSphereVertices;
-        //CreateSphere(boundingSphereVertices, bvhRoot->m_volume->GetRadius() * 2.0f + 0.5f, 30, 30);
-
-        //std::vector<glm::vec3> boundingSpherePositions;
-        //boundingSpherePositions.push_back(glm::vec3(bvhRoot->m_volume->GetCenter().x, bvhRoot->m_volume->GetCenter().y, bvhRoot->m_volume->GetCenter().z));
-
-        //glBindVertexArray(VAO3);
-        //glBufferData(GL_ARRAY_BUFFER, boundingSphereVertices.size() * sizeof(glm::vec3), boundingSphereVertices.data(), GL_STATIC_DRAW);
-
-        //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        //glEnableVertexAttribArray(0);
-
         glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         ourShader.SetMat4("projection", projection);
         glm::mat4 view = camera.GetViewMatrix();
@@ -1336,9 +1276,6 @@ void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
 
         // Update Spheres Positions
         spherePositions[0] = glm::vec3(rigidbody1->position.x, rigidbody1->position.y, rigidbody1->position.z);
-        //spherePositions[1] = glm::vec3(rigidbody2->position.x, rigidbody2->position.y, rigidbody2->position.z);
-        spherePositions[2] = glm::vec3(rigidbody3->position.x, rigidbody3->position.y, rigidbody3->position.z);
-        //spherePositions[3] = glm::vec3(rigidbody4->position.x, rigidbody4->position.y, rigidbody4->position.z);
 
         // Render Spheres 
         for (int i = 0; i < spherePositions.size(); ++i)
@@ -1350,35 +1287,15 @@ void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
             glDrawArrays(GL_LINE_STRIP, 0, sphereVertices.size());
         }
 
-        // Render Bounding Spheres
-        //for (int i = 0; i < boundingSpherePositions.size(); ++i)
-        //{
-        //    model = glm::mat4(1.0f); // Initialize model matrix for each object
-        //    model = glm::translate(model, boundingSpherePositions[i]);
-        //    ourShader.SetMat4("model", model);
-        //    glBindVertexArray(VAO3);
-        //    glDrawArrays(GL_LINE_STRIP, 0, boundingSphereVertices.size());
-        //}
-
         // Render Cubes
         for (int i = 0; i < cubePositions.size(); ++i)
         {
             model = glm::mat4(1.0f); // Reset model matrix for the next object
+            model = glm::scale(model, glm::vec3(10.f, 0.5f, 10.f));
             model = glm::translate(model, cubePositions[i]);
             ourShader.SetMat4("model", model);
             glBindVertexArray(VAO2);
             glDrawArrays(GL_TRIANGLES, 0, cubeVertices.size());
-        }
-
-        // Render Planes
-        for (int i = 0; i < planePositions.size(); i++)
-        {
-            model = glm::mat4(1.0f); // Reset model matrix for the next object
-            model = glm::scale(model, glm::vec3(1.f, 0.1f, 1.f));
-            model = glm::translate(model, planePositions[i]);
-            ourShader.SetMat4("model", model);
-            glBindVertexArray(VAO4);
-            glDrawArrays(GL_TRIANGLES, 0, planeVertices.size());
         }
 
         imguiCpp.NewFrame();
@@ -1388,7 +1305,8 @@ void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         ImGuiSceneSelectionPanel(currentScene);
         ImGuiScene5Panel(physics.GetRigidbodies(), cubePositions);
         ImGuiBroadPhasePanel(physics.GetPotentialContactArray(), physics.GetPotentialContactCount(), physics.GetPotentialContactPrimitiveArray(), physics.GetPotentialContactPrimitiveCount());
-        ImGuiNarrowPhasePanel();
+        // contacts get clear during physics update
+        //ImGuiNarrowPhasePanel(physics.GetContactsArray(), physics.GetContactCount());
         imguiCpp.Render();
 
         glfwSwapBuffers(window.GetHandle());
@@ -1401,8 +1319,6 @@ void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
     glDeleteBuffers(1, &VBO2);
     glDeleteVertexArrays(1, &VAO3);
     glDeleteBuffers(1, &VBO3);
-    glDeleteVertexArrays(1, &VAO4);
-    glDeleteBuffers(1, &VBO4);
 
     delete(potentialContacts);
     delete(potentialContactsPrimitive);
@@ -1729,8 +1645,21 @@ void ImGuiBroadPhasePanel(PotentialContact* potentialContact, unsigned int poten
     ImGui::End();
 }
 
-void ImGuiNarrowPhasePanel()
+void ImGuiNarrowPhasePanel(std::vector<std::shared_ptr<Contact>> contacts, int contactCount)
 {
     ImGui::Begin("Narrow Phase");
+    ImGui::Text("Contacts: %d", contactCount);
+    if (contactCount > 0)
+    {
+        for (auto& contact : contacts)
+        {
+            ImGui::Text("Contact");
+            for (auto& rigibody : contact->rigidbodies)
+            {
+                ImGui::Text("%s", rigibody->name.c_str());
+            }
+            ImGui::Separator();
+        }
+	}
 	ImGui::End();
 }

@@ -46,6 +46,9 @@ public:
 	unsigned int GetPotentialContactPrimitiveCount() const;
 	void ParsePotentialContactsPrimitive();
 
+	std::vector<std::shared_ptr<Contact>> GetContactsArray();
+	int GetContactCount();
+
 	void ClearForces();
 
 	void BroadPhaseCollisionDetection();
@@ -64,6 +67,7 @@ private:
 	PotentialContactPrimitive* m_potentialContactPrimitive;
 	unsigned int m_potentialContactPrimitiveCount;
 
+public:
 	// Narrow Phase Variables
 	std::unique_ptr<ContactGenerator> m_contactGenerator;
 	std::unique_ptr<ContactResolver> m_contactResolver;

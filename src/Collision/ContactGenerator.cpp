@@ -24,6 +24,11 @@ void ContactGenerator::SetCurrentContacts(const int newContacts)
 	currentContacts = newContacts;
 }
 
+int ContactGenerator::GetCurrentContacts()
+{
+	return currentContacts;
+}
+
 void ContactGenerator::DetectSandS(const Sphere& sphereA, const Sphere& sphereB)
 {
 	if (currentContacts >= maxContacts) return;

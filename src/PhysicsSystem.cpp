@@ -328,5 +328,14 @@ void PhysicsSystem::ParsePotentialContactsPrimitive()
 		std::cout << "Rigidbody 1: " << m_potentialContactPrimitive[i].primitives[0]->rigidbody->name << std::endl;
 		std::cout << "Rigidbody 2: " << m_potentialContactPrimitive[i].primitives[1]->rigidbody->name << std::endl;
 	}
+}
 
+std::vector<std::shared_ptr<Contact>> PhysicsSystem::GetContactsArray()
+{
+	return m_contactGenerator->GetContacts();
+}
+
+int PhysicsSystem::GetContactCount()
+{
+	return m_contactGenerator->GetCurrentContacts();
 }
