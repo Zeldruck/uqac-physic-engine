@@ -679,6 +679,7 @@ void Scene3(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
     std::shared_ptr<BoundingSphere> boundingSphere3 = std::make_shared<BoundingSphere>(rigidbody3);
     rigidbody3->m_boundingSphere = boundingSphere3;
 
+
     std::shared_ptr<BVHNode> bvhRoot = std::make_shared<BVHNode>(sphere);
     bvhRoot->Insert(box, boundingSphere2);
     bvhRoot->Insert(sphere2, boundingSphere3);
@@ -797,17 +798,17 @@ void Scene3(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         ourShader.Use();
 
         // Render Bounding 
-        std::vector<glm::vec3> boundingSphereVertices;
-        CreateSphere(boundingSphereVertices, bvhRoot->m_volume->GetRadius() * 2.0f + 0.5f, 30, 30);
+        //std::vector<glm::vec3> boundingSphereVertices;
+        //CreateSphere(boundingSphereVertices, bvhRoot->m_volume->GetRadius() * 2.0f + 0.5f, 30, 30);
 
-        std::vector<glm::vec3> boundingSpherePositions;
-        boundingSpherePositions.push_back(glm::vec3(bvhRoot->m_volume->GetCenter().x, bvhRoot->m_volume->GetCenter().y, bvhRoot->m_volume->GetCenter().z));
+        //std::vector<glm::vec3> boundingSpherePositions;
+        //boundingSpherePositions.push_back(glm::vec3(bvhRoot->m_volume->GetCenter().x, bvhRoot->m_volume->GetCenter().y, bvhRoot->m_volume->GetCenter().z));
 
-        glBindVertexArray(VAO3);
-        glBufferData(GL_ARRAY_BUFFER, boundingSphereVertices.size() * sizeof(glm::vec3), boundingSphereVertices.data(), GL_STATIC_DRAW);
+        //glBindVertexArray(VAO3);
+        //glBufferData(GL_ARRAY_BUFFER, boundingSphereVertices.size() * sizeof(glm::vec3), boundingSphereVertices.data(), GL_STATIC_DRAW);
 
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
+        //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        //glEnableVertexAttribArray(0);
 
         glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         ourShader.SetMat4("projection", projection);
@@ -830,14 +831,14 @@ void Scene3(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         }
 
         // Render Bounding Spheres
-        for (int i = 0; i < boundingSpherePositions.size(); ++i)
-        {
-            model = glm::mat4(1.0f); // Initialize model matrix for each object
-            model = glm::translate(model, boundingSpherePositions[i]);
-            ourShader.SetMat4("model", model);
-            glBindVertexArray(VAO3);
-            glDrawArrays(GL_LINE_STRIP, 0, boundingSphereVertices.size());
-        }
+        //for (int i = 0; i < boundingSpherePositions.size(); ++i)
+        //{
+        //    model = glm::mat4(1.0f); // Initialize model matrix for each object
+        //    model = glm::translate(model, boundingSpherePositions[i]);
+        //    ourShader.SetMat4("model", model);
+        //    glBindVertexArray(VAO3);
+        //    glDrawArrays(GL_LINE_STRIP, 0, boundingSphereVertices.size());
+        //}
  
         // Render Cubes
         for (int i = 0; i < cubePositions.size(); ++i)
@@ -1143,7 +1144,7 @@ void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
 
     std::shared_ptr<Box> box = std::make_shared<Box>(rigidbody2, Matrix4f(), Vector3f(0.5f, 0.5f, 0.5f));
 
-    std::shared_ptr<Plane> plane = std::make_shared<Plane>(rigidbody4, Matrix4f(), Vector3f(0, 1, 0), 0.f);
+    std::shared_ptr<Plane> plane = std::make_shared<Plane>(nullptr, Matrix4f(), Vector3f(0, 1, 0), 0.f);
 #pragma endregion
 
 #pragma region Forces
@@ -1702,19 +1703,19 @@ void ImGuiSceneSelectionPanel(Scene& currentScene)
 
 void ImGuiBroadPhasePanel(PotentialContact* potentialContact, unsigned int potentialContactsCount, PotentialContactPrimitive* potentialContactPrimitive, unsigned int potentialContactPrimitiveCount)
 {
-    ImGui::Begin("Broad Phase");
-    ImGui::Text("Potential Contacts: %d", potentialContactsCount);
-    if (potentialContactsCount > 0)
-    {
-        for (unsigned int i = 0; i < potentialContactsCount; i++)
-        {
-            ImGui::Text("Potential contacts: %s", potentialContact->rigidbodies[0]->name.c_str());
-            ImGui::Text("Potential contacts: %s", potentialContact->rigidbodies[1]->name.c_str());
-            ImGui::Separator();
-        }
-    }
-    ImGui::Separator();
-    ImGui::Separator();
+    //ImGui::Begin("Broad Phase");
+    //ImGui::Text("Potential Contacts: %d", potentialContactsCount);
+    //if (potentialContactsCount > 0)
+    //{
+    //    for (unsigned int i = 0; i < potentialContactsCount; i++)
+    //    {
+    //        ImGui::Text("Potential contacts: %s", potentialContact->rigidbodies[0]->name.c_str());
+    //        ImGui::Text("Potential contacts: %s", potentialContact->rigidbodies[1]->name.c_str());
+    //        ImGui::Separator();
+    //    }
+    //}
+    //ImGui::Separator();
+    //ImGui::Separator();
     ImGui::Text("Potential Contacts Primitive: %d", potentialContactPrimitiveCount);
     if (potentialContactPrimitiveCount > 0)
     {
