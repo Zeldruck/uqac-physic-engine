@@ -649,17 +649,23 @@ void Scene3(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
 #pragma region Rigidbodies
     std::shared_ptr<Rigidbody> rigidbody1 = std::make_shared<Rigidbody>("Rigidbody 1 Sphere", Vector3f::Up * 10.0f);
     std::shared_ptr<Rigidbody> rigidbody2 = std::make_shared<Rigidbody>("Rigidbody 2 Cube", RigidbodyType::CUBE, Vector3f::Zero, 10.0f);
+    std::shared_ptr<Rigidbody> rigidbody3 = std::make_shared<Rigidbody>("Rigidbody 3 Sphere", Vector3f::Up * 5.0f);
 
     physics.AddRigidbody(rigidbody1);
     physics.AddRigidbody(rigidbody2);
+    physics.AddRigidbody(rigidbody3);
 
     std::shared_ptr<Sphere> sphere = std::make_shared<Sphere>(rigidbody1, Matrix4f(), 1.f);
     std::shared_ptr<Box> box = std::make_shared<Box>(rigidbody2, Matrix4f(), Vector3f(0.5f, 0.5f, 0.5f));
+    std::shared_ptr<Sphere> sphere2 = std::make_shared<Sphere>(rigidbody3, Matrix4f(), 1.f);
 #pragma endregion
 
 #pragma region Forces
     std::shared_ptr<ForceGravity> gravity = std::make_shared<ForceGravity>();
+    std::shared_ptr<ForceDrag> drag = std::make_shared<ForceDrag>(10.0f, 0.0f);
+
     forceRegistry->Add(rigidbody1, gravity);
+    forceRegistry->Add(rigidbody1, drag);
 #pragma endregion
 
 #pragma region BroadPhase
@@ -670,8 +676,12 @@ void Scene3(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
     std::shared_ptr<BoundingSphere> boundingSphere2 = std::make_shared<BoundingSphere>(rigidbody2);
     rigidbody2->m_boundingSphere = boundingSphere2;
 
+    std::shared_ptr<BoundingSphere> boundingSphere3 = std::make_shared<BoundingSphere>(rigidbody3);
+    rigidbody3->m_boundingSphere = boundingSphere3;
+
     std::shared_ptr<BVHNode> bvhRoot = std::make_shared<BVHNode>(sphere);
     bvhRoot->Insert(box, boundingSphere2);
+    bvhRoot->Insert(sphere2, boundingSphere3);
 
     physics.AddRootBVHNode(bvhRoot);
     PotentialContact* potentialContacts = new PotentialContact;
@@ -694,6 +704,7 @@ void Scene3(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
     std::vector<glm::vec3> spherePositions;
     spherePositions.push_back(glm::vec3(rigidbody1->position.x, rigidbody1->position.y, rigidbody1->position.z));
     spherePositions.push_back(glm::vec3(rigidbody2->position.x, rigidbody2->position.y, rigidbody2->position.z));
+    spherePositions.push_back(glm::vec3(rigidbody3->position.x, rigidbody3->position.y, rigidbody3->position.z));
 
     GLuint VAO1, VBO1;
     glGenVertexArrays(1, &VAO1);
@@ -806,7 +817,8 @@ void Scene3(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         // Update Spheres Positions
         spherePositions[0] = glm::vec3(rigidbody1->position.x, rigidbody1->position.y, rigidbody1->position.z);
         spherePositions[1] = glm::vec3(rigidbody2->position.x, rigidbody2->position.y, rigidbody2->position.z);
-        
+        spherePositions[2] = glm::vec3(rigidbody3->position.x, rigidbody3->position.y, rigidbody3->position.z);
+
         // Render Spheres 
         for (int i = 0; i < spherePositions.size(); ++i)
         {
@@ -1007,7 +1019,7 @@ void Scene4(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         while (accumulator >= dt)
         {
             previous = current;
-            physics.Update(current, dt, true, false);
+            physics.Update(current, dt, true);
             accumulator -= dt;
             t += dt;
         }
@@ -1287,7 +1299,7 @@ void Scene5(cppGLFWwindow& window, ImguiCpp& imguiCpp, Scene& currentScene)
         while (accumulator >= dt)
         {
             previous = current;
-            physics.Update(current, dt, true, true);
+            physics.Update(current, dt, true, true, true, true);
             accumulator -= dt;
             t += dt;
         }

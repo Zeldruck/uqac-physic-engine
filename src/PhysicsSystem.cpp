@@ -42,7 +42,7 @@ PhysicsSystem::~PhysicsSystem()
 		delete(m_potentialContactPrimitive);
 }
 
-void PhysicsSystem::Update(State& current, float deltaTime, bool isGravityEnabled, bool hasToDetectCollisions /* = true */)
+void PhysicsSystem::Update(State& current, float deltaTime, bool isGravityEnabled, bool hasToDetectBroadPhase, bool hasToDetectNarrowPhase, bool hasToResolveContact)
 {
 	// Clear les forces des particles et rigidbodies
 	ClearForces();
@@ -54,10 +54,16 @@ void PhysicsSystem::Update(State& current, float deltaTime, bool isGravityEnable
 	m_integrator->Update(current, m_particles, m_rigidbodies, deltaTime, isGravityEnabled);	
 
 	// Résolution des collisions
-	if (hasToDetectCollisions)
+	if (hasToDetectBroadPhase)
 	{
 		BroadPhaseCollisionDetection();
+	}
+	if (hasToDetectNarrowPhase)
+	{
 		NarrowPhaseCollisionDetection();
+	}
+	if(hasToResolveContact)
+	{
 		m_contactResolver->ResolveContacts(m_contactGenerator->GetContacts(), deltaTime);
 	}
 

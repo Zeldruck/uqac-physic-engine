@@ -27,7 +27,7 @@ public:
 	PhysicsSystem& operator=(PhysicsSystem&&) = delete;
 	PhysicsSystem& operator=(const PhysicsSystem&) = delete;
 
-	void Update(State& current, float deltaTime, bool isGravityEnabled, bool detectCollisions = true);
+	void Update(State& current, float deltaTime, bool isGravityEnabled, bool hasToDetectBroadPhase = false, bool hasToDetectNarrowPhase = false, bool hasToResolveContact = false);
 	void AddParticle(std::shared_ptr<Particle> particle);
 	void RemoveParticle(std::shared_ptr<Particle> particle);
 	std::vector<std::shared_ptr<Particle>> GetParticles();
