@@ -180,6 +180,38 @@ Rigidbody::Rigidbody(std::string name, RigidbodyType type, Vector3f position, fl
 	CalculateDerivedData();
 }
 
+Rigidbody::Rigidbody(std::string name, RigidbodyType type, Vector3f position, Vector3f scale, float mass) :
+	name(name),
+	type(type),
+	position(position),
+	rotation(Quaternionf()),
+	scale(scale),
+	velocity(Vector3f::Zero),
+	m_acceleration(Vector3f::Zero),
+	force(Vector3f::Zero),
+	angularVelocity(Vector3f::Zero),
+	m_angularAcceleration(Vector3f::Zero),
+	mass(mass),
+	inverseMass(1.0f / MIN_MASS),
+	isAwake(true)
+{
+	switch (type)
+	{
+	case CUBE:
+		inertiaTensor = GetBoxInertiaTensorLocal();
+		break;
+	case SPHERE:
+		inertiaTensor = GetSphereInertiaTensorLocal();
+		break;
+	case TETRAHEDRON:
+		inertiaTensor = GetTetrahedronInertiaTensorLocal();
+		break;
+	}
+
+	inverseInertiaTensor = inertiaTensor.Inverse();
+	CalculateDerivedData();
+}
+
 Rigidbody::Rigidbody(std::string name, RigidbodyType type, Vector3f position, Quaternionf rotation, float mass) :
 	name(name),
 	type(type),
@@ -318,6 +350,7 @@ void Rigidbody::CalculateTransformMatrix()
 
 void Rigidbody::CalculateDerivedData()
 {
+	rotation.Normalize();
 	CalculateTransformMatrix();
 	inverseInertiaTensorWorld = GetInverseInertiaTensorWorld();
 }

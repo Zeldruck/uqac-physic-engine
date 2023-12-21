@@ -5,6 +5,8 @@
 #include "Force/ForceRegistry.hpp"
 #include "Contact/ParticleContactGenerator.hpp"
 #include "Contact/ParticleContactResolver.hpp"
+#include "Collision/ContactGenerator.hpp"
+#include "Collision/ContactResolver.hpp"
 #include "EulerIntegrator.hpp"
 
 class Particle;
@@ -61,4 +63,8 @@ private:
 	unsigned int m_potentialContactCount;
 	PotentialContactPrimitive* m_potentialContactPrimitive;
 	unsigned int m_potentialContactPrimitiveCount;
+
+	// Narrow Phase Variables
+	std::unique_ptr<ContactGenerator> m_contactGenerator;
+	std::unique_ptr<ContactResolver> m_contactResolver;
 };

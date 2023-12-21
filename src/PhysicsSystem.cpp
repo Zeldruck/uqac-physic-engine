@@ -2,22 +2,31 @@
 #include <map>
 #include <vector>
 #include <memory>
+
 #include "PhysicsSystem.hpp"
 #include "Particle.hpp"
 #include "Rigidbody.hpp"
+
 #include "Collision/BVHNode.hpp"
 #include "Collision/BoundingSphere.hpp"
 #include "Collision/BoundingBox.hpp"
 #include "Collision/BVHNode.hpp"
+
+#include "Collision/ContactGenerator.hpp"
+#include "Collision/ContactResolver.hpp"
+
 #include "Collision/Primitives/Primitive.hpp"
 #include "Collision/Primitives/Sphere.hpp"
 #include "Collision/Primitives/Box.hpp"
 #include "Collision/Primitives/Plane.hpp"
+
 #include "State.hpp"
 
 PhysicsSystem::PhysicsSystem(std::shared_ptr<ForceRegistry> forceRegistry) :
 	m_forceRegistry(forceRegistry),
 	m_integrator(std::make_unique<EulerIntegrator>()),
+	m_contactGenerator(std::make_unique<ContactGenerator>(50)),
+	m_contactResolver(std::make_unique<ContactResolver>(50)),
 	m_potentialContactCount(0),
 	m_potentialContactPrimitiveCount(0)
 {
@@ -49,6 +58,7 @@ void PhysicsSystem::Update(State& current, float deltaTime, bool isGravityEnable
 	{
 		BroadPhaseCollisionDetection();
 		NarrowPhaseCollisionDetection();
+		m_contactResolver->ResolveContacts(m_contactGenerator->GetContacts(), deltaTime);
 	}
 
 }
@@ -82,7 +92,124 @@ void PhysicsSystem::BroadPhaseCollisionDetection()
 
 void PhysicsSystem::NarrowPhaseCollisionDetection()
 {
+	for (unsigned int i = 0; i < m_potentialContactPrimitiveCount; i++)
+	{
+		PrimitiveType type1 = m_potentialContactPrimitive[i].primitives[0]->GetType();
+		PrimitiveType type2 = m_potentialContactPrimitive[i].primitives[1]->GetType();
 
+		if (type1 == PrimitiveType::TypeSphere && type2 == PrimitiveType::TypeSphere)
+		{
+			std::shared_ptr<Sphere> sphere1 = std::dynamic_pointer_cast<Sphere>(m_potentialContactPrimitive[i].primitives[0]);
+			std::shared_ptr<Sphere> sphere2 = std::dynamic_pointer_cast<Sphere>(m_potentialContactPrimitive[i].primitives[1]);
+			
+			Sphere sphereA = *sphere1;
+			Sphere sphereB = *sphere2;
+
+			m_contactGenerator->DetectSandS(sphereA, sphereB);
+
+			std::cout << "Sphere - Sphere" << std::endl;
+			std::cout << "Sphere 1: " << sphere1->rigidbody->name << std::endl;
+			std::cout << "Sphere 2: " << sphere2->rigidbody->name << std::endl;
+		}
+		else if (type1 == PrimitiveType::TypeSphere && type2 == PrimitiveType::TypeBox)
+		{
+			std::shared_ptr<Sphere> sphere = std::dynamic_pointer_cast<Sphere>(m_potentialContactPrimitive[i].primitives[0]);
+			std::shared_ptr<Box> box = std::dynamic_pointer_cast<Box>(m_potentialContactPrimitive[i].primitives[1]);
+
+			Sphere sphereA = *sphere;
+			Box boxB = *box;
+
+			m_contactGenerator->DetectSandB(sphereA, boxB);
+
+			std::cout << "Sphere - Box" << std::endl;
+			std::cout << "Sphere: " << sphere->rigidbody->name << std::endl;
+			std::cout << "Box: " << box->rigidbody->name << std::endl;
+		}
+		else if (type1 == PrimitiveType::TypeBox && type2 == PrimitiveType::TypeSphere)
+		{
+			std::shared_ptr<Sphere> sphere = std::dynamic_pointer_cast<Sphere>(m_potentialContactPrimitive[i].primitives[1]);
+			std::shared_ptr<Box> box = std::dynamic_pointer_cast<Box>(m_potentialContactPrimitive[i].primitives[0]);
+			
+			Sphere sphereA = *sphere;
+			Box boxB = *box;
+
+			m_contactGenerator->DetectSandB(sphereA, boxB);
+			
+			std::cout << "Box - Sphere" << std::endl;
+			std::cout << "Sphere: " << sphere->rigidbody->name << std::endl;
+			std::cout << "Box: " << box->rigidbody->name << std::endl;
+		}
+		else if (type1 == PrimitiveType::TypeSphere && type2 == PrimitiveType::TypePlane)
+		{
+			std::shared_ptr<Sphere> sphere = std::dynamic_pointer_cast<Sphere>(m_potentialContactPrimitive[i].primitives[0]);
+			std::shared_ptr<Plane> plane = std::dynamic_pointer_cast<Plane>(m_potentialContactPrimitive[i].primitives[1]);
+
+			Sphere sphereA = *sphere;
+			Plane planeB = *plane;
+
+			m_contactGenerator->DetectSandP(sphereA, planeB);
+
+			std::cout << "Sphere - Plane" << std::endl;
+			std::cout << "Sphere: " << sphere->rigidbody->name << std::endl;
+			std::cout << "Plane: " << plane->rigidbody->name << std::endl;
+		}
+		else if (type1 == PrimitiveType::TypePlane && type2 == PrimitiveType::TypeSphere)
+		{
+			std::shared_ptr<Sphere> sphere = std::dynamic_pointer_cast<Sphere>(m_potentialContactPrimitive[i].primitives[1]);
+			std::shared_ptr<Plane> plane = std::dynamic_pointer_cast<Plane>(m_potentialContactPrimitive[i].primitives[0]);
+			
+			Sphere sphereA = *sphere;
+			Plane planeB = *plane;
+
+			m_contactGenerator->DetectSandP(sphereA, planeB);
+			
+			std::cout << "Plane - Sphere" << std::endl;
+			std::cout << "Sphere: " << sphere->rigidbody->name << std::endl;
+			std::cout << "Plane: " << plane->rigidbody->name << std::endl;
+		}
+		else if (type1 == PrimitiveType::TypeBox && type2 == PrimitiveType::TypeBox)
+		{
+			std::shared_ptr<Box> box1 = std::dynamic_pointer_cast<Box>(m_potentialContactPrimitive[i].primitives[0]);
+			std::shared_ptr<Box> box2 = std::dynamic_pointer_cast<Box>(m_potentialContactPrimitive[i].primitives[1]);
+			
+			Box boxA = *box1;
+			Box boxB = *box2;
+
+			m_contactGenerator->DetectBandB(boxA, boxB);
+			
+			std::cout << "Box - Box" << std::endl;
+			std::cout << "Box 1: " << box1->rigidbody->name << std::endl;
+			std::cout << "Box 2: " << box2->rigidbody->name << std::endl;
+		}
+		else if (type1 == PrimitiveType::TypeBox && type2 == PrimitiveType::TypePlane)
+		{
+			std::shared_ptr<Box> box = std::dynamic_pointer_cast<Box>(m_potentialContactPrimitive[i].primitives[0]);
+			std::shared_ptr<Plane> plane = std::dynamic_pointer_cast<Plane>(m_potentialContactPrimitive[i].primitives[1]);
+			
+			Box boxA = *box;
+			Plane planeB = *plane;
+
+			m_contactGenerator->DetectBandP(boxA, planeB);
+			
+			std::cout << "Box - Plane" << std::endl;
+			std::cout << "Box: " << box->rigidbody->name << std::endl;
+			std::cout << "Plane: " << plane->rigidbody->name << std::endl;
+		}
+		else if (type1 == PrimitiveType::TypePlane && type2 == PrimitiveType::TypeBox)
+		{
+			std::shared_ptr<Box> box = std::dynamic_pointer_cast<Box>(m_potentialContactPrimitive[i].primitives[1]);
+			std::shared_ptr<Plane> plane = std::dynamic_pointer_cast<Plane>(m_potentialContactPrimitive[i].primitives[0]);
+
+			Box boxA = *box;
+			Plane planeB = *plane;
+
+			m_contactGenerator->DetectBandP(boxA, planeB);
+
+			std::cout << "Plane - Box" << std::endl;
+			std::cout << "Box: " << box->rigidbody->name << std::endl;
+			std::cout << "Plane: " << plane->rigidbody->name << std::endl;
+		}
+	}
 }
 
 void PhysicsSystem::AddParticle(std::shared_ptr<Particle> particle)

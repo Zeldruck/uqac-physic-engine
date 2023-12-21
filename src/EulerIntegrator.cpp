@@ -48,7 +48,6 @@ void EulerIntegrator::Update(State& current, std::vector<std::shared_ptr<Particl
 		Quaternionf newRotation = Quaternionf(0.f, rigidbody->angularVelocity.x, rigidbody->angularVelocity.y, rigidbody->angularVelocity.z) * deltaTime;
 		newRotation = newRotation * rigidbody->rotation;
 		rigidbody->rotation = rigidbody->rotation + newRotation * 0.5;
-		rigidbody->rotation.Normalize();
 
 		rigidbody->CalculateDerivedData();
 	}
